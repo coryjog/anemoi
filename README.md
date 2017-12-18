@@ -1,0 +1,2 @@
+# anemoi
+Wind analysis package
