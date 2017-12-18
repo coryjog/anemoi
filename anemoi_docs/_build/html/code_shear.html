@@ -1,0 +1,422 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Shear Module &#8212; anemoi  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Correlate Module" href="code_correlate.html" />
+    <link rel="prev" title="MetMast Class" href="code_MetMast.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-analysis.shear">
+<span id="shear-module"></span><h1>Shear Module<a class="headerlink" href="#module-analysis.shear" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="analysis.shear.alpha_annual_profile_from_wind_speed_time_series">
+<code class="descclassname">analysis.shear.</code><code class="descname">alpha_annual_profile_from_wind_speed_time_series</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#alpha_annual_profile_from_wind_speed_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.alpha_annual_profile_from_wind_speed_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns monthly mean alpha values from a time series of wind speeds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_speed_sensors: list, default all anemometers</dt>
+<dd>Specific wind speeds sensors</dd>
+<dt>heights: list</dt>
+<dd>List of the specified sensor heights</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Mean alpha values indexed by month (annual shear profile)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.alpha_dir_profile_from_wind_speed_time_series">
+<code class="descclassname">analysis.shear.</code><code class="descname">alpha_dir_profile_from_wind_speed_time_series</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_dir_sensor</em>, <em>dir_sectors=16</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#alpha_dir_profile_from_wind_speed_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.alpha_dir_profile_from_wind_speed_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns mean alpha values by direction bin from a time series of wind speeds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_dir_sensors: list</dt>
+<dd>Specific wind wind vane for directional binning</dd>
+<dt>dir_sectors: int, default 16</dt>
+<dd>Number of equally spaced direction sectors in which to bin the mean shear values</dd>
+<dt>wind_speed_sensors: list, default all anemometers</dt>
+<dd>Specific wind speeds sensors</dd>
+<dt>heights: list</dt>
+<dd>List of the specified sensor heights</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Mean alpha values indexed by the specified number of direction bins (directional shear profile)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.alpha_mean_from_alpha_time_series">
+<code class="descclassname">analysis.shear.</code><code class="descname">alpha_mean_from_alpha_time_series</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#alpha_mean_from_alpha_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.alpha_mean_from_alpha_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the mean of monthly means of the alpha time series from wind speed mast data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_speed_sensors: list, default all anemometers</dt>
+<dd>Specific wind speeds sensors</dd>
+<dt>heights: list</dt>
+<dd>List of the specified sensor heights</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Mean of monthly means of an alpha time series</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.alpha_mean_from_wind_speed_time_series">
+<code class="descclassname">analysis.shear.</code><code class="descname">alpha_mean_from_wind_speed_time_series</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#alpha_mean_from_wind_speed_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.alpha_mean_from_wind_speed_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns alpha values from the mean of monthly means of a time series of wind speeds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_speed_sensors: list, default all anemometers</dt>
+<dd>Specific wind speeds sensors</dd>
+<dt>heights: list</dt>
+<dd>List of the specified sensor heights</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Alpha value from the mean of monthly means of a wind speed time series</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.alpha_time_series">
+<code class="descclassname">analysis.shear.</code><code class="descname">alpha_time_series</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#alpha_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.alpha_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a time series of alpha values from a time series of wind speeds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_speed_sensors: list</dt>
+<dd>Specific wind speeds sensors</dd>
+<dt>heights: list</dt>
+<dd>List of the specified sensor heights</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Time series of alpha values with the same index as the input mast data</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.check_and_return_wind_dir_data_for_shear">
+<code class="descclassname">analysis.shear.</code><code class="descname">check_and_return_wind_dir_data_for_shear</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_dir_sensor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#check_and_return_wind_dir_data_for_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.check_and_return_wind_dir_data_for_shear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform checks on wind direction data for shear calculations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.check_and_return_wind_speed_data_for_annual_shear">
+<code class="descclassname">analysis.shear.</code><code class="descname">check_and_return_wind_speed_data_for_annual_shear</code><span class="sig-paren">(</span><em>mast_data</em>, <em>wind_speed_sensors=None</em>, <em>heights=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#check_and_return_wind_speed_data_for_annual_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.check_and_return_wind_speed_data_for_annual_shear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform checks on wind speed data for shear calculations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.shear_analysis_annual">
+<code class="descclassname">analysis.shear.</code><code class="descname">shear_analysis_annual</code><span class="sig-paren">(</span><em>mast_data</em>, <em>replace_nan=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#shear_analysis_annual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.shear_analysis_annual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of annual alpha values from a single mast, indexed by sensor orientation and height.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>replace_nan: boolean, default False</dt>
+<dd>Replace NaN’s with ‘-‘ for prettier output</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Alpha values from a single mast by sensor orientation and height</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.shear_analysis_mean_from_site_results">
+<code class="descclassname">analysis.shear.</code><code class="descname">shear_analysis_mean_from_site_results</code><span class="sig-paren">(</span><em>shear_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#shear_analysis_mean_from_site_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.shear_analysis_mean_from_site_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of the mean annual alpha value from each site mast from a previously run shear analysis.
+This allows the user to choose the heights and oreintations used within the final calculated alpha value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>shear results <span class="classifier-delimiter">:</span> <span class="classifier">DataFrame</span></dt>
+<dd>DataFrame of shear results from shear.shear_analysis_annual or shear.shear_analysis_site</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Average annual alpha values from each site mast using all the provided anemometer combinations</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.shear_analysis_mean_site">
+<code class="descclassname">analysis.shear.</code><code class="descname">shear_analysis_mean_site</code><span class="sig-paren">(</span><em>masts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#shear_analysis_mean_site"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.shear_analysis_mean_site" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of the mean annual alpha value from each site masts. Uses all avaialble anemometer combinations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>masts <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of MetMast objects from which all anemometer data is extracted</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Average annual alpha values from each site mast using all available anemometer combinations</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.shear_analysis_site">
+<code class="descclassname">analysis.shear.</code><code class="descname">shear_analysis_site</code><span class="sig-paren">(</span><em>masts</em>, <em>replace_nan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#shear_analysis_site"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.shear_analysis_site" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of annual alpha values from a multiple site masts, indexed by mast, sensor orientation, and height.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast data: DataFrame</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>replace_nan: boolean, default False</dt>
+<dd>Replace NaN’s with ‘-‘ for prettier output</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Alpha values from multiple site masts by mast, sensor orientation, and height</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">MetMast Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Shear Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Correlate Module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="code_MetMast.html" title="previous chapter">MetMast Class</a></li>
+      <li>Next: <a href="code_correlate.html" title="next chapter">Correlate Module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/code_shear.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

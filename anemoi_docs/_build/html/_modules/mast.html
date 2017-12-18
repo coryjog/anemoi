@@ -1,0 +1,839 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mast &#8212; anemoi  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mast</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># import anemoi as an</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">spyopt</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">gamma</span>
+
+<div class="viewcode-block" id="MetMast"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast">[docs]</a><span class="k">class</span> <span class="nc">MetMast</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Primary Anemoi object. Data structure made up of two components:</span>
+<span class="sd">    </span>
+<span class="sd">    * Metadata (mast coordinates, mast height, primary anemometer, primary wind vane)</span>
+<span class="sd">    * Pandas DataFrame of time series wind measurements which assumes EDF&#39;s standard sensor naming conventions.</span>
+<span class="sd">    </span>
+<span class="sd">    :Metadata:    </span>
+<span class="sd">    </span>
+<span class="sd">    lat: float, default None</span>
+<span class="sd">        Latitude of met mast</span>
+<span class="sd">    </span>
+<span class="sd">    long: float, default None</span>
+<span class="sd">        Longitude of met mast</span>
+<span class="sd">    </span>
+<span class="sd">    height: float or int, default None</span>
+<span class="sd">        Height of met mast in meters</span>
+<span class="sd">    </span>
+<span class="sd">    primary_ano: string</span>
+<span class="sd">        Column label of the primary anemometer</span>
+<span class="sd">    </span>
+<span class="sd">    primary_vane: string</span>
+<span class="sd">        Column label of the primary wind vane</span>
+<span class="sd">    </span>
+<span class="sd">    shear_sensors: list of strings</span>
+<span class="sd">        List of anemometer columns for use in shear analysis</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">lat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">lon</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">elev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">primary_ano</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">primary_vane</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                <span class="n">shear_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat</span> <span class="o">=</span> <span class="n">lat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lon</span> <span class="o">=</span> <span class="n">lon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elev</span> <span class="o">=</span> <span class="n">elev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="o">=</span> <span class="n">primary_ano</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="o">=</span> <span class="n">primary_vane</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shear_sensors</span> <span class="o">=</span> <span class="n">shear_sensors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="s1">&#39;elev&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;primary_ano&#39;</span><span class="p">,</span> <span class="s1">&#39;primary_vane&#39;</span><span class="p">],</span>
+                                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+                                    <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">height</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">primary_ano</span><span class="p">,</span> <span class="n">primary_vane</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sensor_details</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sensor_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="s1">&#39;orient&#39;</span><span class="p">,</span> <span class="s1">&#39;signal&#39;</span><span class="p">]</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">sensor_details</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">sensor_cols</span><span class="p">)</span>
+            <span class="n">sensor_details</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="n">sensor_details</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sensor_details</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="n">sensors</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;Avg&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sensors</span><span class="o">.</span><span class="n">height</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">kind</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">height</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">hts</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ht</span> <span class="k">for</span> <span class="n">ht</span> <span class="ow">in</span> <span class="n">hts</span> <span class="k">if</span> <span class="n">ht</span> <span class="ow">in</span> <span class="s1">&#39;1234567890.&#39;</span><span class="p">]),</span> <span class="n">height</span><span class="p">))</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">ht</span><span class="p">)</span> <span class="k">for</span> <span class="n">ht</span> <span class="ow">in</span> <span class="n">height</span><span class="p">]</span>
+            <span class="n">orient</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">orient</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">kind</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">orient</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">],</span> 
+                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="s1">&#39;Sensors&#39;</span><span class="p">])</span>
+            <span class="n">mast_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">cols</span>
+            <span class="n">mast_data</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+             
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">mast_data</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">repr_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;Mast </span><span class="si">{name}</span><span class="s1"></span>
+<span class="s1"># of sensors: </span><span class="si">{sensors}</span><span class="s1"></span>
+<span class="s1">Coords: </span><span class="si">{lat}</span><span class="s1">, </span><span class="si">{lon}</span><span class="s1"></span>
+<span class="s1">Primary ano: </span><span class="si">{ano}</span><span class="s1"></span>
+<span class="s1">Primary vane: </span><span class="si">{vane}</span><span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> 
+                            <span class="n">sensors</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sensors</span><span class="p">),</span> 
+                            <span class="n">lat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">,</span>
+                            <span class="n">lon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span>
+                            <span class="n">ano</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">,</span>
+                            <span class="n">vane</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">repr_string</span>
+
+    <span class="k">def</span> <span class="nf">print_mast_data_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">measured_period</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="n">measured_period</span> <span class="o">=</span> <span class="n">measured_period</span><span class="o">/</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mf">365.25</span><span class="p">)</span> <span class="c1">#convert to years</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mast </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Elevation: </span><span class="si">{}</span><span class="s1"> m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elev</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Start date: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;End date: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Measured period: </span><span class="si">{:.2f}</span><span class="s1"> years&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measured_period</span><span class="p">))</span>
+
+    <span class="c1">#### MAST CHECKS ####</span>
+    <span class="k">def</span> <span class="nf">is_sensor_type_included</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">is_sensor_type_included</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="n">sensor_type</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_sensor_name_included</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">is_sensor_name_included</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_sensor_names_included</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ano</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ano</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unclear which anemometer to use.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ano</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ano</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span>
+        <span class="k">if</span> <span class="n">ano</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_names</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Anemometer not installed on mast.&#39;</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">ano</span>
+
+    <span class="k">def</span> <span class="nf">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vane</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unclear which wind vane to use.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vane</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_names</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Wind vane not installed on mast.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span>
+
+        <span class="k">return</span> <span class="n">vane</span>
+
+    <span class="c1">#### MAST DATAFRAME MANIPULATION ####</span>
+    <span class="k">def</span> <span class="nf">remove_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">add_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">add_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">remove_and_add_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="MetMast.get_sensor_names"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor columns from the MetMast.data DataFrame</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_details"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor details for a given column level in MetMast.data</span>
+<span class="sd">        </span>
+<span class="sd">        :Parameters:</span>
+
+<span class="sd">        level: string, default None</span>
+<span class="sd">            Level from which to return details (&#39;Type&#39;, &#39;Ht&#39;, &#39;Orient&#39;, &#39;Signal&#39;, &#39;Sensors&#39;)</span>
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">(</span><span class="n">sensors</span><span class="p">):</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,:,:,:,</span><span class="n">sensors</span><span class="p">]]</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">details</span></div>
+        
+<div class="viewcode-block" id="MetMast.get_sensor_types"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor types for columns in MetMast.data</span>
+
+<span class="sd">        :Parameters:</span>
+
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">types</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_heights"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_heights">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor heights for columns in MetMast.data</span>
+
+<span class="sd">        :Parameters:</span>
+
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="n">heights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">heights</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_orients"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_orients">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_orients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor orientations for columns in MetMast.data</span>
+
+<span class="sd">        :Parameters:</span>
+
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="n">orients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">orients</span></div>
+
+    <span class="k">def</span> <span class="nf">get_sensor_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="n">signals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">signals</span>
+
+<div class="viewcode-block" id="MetMast.return_primary_ano_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemometer</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">])):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+        
+<div class="viewcode-block" id="MetMast.return_primary_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary wind vane</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">])):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="MetMast.return_primary_ano_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemometer and primary wind vane</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">])):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+        
+<div class="viewcode-block" id="MetMast.return_sensor_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_sensor_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from specified sensors</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return data</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">sensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sensors</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">sensors</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">(</span><span class="n">sensors</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">sensors</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="MetMast.return_sensor_type_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_sensor_type_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_sensor_type_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from a specified sensor type</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        sensor_type: string, default None</span>
+<span class="sd">            Sensor type (&#39;SPD&#39;, &#39;DIR&#39;, &#39;T&#39;, &#39;RH&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        see ECRM for more on naming convensions</span>
+
+<span class="sd">        https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">return_sensor_type_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="n">sensor_type</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="MetMast.resample_sensor_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.resample_sensor_data">[docs]</a>    <span class="k">def</span> <span class="nf">resample_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">agg</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data resampled to the specified frequency</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        sensors: list of sensors</span>
+<span class="sd">            List of specific sensor columns to resample</span>
+<span class="sd">        </span>
+<span class="sd">        freq: string; (&#39;hourly&#39;, &#39;daily&#39;, &#39;weekly&#39;, &#39;monthly&#39;, &#39;yearly&#39;)</span>
+<span class="sd">            Frequency to resample. </span>
+
+<span class="sd">            Accepts Python offset aliases.</span>
+
+<span class="sd">            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</span>
+
+<span class="sd">        agg: string; default &#39;mean&#39;</span>
+<span class="sd">            Aggregator (&#39;mean&#39;, &#39;std&#39;, &#39;max&#39;, &#39;min&#39;, &#39;count&#39;, &#39;first&#39;, &#39;last&#39;) </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sensors</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">sensors</span><span class="p">]</span>
+        
+        <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">freq</span> <span class="o">==</span> <span class="s1">&#39;hourly&#39;</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="s1">&#39;H&#39;</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">:00&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">hour</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s1">&#39;daily&#39;</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">day</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s1">&#39;weekly&#39;</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="s1">&#39;W&#39;</span>
+        <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s1">&#39;monthly&#39;</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="s1">&#39;MS&#39;</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">/01&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">start_time</span><span class="o">.</span><span class="n">month</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">freq</span> <span class="o">==</span> <span class="s1">&#39;yearly&#39;</span><span class="p">:</span>
+            <span class="n">freq</span> <span class="o">=</span> <span class="s1">&#39;AS&#39;</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/01/01&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">minimum_recovery_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">minimum_recovery_rate</span> <span class="o">=</span> <span class="n">minimum_recovery_rate</span><span class="o">/</span><span class="mf">100.0</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="n">data_agg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">agg</span><span class="p">)</span>
+        <span class="n">data_count</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+        <span class="n">date_range</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">max_counts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">date_range</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">data_count</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">max_counts</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">max_counts</span> <span class="o">=</span> <span class="n">max_counts</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">data_recovery_rate</span> <span class="o">=</span> <span class="n">data_count</span><span class="o">/</span><span class="n">max_counts</span>
+        <span class="n">data_agg</span> <span class="o">=</span> <span class="n">data_agg</span><span class="p">[</span><span class="n">data_recovery_rate</span> <span class="o">&gt;</span> <span class="n">minimum_recovery_rate</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data_agg</span></div>
+
+    <span class="k">def</span> <span class="nf">return_self_corr_result_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;SPD&#39;</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Ht&#39;</span><span class="p">)</span>
+        <span class="n">orients</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">result_dataframe</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">orient</span> <span class="ow">in</span> <span class="n">orients</span><span class="p">:</span>
+            <span class="n">oriented_sensors</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">orient</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">orientated_result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_product</span><span class="p">([</span><span class="n">oriented_sensors</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Site&#39;</span><span class="p">]),</span>
+                                             <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Slope&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;Uncert&#39;</span><span class="p">])</span>
+            <span class="n">result_dataframe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orientated_result</span><span class="p">)</span>
+
+        <span class="n">result_dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">result_dataframe</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">result_dataframe</span> <span class="o">=</span> <span class="n">result_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">result_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">result_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">),:]</span>
+        <span class="k">return</span> <span class="n">result_dataframe</span>
+
+    <span class="c1">#### MAST STATS ####</span>
+    <span class="k">def</span> <span class="nf">return_monthly_data_recovery</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># Calculate monthly data recovery by dividing the number of valid records by the number possible</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Stamp&#39;</span><span class="p">])</span>
+        <span class="n">monthly_data_count</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">monthly_max</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()]</span><span class="o">*</span><span class="n">monthly_data_count</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                                  <span class="n">index</span><span class="o">=</span><span class="n">monthly_data_count</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> 
+                                  <span class="n">columns</span><span class="o">=</span><span class="n">monthly_data_count</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">monthly_data_recovery</span> <span class="o">=</span> <span class="n">monthly_data_count</span><span class="o">/</span><span class="n">monthly_max</span><span class="o">*</span><span class="mi">100</span>
+        <span class="k">return</span> <span class="n">monthly_data_recovery</span>
+
+    <span class="k">def</span> <span class="nf">return_momm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_type_data</span><span class="p">(</span><span class="n">sensor_type</span><span class="o">=</span><span class="n">sensor_type</span><span class="p">)</span>
+        
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Month&#39;</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">days</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">shear</span><span class="o">.</span><span class="n">return_monthly_days</span><span class="p">()]</span><span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">days</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">MoMM</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">*</span><span class="n">days</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="mf">365.25</span>
+        <span class="n">MoMM</span> <span class="o">=</span> <span class="n">MoMM</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;MoMM&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MoMM</span>
+
+    <span class="k">def</span> <span class="nf">return_directional_energy_frequencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">dir_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">dir_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">dir_sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">ws_sensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">dir_sensor</span><span class="p">,</span> <span class="n">ws_sensor</span><span class="p">])</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">freq_dist</span><span class="o">.</span><span class="n">return_directional_energy_frequencies</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> 
+                                                                  <span class="n">dir_sensor</span><span class="o">=</span><span class="n">dir_sensor</span><span class="p">,</span> 
+                                                                  <span class="n">ws_sensor</span><span class="o">=</span><span class="n">ws_sensor</span><span class="p">,</span> 
+                                                                  <span class="n">dir_sectors</span><span class="o">=</span><span class="n">dir_sectors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">freqs</span></div>
+
+    <span class="c1"># #### ANALYSIS - LONG-TERM ####</span>
+    <span class="c1"># def correlate_to_reference(self, reference_mast, site_ano=None, reference_ano=None, sensor=None, method=&#39;ODR&#39;):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if site_ano is None:</span>
+    <span class="c1">#         site_ano = self.primary_ano</span>
+    <span class="c1">#     if reference_ano is None:</span>
+    <span class="c1">#         reference_ano = reference_mast.primary_ano</span>
+
+    <span class="c1">#     site_data = self.return_sensor_data(site_ano)</span>
+    <span class="c1">#     reference_data = reference_mast.return_sensor_data(reference_ano)</span>
+    <span class="c1">#     data = pd.concat(</span>
+    <span class="c1">#         [reference_data, site_data], </span>
+    <span class="c1">#         axis=1, </span>
+    <span class="c1">#         join=&#39;inner&#39;).dropna()</span>
+    <span class="c1">#     data.columns = [&#39;Ref&#39;, &#39;Site&#39;]</span>
+
+    <span class="c1">#     slope, offset = corr.correlate_orthoginal_distance(</span>
+    <span class="c1">#         df=data, </span>
+    <span class="c1">#         ref=&#39;Ref&#39;, </span>
+    <span class="c1">#         site=&#39;Site&#39;, </span>
+    <span class="c1">#         force_through_origin=False)</span>
+    <span class="c1">#     uncertainty = corr.calculate_IEC_uncertainty(data)</span>
+    <span class="c1">#     R2 = data.corr().loc[&#39;Ref&#39;, &#39;Site&#39;]**2</span>
+    <span class="c1">#     return slope, offset, uncertainty, R2</span>
+
+    <span class="c1"># def calculate_self_corr_results(self, sensor_type=&#39;SPD&#39;):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     results_dataframe = self.return_self_corr_result_dataframe()</span>
+    <span class="c1">#     for i in results_dataframe.index:</span>
+    <span class="c1">#         ref = i[0]</span>
+    <span class="c1">#         site = i[1]</span>
+    <span class="c1">#         df = self.return_sensor_data(sensors=[ref, site]).dropna()</span>
+    <span class="c1">#         df.columns = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#         slope = corr.correlate_principal_component(df=df, </span>
+    <span class="c1">#                                                   ref=ref, </span>
+    <span class="c1">#                                                   site=site)</span>
+    <span class="c1">#         results_dataframe.loc[pd.IndexSlice[ref, site], &#39;Slope&#39;] = slope</span>
+    <span class="c1">#         results_dataframe.loc[pd.IndexSlice[ref, site], &#39;R2&#39;] = corr.calculate_R2(df=df, ref=ref, site=site)</span>
+    <span class="c1">#         results_dataframe.loc[pd.IndexSlice[ref, site], &#39;Uncert&#39;] = corr.calculate_IEC_uncertainty(df=df, ref=ref, site=site)</span>
+    <span class="c1">#     return results_dataframe.dropna()</span>
+
+    <span class="c1"># #### ANALYSIS - SHEAR ####</span>
+    <span class="c1"># def calculate_time_series_alpha(self, wind_speed_sensors=None):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if wind_speed_sensors is None:</span>
+    <span class="c1">#         df = self.return_sensor_type_data(sensor_type=&#39;SPD&#39;)</span>
+    <span class="c1">#         wind_speed_sensors = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         df = self.return_sensor_data(sensors=wind_speed_sensors)</span>
+
+    <span class="c1">#     heights = df.columns.get_level_values(level=&#39;Ht&#39;).values.astype(np.float)</span>
+
+    <span class="c1">#     df.columns = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     shear_time_series = shear.shear_alpha_time_series(df=df, </span>
+    <span class="c1">#                                                     wind_speed_columns=wind_speed_sensors,</span>
+    <span class="c1">#                                                     heights=heights)</span>
+    <span class="c1">#     return shear_time_series</span>
+
+    <span class="c1"># def calculate_monthly_alpha(self, wind_speed_sensors=None):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if wind_speed_sensors is None:</span>
+    <span class="c1">#         df = self.return_sensor_type_data(sensor_type=&#39;SPD&#39;)</span>
+    <span class="c1">#         wind_speed_sensors = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         df = self.return_sensor_data(sensors=wind_speed_sensors)</span>
+        
+    <span class="c1">#     heights = df.columns.get_level_values(level=&#39;Ht&#39;).values.astype(np.float)</span>
+
+    <span class="c1">#     df.columns = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     df = df.groupby(df.index.month).mean()</span>
+    <span class="c1">#     df.index.name = &#39;Month&#39;</span>
+
+    <span class="c1">#     monthly_shear = shear.shear_alpha_time_series(df=df, </span>
+    <span class="c1">#                                                     wind_speed_columns=wind_speed_sensors,</span>
+    <span class="c1">#                                                     heights=heights)</span>
+    <span class="c1">#     return monthly_shear</span>
+
+    <span class="c1"># def calculate_annual_alpha(self, wind_speed_sensors=None):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if wind_speed_sensors is None:</span>
+    <span class="c1">#         df = self.return_sensor_type_data(sensor_type=&#39;SPD&#39;)</span>
+    <span class="c1">#         wind_speed_sensors = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         df = self.return_sensor_data(sensors=wind_speed_sensors)</span>
+        
+    <span class="c1">#     heights = df.columns.get_level_values(level=&#39;Ht&#39;).values.astype(np.float)</span>
+
+    <span class="c1">#     df.columns = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+    <span class="c1">#     df = df.groupby(df.index.year).mean()</span>
+    <span class="c1">#     df.index.name = &#39;Year&#39;</span>
+
+    <span class="c1">#     annual_shear = shear.shear_alpha_time_series(df=df, </span>
+    <span class="c1">#                                                 wind_speed_columns=wind_speed_sensors,</span>
+    <span class="c1">#                                                 heights=heights)</span>
+    <span class="c1">#     return annual_shear</span>
+
+    <span class="c1"># def calculate_long_term_alpha(self,  wind_speed_sensors=None):</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+    <span class="c1">#     **Returns:**</span>
+    <span class="c1">#     If data in df</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+        
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if wind_speed_sensors is None:</span>
+    <span class="c1">#         wind_speed_sensors = self.shear_sensors</span>
+
+    <span class="c1">#     if self.is_sensor_names_included(sensors=wind_speed_sensors):</span>
+    <span class="c1">#         momm = self.return_momm(sensors=wind_speed_sensors).T</span>
+    <span class="c1">#         heights = np.array(map(np.float, self.get_sensor_heights(sensors=wind_speed_sensors)))</span>
+    <span class="c1">#         alpha = shear.shear_alpha_time_series(df=momm, </span>
+    <span class="c1">#                                             wind_speed_columns=momm.columns,</span>
+    <span class="c1">#                                             heights=heights)</span>
+    <span class="c1">#         return alpha.iloc[0,0]</span>
+
+    <span class="c1"># #### PLOTTING ####</span>
+    <span class="c1"># def plot_monthly_valid_recovery(self, valid_recovery=70, color=&#39;#001A70&#39;):</span>
+    <span class="c1">#     &#39;&#39;&#39;Plots valid months with data recovery above a threshhold</span>
+
+    <span class="c1">#     *Parameters:*</span>
+    <span class="c1">#     valid_recovery: int, default 70</span>
+    <span class="c1">#     Threshold to consider valid month</span>
+        
+    <span class="c1">#     color: str, default #001A70</span>
+    <span class="c1">#     Color to plot the months</span>
+    <span class="c1">#     Default is EDF Dark Blue </span>
+
+    <span class="c1">#     *Returns:*</span>
+    <span class="c1">#     Valid recovery plot</span>
+    <span class="c1">#     &#39;&#39;&#39; </span>
+
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     sensors = self.get_sensor_names()</span>
+    <span class="c1">#     no_of_sensors = len(sensors)</span>
+
+    <span class="c1">#     monthly_data_recovery = self.return_monthly_data_recovery()</span>
+    <span class="c1">#     monthly_data_recovery.columns = monthly_data_recovery.columns.get_level_values(&#39;Sensors&#39;)</span>
+    <span class="c1">#     monthly_data_recovery[monthly_data_recovery&lt;=valid_recovery] = np.nan</span>
+
+    <span class="c1">#     #Set y-axis height for each valid month from each sensor</span>
+    <span class="c1">#     for i, sensor in enumerate(sensors):</span>
+    <span class="c1">#         monthly_data_recovery.loc[monthly_data_recovery[sensor].notnull(), sensor] = i*+1</span>
+
+    <span class="c1">#     # Plot wind speed data recovery rate</span>
+    <span class="c1">#     plot_width = len(monthly_data_recovery)/1.75</span>
+    <span class="c1">#     if plot_width &lt; 5:</span>
+    <span class="c1">#         plot_width = 5</span>
+            
+    <span class="c1">#     fig = plt.figure(figsize=(plot_width,0.4*no_of_sensors))</span>
+    <span class="c1">#     ax = fig.add_subplot(111)</span>
+    <span class="c1">#     if self.name is None:</span>
+    <span class="c1">#       title = &#39;Valid months of data (&gt;{}% recovery)&#39;.format(valid_recovery)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#       title = &#39;Mast {} - Valid months of data (&gt;{}% recovery)&#39;.format(self.name, </span>
+    <span class="c1">#                                                                       valid_recovery)</span>
+    <span class="c1">#     for sensor in sensors:</span>
+    <span class="c1">#         ax.scatter(pd.date_range(&#39;%s-%s-01&#39; %(str(monthly_data_recovery.index.get_level_values(&#39;Year&#39;)[0]), str(monthly_data_recovery.index.get_level_values(&#39;Month&#39;)[0])), </span>
+    <span class="c1">#                                  periods=len(monthly_data_recovery), </span>
+    <span class="c1">#                                  freq=&#39;MS&#39;), </span>
+    <span class="c1">#                    monthly_data_recovery[sensor].values, </span>
+    <span class="c1">#                    s=140, </span>
+    <span class="c1">#                    marker=&#39;s&#39;, </span>
+    <span class="c1">#                    color=color)</span>
+    <span class="c1">#     ax.xaxis.set_minor_locator(mdates.MonthLocator())</span>
+    <span class="c1">#     ax.xaxis.set_minor_formatter(mdates.DateFormatter(&#39;%b&#39;))</span>
+    <span class="c1">#     ax.xaxis.set_major_locator(mdates.YearLocator())</span>
+    <span class="c1">#     ax.xaxis.set_major_formatter(mdates.DateFormatter(&#39;\n%Y&#39;))</span>
+    <span class="c1">#     ax.set_yticks(np.arange(no_of_sensors))</span>
+    <span class="c1">#     ax.set_yticklabels(sensors)</span>
+    <span class="c1">#     ax.set_ylim([-0.5,no_of_sensors-0.5])</span>
+    <span class="c1">#     ax.fmt_xdata = mdates.DateFormatter(&#39;%Y-%m&#39;)</span>
+    <span class="c1">#     ax.set_title(title)</span>
+    <span class="c1">#     return fig</span>
+
+    <span class="c1"># def plot_sensor_type(self, sensor_type=&#39;SPD&#39;):</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+    <span class="c1">#     Plots valid months with data recovery above a threshhold</span>
+
+    <span class="c1">#     **Parameters:**</span>
+        
+    <span class="c1">#     sensor_type: string, default &#39;SPD&#39;</span>
+    <span class="c1">#     Type of sensor to plot</span>
+        
+    <span class="c1">#     **Returns:**</span>
+    <span class="c1">#     Time series plot</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if not self.check_sensor_type_included(sensor_type):</span>
+    <span class="c1">#         data = pd.DataFrame(index=self.data.index.values, columns=[&#39;Empty&#39;])</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         data = self.data[sensor_type]</span>
+    <span class="c1">#         data.columns = data.columns.get_level_values(&#39;Sensors&#39;)</span>
+
+    <span class="c1">#     if sensor_type == &#39;SPD&#39;:</span>
+    <span class="c1">#         fig_size = (30,6)</span>
+    <span class="c1">#         kwargs = {&#39;ylim&#39;:[0,30],</span>
+    <span class="c1">#                  &#39;rot&#39;:0,</span>
+    <span class="c1">#                  &#39;linewidth&#39;:2,</span>
+    <span class="c1">#                  &#39;markersize&#39;:0,</span>
+    <span class="c1">#                  &#39;marker&#39;:&#39;.&#39;,</span>
+    <span class="c1">#                  &#39;use_index&#39;:True}</span>
+    <span class="c1">#         ylabel = &#39;Wind speed [m/s]&#39;</span>
+    <span class="c1">#     elif sensor_type == &#39;DIR&#39;:</span>
+    <span class="c1">#         fig_size = (30,5)</span>
+    <span class="c1">#         kwargs = {&#39;ylim&#39;:[0,360],</span>
+    <span class="c1">#                  &#39;rot&#39;:0,</span>
+    <span class="c1">#                  &#39;linewidth&#39;:0,</span>
+    <span class="c1">#                  &#39;markersize&#39;:3,</span>
+    <span class="c1">#                  &#39;marker&#39;:&#39;.&#39;,</span>
+    <span class="c1">#                  &#39;use_index&#39;:True}</span>
+    <span class="c1">#         ylabel = &#39;Wind direction [deg]&#39;</span>
+    <span class="c1">#     elif sensor_type == &#39;T&#39;:</span>
+    <span class="c1">#         fig_size = (30,4)</span>
+    <span class="c1">#         kwargs = {&#39;ylim&#39;:[-40,40],</span>
+    <span class="c1">#                  &#39;rot&#39;:0,</span>
+    <span class="c1">#                  &#39;linewidth&#39;:3,</span>
+    <span class="c1">#                  &#39;markersize&#39;:0,</span>
+    <span class="c1">#                  &#39;marker&#39;:&#39;.&#39;,</span>
+    <span class="c1">#                  &#39;use_index&#39;:True}</span>
+    <span class="c1">#         ylabel = &#39;Temperature [C]&#39;</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         fig_size = (30,2)</span>
+    <span class="c1">#         kwargs = {&#39;ylim&#39;:[-1,1],</span>
+    <span class="c1">#                  &#39;rot&#39;:0,</span>
+    <span class="c1">#                  &#39;use_index&#39;:True}</span>
+    <span class="c1">#         ylabel = &#39;No data: %s&#39; %sensor_type</span>
+
+    <span class="c1">#     fig = plt.figure(figsize=fig_size)</span>
+    <span class="c1">#     ax = fig.add_subplot(111)</span>
+    <span class="c1">#     data.plot(kind=&#39;line&#39;, ax=ax,**kwargs)</span>
+    <span class="c1">#     ax.xaxis.set_minor_locator(mdates.MonthLocator())</span>
+    <span class="c1">#     ax.xaxis.set_minor_formatter(mdates.DateFormatter(&#39;%b&#39;))</span>
+    <span class="c1">#     ax.xaxis.set_major_locator(mdates.YearLocator())</span>
+    <span class="c1">#     ax.xaxis.set_major_formatter(mdates.DateFormatter(&#39;\n%Y&#39;))</span>
+    <span class="c1">#     ax.fmt_xdata = mdates.DateFormatter(&#39;%Y-%m&#39;)</span>
+    <span class="c1">#     ax.set_xlabel(&#39;&#39;)</span>
+    <span class="c1">#     ax.legend(loc=&#39;best&#39;)</span>
+    <span class="c1">#     ax.set_ylabel(ylabel)</span>
+    
+    <span class="c1"># def plot_freq_dist(self, wind_speed_sensor=None):</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+    <span class="c1">#     Plots wind speed frequency distribution and weibull fit</span>
+
+    <span class="c1">#     **Parameters:**</span>
+        
+    <span class="c1">#     wind_speed_sensor: string, default None</span>
+    <span class="c1">#     Wind speed sensor from which to get the measured data</span>
+        
+    <span class="c1">#     **Returns:**</span>
+    <span class="c1">#     Frequency distribution plot</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+
+    <span class="c1">#     if wind_speed_sensor is None:</span>
+    <span class="c1">#         wind_speed_sensor = self.primary_ano</span>
+
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     A, k = self.return_weibull_params(sensor=wind_speed_sensor)</span>
+    <span class="c1">#     freq_dist.plot_freq_dist(params=(A,k), </span>
+    <span class="c1">#                             data=self.return_sensor_data([wind_speed_sensor]),</span>
+    <span class="c1">#                             title=&#39;Mast {}: Wind speed frequency distribution&#39;.format(self.name))</span>
+
+    <span class="c1"># def plot_wind_rose(self, wind_vane=None, bins=16):</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+    <span class="c1">#     Plots wind rose</span>
+
+    <span class="c1">#     **Parameters:**</span>
+        
+    <span class="c1">#     wind_vane: string, default None</span>
+    <span class="c1">#     Wind speed sensor from which to get the measured data</span>
+    <span class="c1">#     bins: int, default 16</span>
+    <span class="c1">#     Number of wind direction bins to plot</span>
+        
+    <span class="c1">#     **Returns:**</span>
+    <span class="c1">#     Wind rose plot</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+        
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if wind_vane is None:</span>
+    <span class="c1">#         wind_vane = self.primary_vane</span>
+
+    <span class="c1">#     data = self.return_sensor_data(wind_vane).dropna().values</span>
+    <span class="c1">#     freqs = freq_dist.return_wind_direction_frequencies(data=data, bins=bins)</span>
+    <span class="c1">#     freq_dist.plot_wind_rose(freqs, title=&#39;Mast {}: Wind rose&#39;.format(self.name))</span>
+
+    <span class="c1"># def plot_wind_energy_roses(self, dir_sensor=None, ws_sensor=None, dir_sectors=16):</span>
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     if (dir_sensor is None) and (self.primary_vane is None):</span>
+    <span class="c1">#         return None</span>
+    <span class="c1">#     elif (ws_sensor is None) and (self.primary_ano is None):</span>
+    <span class="c1">#         return None</span>
+    <span class="c1">#     if (dir_sensor is None) and (self.primary_vane is not None):</span>
+    <span class="c1">#         dir_sensor = self.primary_vane</span>
+    <span class="c1">#     if (ws_sensor is None) and (self.primary_ano is not None):</span>
+    <span class="c1">#         ws_sensor = self.primary_ano</span>
+
+    <span class="c1">#     freqs = self.return_directional_energy_frequencies(dir_sensor=dir_sensor, </span>
+    <span class="c1">#                                                       ws_sensor=ws_sensor, </span>
+    <span class="c1">#                                                       dir_sectors=dir_sectors)</span>
+    <span class="c1">#     fig = an.freq_dist.return_wind_energy_rose_figure(dir_bin_centers=freqs.index.values, </span>
+    <span class="c1">#                                                       dir_bin_freqs_ws=freqs.dir.values, </span>
+    <span class="c1">#                                                       dir_bin_freqs_energy=freqs.energy.values)</span>
+    <span class="c1">#     return fig</span>
+
+
+
+    <span class="c1"># def plot_self_corrs(self, pdf_filename=&#39;_self_corrs.pdf&#39;, save_pdf=True):</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+    <span class="c1">#     Plots wind speed correlations up and down the mast</span>
+        
+    <span class="c1">#     **Returns:**</span>
+    <span class="c1">#     A list of wind speed correlation plots, will also save as a .pdf file</span>
+    <span class="c1">#     &#39;&#39;&#39;</span>
+        
+    <span class="c1">#     self.is_mast_data_size_greater_than_zero()</span>
+    <span class="c1">#     self = self.remove_sensor_levels()</span>
+    <span class="c1">#     self = self.add_sensor_levels()</span>
+    <span class="c1">#     self_corr_results = self.calculate_self_corr_results()</span>
+        
+    <span class="c1">#     df = self.data</span>
+    <span class="c1">#     df.columns = df.columns.get_level_values(level=&#39;Sensors&#39;)</span>
+        
+    <span class="c1">#     self_corr_plots = []</span>
+    <span class="c1">#     for mast_pair in self_corr_results.index:</span>
+    <span class="c1">#         ref = mast_pair[0]</span>
+    <span class="c1">#         site = mast_pair[1]</span>
+          
+    <span class="c1">#         self_corr_plot = corr.plot_wind_speed_correlation(df=df, </span>
+    <span class="c1">#                                      ref=ref, </span>
+    <span class="c1">#                                      site=site,</span>
+    <span class="c1">#                                      title= &#39;Mast {}&#39;.format(self.name), </span>
+    <span class="c1">#                                      slope=self_corr_results.loc[pd.IndexSlice[ref, site], &#39;Slope&#39;],</span>
+    <span class="c1">#                                      R2=self_corr_results.loc[pd.IndexSlice[ref, site], &#39;R2&#39;])</span>
+    <span class="c1">#         self_corr_plots.append(self_corr_plot)</span>
+
+    <span class="c1">#     if save_pdf:</span>
+    <span class="c1">#         print(&#39;Will save pdf for Mast {} here&#39;.format(self.name))</span>
+    <span class="c1">#         ## Save pdf code here</span>
+
+    <span class="c1">#     return self_corr_plots</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_MetMast.html">MetMast Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_shear.html">Shear Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_correlate.html">Correlate Module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

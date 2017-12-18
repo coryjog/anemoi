@@ -1,0 +1,215 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>utils.mast_data &#8212; anemoi  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for utils.mast_data</h1><div class="highlight"><pre>
+<span></span><span class="c1"># import anemoi as an</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1">### MAST DATA CHECKS AND VALIDATIONS ###</span>
+<span class="k">def</span> <span class="nf">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">mast_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mast_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No data associated within mast_data DataFrame.&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">is_sensor_name_included</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensor_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">sensor_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need to define a sensor name to verify it is installed on the mast...&#39;</span><span class="p">)</span>
+
+    <span class="n">sensor_names</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">sensor_name</span> <span class="ow">in</span> <span class="n">sensor_names</span>
+
+<span class="k">def</span> <span class="nf">is_sensor_names_included</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">sensors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need to define a sensor name to verify it is installed on the mast...&#39;</span><span class="p">)</span>
+
+    <span class="n">sensor_names</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">sensor</span> <span class="ow">in</span> <span class="n">sensor_names</span> <span class="k">for</span> <span class="n">sensor</span> <span class="ow">in</span> <span class="n">sensors</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">is_sensor_type_included</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">sensor_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need to define a sensor type to verify it is installed on the mast...&#39;</span><span class="p">)</span>
+
+    <span class="n">sensor_types</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">sensor_type</span> <span class="ow">in</span> <span class="n">sensor_types</span>
+
+<span class="k">def</span> <span class="nf">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No data associated with mast.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No data associated with mast.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="remove_sensor_levels"><a class="viewcode-back" href="../../code.html#utils.mast_data.remove_sensor_levels">[docs]</a><span class="k">def</span> <span class="nf">remove_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Removes kind, type, height, and orient levels from sensor columns in mast data DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span>
+    <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Sensors&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">mast_data</span></div>
+
+<div class="viewcode-block" id="add_sensor_levels"><a class="viewcode-back" href="../../code.html#utils.mast_data.add_sensor_levels">[docs]</a><span class="k">def</span> <span class="nf">add_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Add kind, type, height, and orient levels to sensor columns in mast data DataFrame</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">mast_data</span> <span class="o">=</span> <span class="n">remove_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+
+    <span class="n">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="n">sensor_details</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sensor_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="s1">&#39;orient&#39;</span><span class="p">,</span> <span class="s1">&#39;signal&#39;</span><span class="p">]</span>
+    <span class="n">sensors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">sensor_details</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">sensor_cols</span><span class="p">)</span>
+    <span class="n">sensor_details</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="n">sensor_details</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">sensors</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sensor_details</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+    <span class="n">sensors</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;Avg&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sensors</span><span class="o">.</span><span class="n">height</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">height</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">hts</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">ht</span> <span class="k">for</span> <span class="n">ht</span> <span class="ow">in</span> <span class="n">hts</span> <span class="k">if</span> <span class="n">ht</span> <span class="ow">in</span> <span class="s1">&#39;1234567890.&#39;</span><span class="p">]),</span> <span class="n">height</span><span class="p">))</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">ht</span><span class="p">)</span> <span class="k">for</span> <span class="n">ht</span> <span class="ow">in</span> <span class="n">height</span><span class="p">]</span>
+    <span class="n">orient</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">orient</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">sensors</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">([</span><span class="n">kind</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">orient</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span><span class="p">],</span> 
+        <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="s1">&#39;Sensors&#39;</span><span class="p">])</span>
+    <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">cols</span>
+    <span class="n">mast_data</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mast_data</span></div>
+
+<span class="k">def</span> <span class="nf">remove_and_add_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+    <span class="n">mast_data</span> <span class="o">=</span> <span class="n">remove_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="n">mast_data</span> <span class="o">=</span> <span class="n">add_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mast_data</span>
+
+<span class="k">def</span> <span class="nf">return_sensor_data</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensors</span><span class="p">):</span>
+    <span class="n">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sensors</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">sensors</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_sensor_names_included</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensors</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Trying to return sensor data from a sensor not in the mast data&#39;</span><span class="p">)</span>
+                
+    <span class="n">sensor_data</span> <span class="o">=</span> <span class="n">remove_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">sensors</span><span class="p">]</span>
+    <span class="n">sensor_data</span> <span class="o">=</span> <span class="n">remove_and_add_sensor_levels</span><span class="p">(</span><span class="n">sensor_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sensor_data</span>
+
+<span class="k">def</span> <span class="nf">return_sensor_type_data</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">is_mast_data_size_greater_than_zero</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="n">mast_data</span> <span class="o">=</span> <span class="n">remove_and_add_sensor_levels</span><span class="p">(</span><span class="n">mast_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">sensor_type</span><span class="p">]]</span>
+        
+<span class="k">def</span> <span class="nf">return_monthly_days</span><span class="p">():</span>
+        <span class="n">days</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">),</span> 
+                            <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">28.25</span><span class="p">,</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">,</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">,</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">,</span><span class="mf">31.0</span><span class="p">,</span><span class="mf">30.0</span><span class="p">,</span><span class="mf">31.0</span><span class="p">],</span> 
+                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Days&#39;</span><span class="p">])</span>
+        <span class="n">days</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Month&#39;</span>
+        <span class="k">return</span> <span class="n">days</span>
+
+<span class="k">def</span> <span class="nf">return_momm</span><span class="p">(</span><span class="n">mast_data</span><span class="p">):</span>
+        <span class="n">mast_data</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">mast_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">mast_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Month&#39;</span>
+        <span class="n">days</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">return_monthly_days</span><span class="p">()]</span><span class="o">*</span><span class="n">mast_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">days</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">mast_data</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">momm</span> <span class="o">=</span> <span class="p">(</span><span class="n">mast_data</span><span class="o">*</span><span class="n">days</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="mf">365.25</span>
+        <span class="n">momm</span> <span class="o">=</span> <span class="n">momm</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;MoMM&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">momm</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_MetMast.html">MetMast Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_shear.html">Shear Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_correlate.html">Correlate Module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
