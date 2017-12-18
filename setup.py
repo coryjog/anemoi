@@ -10,7 +10,7 @@ required = ['matplotlib',
             'statsmodels']
 
 setup(name='anemoi',
-      version='0.0.26',
+      version='0.0.27',
       description='EDF wind data analysis package',
       url='http://github.com/coryjog/anemoi',
       author='Cory Jog',
