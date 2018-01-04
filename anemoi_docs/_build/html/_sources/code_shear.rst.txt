@@ -1,4 +1,4 @@
-Shear Module
+Analysis Module - Shear
 ==============================
 
 .. automodule:: analysis.shear

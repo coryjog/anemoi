@@ -40,7 +40,7 @@
             
   <h1>Source code for mast</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1"># import anemoi as an</span>
+<span class="kn">import</span> <span class="nn">anemoi</span> <span class="k">as</span> <span class="nn">an</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -135,7 +135,7 @@
             <span class="n">sensors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sensors</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">repr_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;Mast </span><span class="si">{name}</span><span class="s1"></span>
+        <span class="n">repr_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span><span class="se">\n\n</span><span class="s1">Mast </span><span class="si">{name}</span><span class="s1"></span>
 <span class="s1"># of sensors: </span><span class="si">{sensors}</span><span class="s1"></span>
 <span class="s1">Coords: </span><span class="si">{lat}</span><span class="s1">, </span><span class="si">{lon}</span><span class="s1"></span>
 <span class="s1">Primary ano: </span><span class="si">{ano}</span><span class="s1"></span>
@@ -187,8 +187,11 @@
         <span class="k">if</span> <span class="n">vane</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_names</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Wind vane not installed on mast.&#39;</span><span class="p">)</span>
         
-
         <span class="k">return</span> <span class="n">vane</span>
+
+    <span class="k">def</span> <span class="nf">infer_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">infer_time_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">freq</span>
 
     <span class="c1">#### MAST DATAFRAME MANIPULATION ####</span>
     <span class="k">def</span> <span class="nf">remove_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -203,99 +206,141 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="MetMast.get_sensor_names"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_sensor_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Returns a list of sensor columns from the MetMast.data DataFrame</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
 <div class="viewcode-block" id="MetMast.get_sensor_details"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a list of sensor details for a given column level in MetMast.data</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor details for a given column level in MetMast.data.</span>
+<span class="sd">        See also: an.utils.mast_data.get_sensor_details</span>
 <span class="sd">        </span>
 <span class="sd">        :Parameters:</span>
 
 <span class="sd">        level: string, default None</span>
 <span class="sd">            Level from which to return details (&#39;Type&#39;, &#39;Ht&#39;, &#39;Orient&#39;, &#39;Signal&#39;, &#39;Sensors&#39;)</span>
+<span class="sd">        </span>
 <span class="sd">        sensors: list, default None</span>
 <span class="sd">            List of specific sensors from which to return details</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">sensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">(</span><span class="n">sensors</span><span class="p">):</span>
-            <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:,:,:,:,</span><span class="n">sensors</span><span class="p">]]</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="MetMast.get_unique_sensor_details"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_unique_sensor_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_unique_sensor_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor details for a given column level in an.MetMast.data.</span>
+<span class="sd">        See also: an.utils.mast_data.get_unique_sensor_details</span>
+<span class="sd">        </span>
+<span class="sd">        :Parameters:</span>
+
+<span class="sd">        level: string, default None</span>
+<span class="sd">            Level from which to return details (&#39;Type&#39;, &#39;Ht&#39;, &#39;Orient&#39;, &#39;Signal&#39;, &#39;Sensors&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        sensors: list, default None</span>
+<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">get_unique_sensor_details</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">details</span></div>
         
 <div class="viewcode-block" id="MetMast.get_sensor_types"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a list of sensor types for columns in MetMast.data</span>
+        <span class="sd">&#39;&#39;&#39;Returns a list of sensor types for columns in an.MetMast.data</span>
 
 <span class="sd">        :Parameters:</span>
 
 <span class="sd">        sensors: list, default None</span>
-<span class="sd">            List of specific sensors from which to return details</span>
+<span class="sd">            List of specific sensors from which to return details, otherwise all columns assumed</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
         <span class="n">types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">types</span></div>
 
-<div class="viewcode-block" id="MetMast.get_sensor_heights"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_heights">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a list of sensor heights for columns in MetMast.data</span>
+<div class="viewcode-block" id="MetMast.get_unique_sensor_types"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_unique_sensor_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_unique_sensor_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of unique sensor types for columns in an.MetMast.data</span>
 
-<span class="sd">        :Parameters:</span>
+<span class="sd">            :Parameters:</span>
 
-<span class="sd">        sensors: list, default None</span>
-<span class="sd">            List of specific sensors from which to return details</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
-        <span class="n">heights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">heights</span></div>
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unique_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">types</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_signals"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_signals">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of sensor signals for columns in an.MetMast.data</span>
+
+<span class="sd">            :Parameters:</span>
+
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">signals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">signals</span></div>
+
+<div class="viewcode-block" id="MetMast.get_unique_sensor_signals"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_unique_sensor_signals">[docs]</a>    <span class="k">def</span> <span class="nf">get_unique_sensor_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of unique sensor signals for columns in an.MetMast.data</span>
+
+<span class="sd">            :Parameters:</span>
+
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">signals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unique_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">signals</span></div>
 
 <div class="viewcode-block" id="MetMast.get_sensor_orients"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_orients">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_orients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a list of sensor orientations for columns in MetMast.data</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of sensor orientations for columns in an.MetMast.data</span>
 
-<span class="sd">        :Parameters:</span>
+<span class="sd">            :Parameters:</span>
 
-<span class="sd">        sensors: list, default None</span>
-<span class="sd">            List of specific sensors from which to return details</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
-        <span class="n">orients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">orients</span></div>
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">orients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">orients</span></div>
 
-    <span class="k">def</span> <span class="nf">get_sensor_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
-        <span class="n">signals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">signals</span>
+<div class="viewcode-block" id="MetMast.get_unique_sensor_orients"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_unique_sensor_orients">[docs]</a>    <span class="k">def</span> <span class="nf">get_unique_sensor_orients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of unique sensor orientations for columns in an.MetMast.data</span>
 
-<div class="viewcode-block" id="MetMast.return_primary_ano_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemometer</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">])):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
-        
-<div class="viewcode-block" id="MetMast.return_primary_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary wind vane</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">])):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+<span class="sd">            :Parameters:</span>
 
-<div class="viewcode-block" id="MetMast.return_primary_ano_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemometer and primary wind vane</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">])):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span>
-            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">]]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
-        
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">orients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unique_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">orients</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_heights"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_heights">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of sensor heights for columns in an.MetMast.data</span>
+
+<span class="sd">            :Parameters:</span>
+
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">heights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">heights</span></div>
+
+<div class="viewcode-block" id="MetMast.get_unique_sensor_heights"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_unique_sensor_heights">[docs]</a>    <span class="k">def</span> <span class="nf">get_unique_sensor_heights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of unique sensor heights for columns in an.MetMast.data</span>
+
+<span class="sd">            :Parameters:</span>
+
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">heights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_unique_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Ht&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">heights</span></div>
+
+<div class="viewcode-block" id="MetMast.get_sensor_names"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.get_sensor_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_sensor_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&#39;&#39;&#39;Returns a list of sensor names for columns in an.MetMast.data</span>
+
+<span class="sd">            :Parameters:</span>
+
+<span class="sd">            sensors: list, default None</span>
+<span class="sd">                List of specific sensors from which to return details, otherwise all columns assumed</span>
+<span class="sd">            &#39;&#39;&#39;</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_details</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Sensors&#39;</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">names</span></div>
+
 <div class="viewcode-block" id="MetMast.return_sensor_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_sensor_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from specified sensors</span>
 
@@ -304,15 +349,25 @@
 <span class="sd">        sensors: list, default None</span>
 <span class="sd">            List of specific sensors from which to return data</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="n">sensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sensors</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">sensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">sensors</span><span class="p">]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sensor_names_included</span><span class="p">(</span><span class="n">sensors</span><span class="p">):</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_sensor_levels</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">sensors</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">sensors</span><span class="o">=</span><span class="n">sensors</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="MetMast.return_primary_ano_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemomter</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">sensors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_ano</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="MetMast.return_primary_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary wind vane</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">sensors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MetMast.return_primary_ano_vane_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_primary_ano_vane_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_primary_ano_vane_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from the primary anemometer and primary wind vane</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ano_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_primary_ano_data</span><span class="p">()</span>
+        <span class="n">vane_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_primary_vane_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ano_data</span><span class="p">,</span> <span class="n">vane_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+        
 <div class="viewcode-block" id="MetMast.return_sensor_type_data"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.return_sensor_type_data">[docs]</a>    <span class="k">def</span> <span class="nf">return_sensor_type_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sensor_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Returns a DataFrame of measured data from a specified sensor type</span>
 
@@ -803,10 +858,13 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_model.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code_MetMast.html">MetMast Class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code_shear.html">Shear Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code_correlate.html">Correlate Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_shear.html">Analysis Module - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_correlate.html">Analysis Module - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_freq_dist.html">Analysis Module - Freq Dist</a></li>
 </ul>
 
 <div class="relations">

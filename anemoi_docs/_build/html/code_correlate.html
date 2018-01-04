@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Correlate Module &#8212; anemoi  documentation</title>
+    <title>Analysis Module - Correlate &#8212; anemoi  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Shear Module" href="code_shear.html" />
+    <link rel="next" title="Analysis Module - Freq Dist" href="code_freq_dist.html" />
+    <link rel="prev" title="Analysis Module - Shear" href="code_shear.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,8 +40,105 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-analysis.correlate">
-<span id="correlate-module"></span><h1>Correlate Module<a class="headerlink" href="#module-analysis.correlate" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="analysis-module-correlate">
+<h1>Analysis Module - Correlate<a class="headerlink" href="#analysis-module-correlate" title="Permalink to this headline">¶</a></h1>
+<p>This module is for correlation analysis between multiple masts. The typical format is to give the method the site and reference MetMast or RefMast objects. The method then returns a DataFrame of results. Those results can then be applied with a separate method.</p>
+<p>For example, correlations typically require two lines of text. One for running the actual correlation between masts and one for applying that correlation to synthesize missing data:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">corr_results_10min</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">correlate</span><span class="o">.</span><span class="n">masts_10_minute_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">)</span>
+<span class="n">syn_10min</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">correlate</span><span class="o">.</span><span class="n">apply_10min_results_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">corr_results_10min</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<span class="target" id="module-analysis.correlate"></span><dl class="function">
+<dt id="analysis.correlate.apply_10min_results_by_direction">
+<code class="descclassname">analysis.correlate.</code><code class="descname">apply_10min_results_by_direction</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>corr_results</em>, <em>ref_ws_sensor=None</em>, <em>ref_dir_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>splice=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#apply_10min_results_by_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.apply_10min_results_by_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the slopes and offsets from a 10-minute correaltion, binned by direction, between two met masts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>corr_results: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points for each direction sector</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>ref_dir_sensor: string, default None (primary vane assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>splice: Boolean, default True</dt>
+<dd>Returns site data where available and gap-fills any missing periods between the site mast
+and the reference mast’s measurement period. Otherwise, returns purely sythesized data without 
+taking into account the measured wind speeds.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: time series DataFrame</dt>
+<dd>predicted wind speeds at the site</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.apply_daily_results_by_month">
+<code class="descclassname">analysis.correlate.</code><code class="descname">apply_daily_results_by_month</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>corr_results</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>splice=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#apply_daily_results_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.apply_daily_results_by_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the slopes and offsets from a daily correaltion, binned by month, between two met masts.
+If the reference or site masts don’t have daily time series the method resamples to daily frequency, 
+requiring 70% data coverage within each day to be a valid day.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>corr_results: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points for each direction sector</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>ref_dir_sensor: string, default None (primary vane assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>splice: Boolean, default True</dt>
+<dd>Returns site data where available and gap-fills any missing periods between the site mast
+and the reference mast’s measurement period. Otherwise, returns purely sythesized data without 
+taking into account the measured wind speeds.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: time series DataFrame</dt>
+<dd>predicted wind speeds at the site</dd>
+</dl>
+</dd></dl>
+
 <dl class="function">
 <dt id="analysis.correlate.calculate_EDF_uncertainty">
 <code class="descclassname">analysis.correlate.</code><code class="descname">calculate_EDF_uncertainty</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_EDF_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_EDF_uncertainty" title="Permalink to this definition">¶</a></dt>
@@ -61,8 +159,8 @@ Assumes a correalation forced through the origin</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="analysis.correlate.correlate_masts_10_minute">
-<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_10_minute</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_10_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_10_minute" title="Permalink to this definition">¶</a></dt>
+<dt id="analysis.correlate.masts_10_minute">
+<code class="descclassname">analysis.correlate.</code><code class="descname">masts_10_minute</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#masts_10_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.masts_10_minute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the slope and offset between two met masts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -107,8 +205,8 @@ Assumes a correalation forced through the origin</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="analysis.correlate.correlate_masts_10_minute_by_direction">
-<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_10_minute_by_direction</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>ref_dir_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>dir_sectors=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_10_minute_by_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_10_minute_by_direction" title="Permalink to this definition">¶</a></dt>
+<dt id="analysis.correlate.masts_10_minute_by_direction">
+<code class="descclassname">analysis.correlate.</code><code class="descname">masts_10_minute_by_direction</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>ref_dir_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>dir_sectors=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#masts_10_minute_by_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.masts_10_minute_by_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the slope and offset, binned by direction, between two met masts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -157,8 +255,8 @@ Assumes a correalation forced through the origin</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="analysis.correlate.correlate_masts_daily">
-<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_daily</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_daily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_daily" title="Permalink to this definition">¶</a></dt>
+<dt id="analysis.correlate.masts_daily">
+<code class="descclassname">analysis.correlate.</code><code class="descname">masts_daily</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#masts_daily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.masts_daily" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the slope and offset for daily data between two met masts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -207,8 +305,8 @@ at least 101 valid records to have a valid daily average.</dd>
 </dd></dl>
 
 <dl class="function">
-<dt id="analysis.correlate.correlate_masts_daily_by_month">
-<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_daily_by_month</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_daily_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_daily_by_month" title="Permalink to this definition">¶</a></dt>
+<dt id="analysis.correlate.masts_daily_by_month">
+<code class="descclassname">analysis.correlate.</code><code class="descname">masts_daily_by_month</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#masts_daily_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.masts_daily_by_month" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the slope and offset for daily data, binned by month, between two met masts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -534,17 +632,21 @@ Will be extracted from each MetMast object using the primary anemometers and win
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">MetMast Class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Shear Module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Correlate Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis Module - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_freq_dist.html">Analysis Module - Freq Dist</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="code_shear.html" title="previous chapter">Shear Module</a></li>
+      <li>Previous: <a href="code_shear.html" title="previous chapter">Analysis Module - Shear</a></li>
+      <li>Next: <a href="code_freq_dist.html" title="next chapter">Analysis Module - Freq Dist</a></li>
   </ul></li>
 </ul>
 </div>
