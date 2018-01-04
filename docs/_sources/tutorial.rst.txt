@@ -1,4 +1,4 @@
 Tutorial
 ========
 
-This will be a quick tutorial for importing and analyzing mast data from Windographer.
+This will be a quick tutorial for importing and analyzing already cleaned mast data from Windographer.

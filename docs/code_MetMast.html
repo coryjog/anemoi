@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>MetMast Class &#8212; anemoi  documentation</title>
+    <title>Class - MetMast &#8212; anemoi  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Shear Module" href="code_shear.html" />
+    <link rel="next" title="Analysis Module - Shear" href="code_shear.html" />
     <link rel="prev" title="Tutorial" href="tutorial.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -40,8 +40,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="metmast-class">
-<h1>MetMast Class<a class="headerlink" href="#metmast-class" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="class-metmast">
+<h1>Class - MetMast<a class="headerlink" href="#class-metmast" title="Permalink to this headline">¶</a></h1>
 <p>This is the foundational object within the Anemoi wind analysis package.</p>
 <dl class="class">
 <dt id="mast.MetMast">
@@ -91,7 +91,8 @@ See ECRM for more on the format of the naming convensions:</p>
 <dl class="method">
 <dt id="mast.MetMast.get_sensor_details">
 <code class="descname">get_sensor_details</code><span class="sig-paren">(</span><em>level</em>, <em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_details" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of sensor details for a given column level in MetMast.data</p>
+<dd><p>Returns a list of sensor details for a given column level in MetMast.data.
+See also: an.utils.mast_data.get_sensor_details</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -111,7 +112,7 @@ See ECRM for more on the format of the naming convensions:</p>
 <dl class="method">
 <dt id="mast.MetMast.get_sensor_heights">
 <code class="descname">get_sensor_heights</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_heights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_heights" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of sensor heights for columns in MetMast.data</p>
+<dd><p>Returns a list of sensor heights for columns in an.MetMast.data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -122,20 +123,14 @@ See ECRM for more on the format of the naming convensions:</p>
 </table>
 <dl class="docutils">
 <dt>sensors: list, default None</dt>
-<dd>List of specific sensors from which to return details</dd>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mast.MetMast.get_sensor_names">
-<code class="descname">get_sensor_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of sensor columns from the MetMast.data DataFrame</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="mast.MetMast.get_sensor_orients">
-<code class="descname">get_sensor_orients</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_orients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_orients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of sensor orientations for columns in MetMast.data</p>
+<code class="descname">get_sensor_names</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of sensor names for columns in an.MetMast.data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -146,14 +141,50 @@ See ECRM for more on the format of the naming convensions:</p>
 </table>
 <dl class="docutils">
 <dt>sensors: list, default None</dt>
-<dd>List of specific sensors from which to return details</dd>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_sensor_orients">
+<code class="descname">get_sensor_orients</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_orients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_orients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of sensor orientations for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_sensor_signals">
+<code class="descname">get_sensor_signals</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of sensor signals for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="mast.MetMast.get_sensor_types">
 <code class="descname">get_sensor_types</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of sensor types for columns in MetMast.data</p>
+<dd><p>Returns a list of sensor types for columns in an.MetMast.data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -164,7 +195,100 @@ See ECRM for more on the format of the naming convensions:</p>
 </table>
 <dl class="docutils">
 <dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_unique_sensor_details">
+<code class="descname">get_unique_sensor_details</code><span class="sig-paren">(</span><em>level</em>, <em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_unique_sensor_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_unique_sensor_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of sensor details for a given column level in an.MetMast.data.
+See also: an.utils.mast_data.get_unique_sensor_details</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>level: string, default None</dt>
+<dd>Level from which to return details (‘Type’, ‘Ht’, ‘Orient’, ‘Signal’, ‘Sensors’)</dd>
+<dt>sensors: list, default None</dt>
 <dd>List of specific sensors from which to return details</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_unique_sensor_heights">
+<code class="descname">get_unique_sensor_heights</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_unique_sensor_heights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_unique_sensor_heights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of unique sensor heights for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_unique_sensor_orients">
+<code class="descname">get_unique_sensor_orients</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_unique_sensor_orients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_unique_sensor_orients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of unique sensor orientations for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_unique_sensor_signals">
+<code class="descname">get_unique_sensor_signals</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_unique_sensor_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_unique_sensor_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of unique sensor signals for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mast.MetMast.get_unique_sensor_types">
+<code class="descname">get_unique_sensor_types</code><span class="sig-paren">(</span><em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_unique_sensor_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_unique_sensor_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of unique sensor types for columns in an.MetMast.data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>sensors: list, default None</dt>
+<dd>List of specific sensors from which to return details, otherwise all columns assumed</dd>
 </dl>
 </dd></dl>
 
@@ -196,7 +320,7 @@ See ECRM for more on the format of the naming convensions:</p>
 <dl class="method">
 <dt id="mast.MetMast.return_primary_ano_data">
 <code class="descname">return_primary_ano_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.return_primary_ano_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.return_primary_ano_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a DataFrame of measured data from the primary anemometer</p>
+<dd><p>Returns a DataFrame of measured data from the primary anemomter</p>
 </dd></dl>
 
 <dl class="method">
@@ -273,9 +397,9 @@ See ECRM for more on the format of the naming convensions:</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">MetMast Class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Shear Module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Correlate Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Analysis Module - Correlate</a></li>
 </ul>
 
 <div class="relations">
@@ -283,7 +407,7 @@ See ECRM for more on the format of the naming convensions:</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="tutorial.html" title="previous chapter">Tutorial</a></li>
-      <li>Next: <a href="code_shear.html" title="next chapter">Shear Module</a></li>
+      <li>Next: <a href="code_shear.html" title="next chapter">Analysis Module - Shear</a></li>
   </ul></li>
 </ul>
 </div>

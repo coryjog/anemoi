@@ -1,4 +1,4 @@
-MetMast Class
+Class - MetMast
 ============================
 
 This is the foundational object within the Anemoi wind analysis package.
