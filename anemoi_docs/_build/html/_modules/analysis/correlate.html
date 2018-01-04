@@ -48,123 +48,138 @@
 
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">mdates</span>
-<span class="n">mpl</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s1">&#39;talk&#39;</span><span class="p">)</span>
-
 <span class="c1">### TODO: Need to rewrite so that all methods assume a DataFrame of columns: ref, site, dir ###</span>
 <span class="c1">### TODO: Need to rewrite so that all methods output a DataFrame of columns: slope, offset, R2, uncert, points ###</span>
-
-<span class="k">def</span> <span class="nf">compare_df_columns</span><span class="p">(</span><span class="n">cols_1</span><span class="p">,</span> <span class="n">cols_2</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">Counter</span><span class="p">(</span><span class="n">cols_1</span><span class="p">)</span> <span class="o">==</span> <span class="n">Counter</span><span class="p">(</span><span class="n">cols_2</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">compare_sorted_df_columns</span><span class="p">(</span><span class="n">cols_1</span><span class="p">,</span> <span class="n">cols_2</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols_1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols_2</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="p">):</span>
-    <span class="c1"># Assume df.columns == [&#39;Ref&#39;, &#39;Site&#39;, &#39;Dir&#39;]</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    
-    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">:</span>
+<div class="viewcode-block" id="valid_correlation_data"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.valid_correlation_data">[docs]</a><span class="k">def</span> <span class="nf">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Perform checks on correlation data.&#39;&#39;&#39;</span> 
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_sorted_df_columns</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: the correlation data don&#39;t match the expected format.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">6</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: you are trying to correalate between less than six points.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="n">ref</span> <span class="o">==</span> <span class="n">site</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: it seems you are trying to correalate a single mast against itself.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
 
-<span class="c1">### CORRELATION METHODS ###</span>
-<div class="viewcode-block" id="calculate_R2"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_R2">[docs]</a><span class="k">def</span> <span class="nf">calculate_R2</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Return a single R2 between two wind speed columns&#39;&#39;&#39;</span>
+<span class="k">def</span> <span class="nf">return_correlation_results_frame</span><span class="p">():</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">],</span>
+                            <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">)],</span> 
+                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
+                            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    
-    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
-
-<div class="viewcode-block" id="calculate_IEC_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_IEC_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Calculate the IEC correlation uncertainty between two wind speed columns&#39;&#39;&#39;</span>
-    
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="o">/</span><span class="n">X</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">uncert</span></div>
-    
-<div class="viewcode-block" id="calculate_EDF_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_EDF_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_EDF_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Calculate the EDF estimated correaltion uncetianty between two wind speed columns. </span>
-<span class="sd">    Assumes a correalation forced through the origin&#39;&#39;&#39;</span>
-    
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-    <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">])</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">/</span><span class="n">Sxy</span>
-    <span class="n">SU</span> <span class="o">=</span> <span class="o">-</span><span class="n">B</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">e2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span> <span class="o">-</span> <span class="n">SU</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Xsi2</span> <span class="o">=</span> <span class="n">e2</span><span class="o">/</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Xsi2</span><span class="o">*</span><span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.25</span><span class="o">*</span><span class="p">((</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Sxx</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">4</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">uncert</span></div>
-
-<div class="viewcode-block" id="correlate_least_squares"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.correlate_least_squares">[docs]</a><span class="k">def</span> <span class="nf">correlate_least_squares</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>    
-    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using ordinary least squares regression.</span>
+<div class="viewcode-block" id="return_correlation_data_from_masts"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.return_correlation_data_from_masts">[docs]</a><span class="k">def</span> <span class="nf">return_correlation_data_from_masts</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Return a DataFrame of reference and site data for correlations. </span>
+<span class="sd">    Will be extracted from each MetMast object using the primary anemometers and wind vanes. </span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
 <span class="sd">    </span>
-<span class="sd">    wind speed data: DataFrame</span>
-<span class="sd">        Measured wind speed data from MetMast.data</span>
+<span class="sd">    ref_mast: MetMast</span>
+<span class="sd">        Anemoi MetMast object</span>
 
-<span class="sd">    ref: string, default &#39;RefWS&#39;</span>
-<span class="sd">        Label of the reference wind speed data column </span>
+<span class="sd">    site_mast: MetMast</span>
+<span class="sd">        Anemoi MetMast object</span>
 
-<span class="sd">    site: string, default &#39;SiteWS&#39;</span>
-<span class="sd">        Label of the site wind speed data column </span>
+<span class="sd">    :Returns:</span>
 
-<span class="sd">    force_through_origin: boolean, default True</span>
+<span class="sd">    out: DataFrame with columns ref, site, and dir</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_primary_ano_vane_data</span><span class="p">()</span>
+    <span class="n">ref_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
+    <span class="n">site_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_primary_ano_vane_data</span><span class="p">()</span>
+    <span class="n">site_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;site_dir&#39;</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data</span><span class="p">,</span> <span class="n">site_data</span><span class="o">.</span><span class="n">site</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">warning_string</span> <span class="o">=</span> <span class="s2">&quot;Warning: </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> don&#39;t seem to have valid concurrent data for a correlation.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+<span class="c1">### CORRELATION METHODS ###</span>
+<div class="viewcode-block" id="calculate_R2"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_R2">[docs]</a><span class="k">def</span> <span class="nf">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Return a single R2 between two wind speed columns&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
+
+<div class="viewcode-block" id="calculate_IEC_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_IEC_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the IEC correlation uncertainty between two wind speed columns&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="o">/</span><span class="n">X</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">uncert</span><span class="o">*</span><span class="mf">100.0</span></div>
+    
+<div class="viewcode-block" id="calculate_EDF_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_EDF_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_EDF_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the EDF estimated correaltion uncetianty between two wind speed columns. </span>
+<span class="sd">    Assumes a correalation forced through the origin&#39;&#39;&#39;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">/</span><span class="n">Sxy</span>
+    <span class="n">SU</span> <span class="o">=</span> <span class="o">-</span><span class="n">B</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">e2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">site</span> <span class="o">-</span> <span class="n">SU</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Xsi2</span> <span class="o">=</span> <span class="n">e2</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Xsi2</span><span class="o">*</span><span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.25</span><span class="o">*</span><span class="p">((</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Sxx</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">4</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">uncert</span></div>
+
+<div class="viewcode-block" id="ws_correlation_least_squares_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_least_squares_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>    
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using ordinary least squares regression.</span>
+<span class="sd">    </span>
+<span class="sd">    https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.linalg.lstsq.html</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
 <span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
 <span class="sd">    </span>
 <span class="sd">    :Returns:</span>
 
-<span class="sd">    out: slope, offset, R2, uncert, points</span>
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="n">slope</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
-    
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">force_through_origin</span><span class="p">:</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
     
-    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="s1">&#39;offset&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;offset&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
     <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span></div>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
 <span class="k">def</span> <span class="nf">f_with_offset</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -172,22 +187,36 @@
 <span class="k">def</span> <span class="nf">f_without_offset</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span>
 
-<span class="k">def</span> <span class="nf">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="viewcode-block" id="ws_correlation_orthoginal_distance_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_orthoginal_distance_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using orthoganal distance regression.</span>
+<span class="sd">    </span>
+<span class="sd">    https://docs.scipy.org/doc/scipy-0.18.1/reference/odr.html</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="n">slope</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
-       
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    
-    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
 
     <span class="n">realdata</span> <span class="o">=</span> <span class="n">odrpack</span><span class="o">.</span><span class="n">RealData</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 
@@ -201,46 +230,39 @@
         <span class="n">odr</span> <span class="o">=</span> <span class="n">odrpack</span><span class="o">.</span><span class="n">ODR</span><span class="p">(</span><span class="n">realdata</span><span class="p">,</span> <span class="n">linear</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">odr</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">odr</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     
-    <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
             
-<span class="k">def</span> <span class="nf">correlate_principal_component</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="n">slope</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
-       
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    
-    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    
-    <span class="n">beta</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span>
-    <span class="n">slope</span> <span class="o">=</span> <span class="o">-</span><span class="n">beta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
+<div class="viewcode-block" id="ws_correlation_robust_linear_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_robust_linear_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using robust linear model.</span>
+<span class="sd">    </span>
+<span class="sd">    http://www.statsmodels.org/dev/rlm.html</span>
 
-<span class="k">def</span> <span class="nf">correlate_robust_linear_model</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">points</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">results</span>    
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-        <span class="n">slope</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
-        <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
-       
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-    
-    <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">ref</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">site</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="n">force_through_origin</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -252,228 +274,370 @@
     <span class="n">resrlm</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
     <span class="n">offset</span><span class="p">,</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">resrlm</span><span class="o">.</span><span class="n">params</span>
     <span class="n">R2</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">WLS</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">endog</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">exog</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">rsquared</span>
-    <span class="k">return</span> <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-<span class="k">def</span> <span class="nf">append_dir_bin</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dir_column</span><span class="p">,</span> <span class="n">sectors</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">drop_dir_column</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">bin_width</span> <span class="o">=</span> <span class="mf">360.0</span><span class="o">/</span><span class="n">sectors</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor_divide</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">dir_column</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">bin_width</span><span class="o">/</span><span class="mf">2.0</span><span class="p">),</span><span class="mi">360</span><span class="p">),</span><span class="n">bin_width</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">drop_dir_column</span><span class="p">:</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">dir_column</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span>
+<div class="viewcode-block" id="ws_correlation_method"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_method">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, for a given correlation method, between two wind speed columns.</span>
 
-<span class="k">def</span> <span class="nf">correlate_ws_binned_by_direction</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">dir_column</span><span class="o">=</span><span class="s1">&#39;Dir&#39;</span><span class="p">,</span> <span class="n">sectors</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># Method: defaults &#39;ODR&#39;, &#39;OLS&#39;, &#39;PCA&#39;, &#39;RLM&#39;</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">,</span><span class="n">dir_column</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">dir_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">sectors</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">dir_bins</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;dir_bin&#39;</span>
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">:</span> 
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;RLM&#39;</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="ws_correlation_binned_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_direction">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_direction</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by direction, between two wind speed columns.</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    dir_sectors: int, default 16</span>
+<span class="sd">        Number of equally spaced direction sectors</span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">results</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">append_dir_bin</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dir_column</span><span class="p">,</span> <span class="n">sectors</span><span class="o">=</span><span class="n">sectors</span><span class="p">,</span> <span class="n">drop_dir_column</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dir_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dir_sectors</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">results</span><span class="p">]</span><span class="o">*</span><span class="n">dir_sectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">dir_bins</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">)</span>
+
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">wind_rose</span><span class="o">.</span><span class="n">append_dir_bin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="n">dir_sectors</span><span class="p">)</span>
     
     <span class="k">for</span> <span class="n">dir_bin</span> <span class="ow">in</span> <span class="n">dir_bins</span><span class="p">:</span>
-        <span class="n">dir_bin_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span>
-        <span class="n">points</span> <span class="o">=</span> <span class="n">dir_bin_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dir_bin_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">dir_bin_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-            <span class="n">invalid_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">invalid_results</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">)</span>
     
-            <span class="k">if</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span> 
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_least_squares</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_least_squares</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span> 
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_principal_component</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">dir_bin_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            
-            <span class="n">valid_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">valid_results</span>
+            <span class="n">dir_bin_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dir_bin_results</span><span class="o">.</span><span class="n">values</span>
 
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-<span class="k">def</span> <span class="nf">correlate_ws_binned_by_month</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># Method: defaults &#39;ODR&#39;, &#39;OLS&#39;, &#39;PCA&#39;, &#39;RLM&#39;</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">months</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">12</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">months</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Month&#39;</span>
+<div class="viewcode-block" id="ws_correlation_binned_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_month">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_month</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by month, between two wind speed columns.</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">results</span>
 
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span>
-    
+    <span class="n">months</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">results</span><span class="p">]</span><span class="o">*</span><span class="mi">12</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">months</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;month&#39;</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">month</span> <span class="ow">in</span> <span class="n">months</span><span class="p">:</span>
-        <span class="n">month_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span>
-        <span class="n">points</span> <span class="o">=</span> <span class="n">month_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">monthly_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="o">==</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;site&#39;</span><span class="p">,</span><span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">monthly_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">):</span>
-            <span class="n">invalid_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">invalid_results</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">)</span>
     
-            <span class="k">if</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span> 
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_least_squares</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_least_squares</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span> 
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_principal_component</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;PCA&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;RLM&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">):</span> 
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_robust_linear_model</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;RLM&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">force_through_origin</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">correlate_robust_linear_model</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">month_df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-            
-            <span class="n">valid_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">valid_results</span>
+            <span class="n">monthly_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">monthly_results</span><span class="o">.</span><span class="n">values</span>
 
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
 <span class="c1">### MAST CORRELATIONS ###</span>
 <span class="sd">&#39;&#39;&#39; Basic outline is that for every correlate method you have to pass it</span>
 <span class="sd">reference and site mast objects along with the needed sensor names</span>
 <span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="correlate_masts_10_minute"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.correlate_masts_10_minute">[docs]</a><span class="k">def</span> <span class="nf">correlate_masts_10_minute</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two met masts.</span>
 
-<span class="k">def</span> <span class="nf">correlate_masts_10_minute</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1">#Return slope, offset, R2, uncertainty, data</span>
-    <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    <span class="n">site_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    ref_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
 
+<span class="sd">    site_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
-
-    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
-    <span class="n">site_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
-    <span class="n">data_10_min</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data</span><span class="p">,</span> <span class="n">site_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">data_10_min</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="s1">&#39;SiteWS&#39;</span><span class="p">]</span>
     
-    <span class="n">results_index</span> <span class="o">=</span> <span class="n">masts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Site&#39;</span><span class="p">,</span> <span class="s1">&#39;Ref&#39;</span><span class="p">])</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_sensor</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
+    
+    <span class="n">results_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">results_index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    <span class="n">valid_results</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">data_10_min</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">valid_results</span>
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="n">valid_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">valid_results</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-<span class="k">def</span> <span class="nf">correlate_masts_10_minute_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sectors</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
-    <span class="c1">#Return correaltion results: slope, offset, R2, uncertainty</span>
-    <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    <span class="n">site_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
+<div class="viewcode-block" id="correlate_masts_10_minute_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.correlate_masts_10_minute_by_direction">[docs]</a><span class="k">def</span> <span class="nf">correlate_masts_10_minute_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by direction, between two met masts.</span>
 
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    ref_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    site_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    ref_dir_sensor: string, default None (primary wind vane assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+
+<span class="sd">    dir_sectors: int, default 16</span>
+<span class="sd">        Number of equally spaced direction sectors</span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
-    <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="n">ref_dir_sensor</span><span class="p">)</span>
+    
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_sensor</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
 
-    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="p">])</span>
-    <span class="n">site_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data</span><span class="p">,</span> <span class="n">site_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Site&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="s1">&#39;RefDir&#39;</span><span class="p">,</span> <span class="s1">&#39;SiteWS&#39;</span><span class="p">]</span>
-
-    <span class="n">results</span> <span class="o">=</span> <span class="n">correlate_ws_binned_by_direction</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">dir_column</span><span class="o">=</span><span class="s1">&#39;RefDir&#39;</span><span class="p">,</span> <span class="n">sectors</span><span class="o">=</span><span class="n">sectors</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
+    
+    <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_binned_by_direction</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="n">dir_sectors</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;Ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;Site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;Site&#39;</span><span class="p">,</span> <span class="s1">&#39;Ref&#39;</span><span class="p">,</span> <span class="s1">&#39;dir_bin&#39;</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">results</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir_bin&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-<span class="k">def</span> <span class="nf">correlate_masts_daily</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
-    <span class="c1">#Return slope, offset, R2, uncertainty, data</span>
-    <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    <span class="n">site_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    
+<div class="viewcode-block" id="correlate_masts_daily"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.correlate_masts_daily">[docs]</a><span class="k">def</span> <span class="nf">correlate_masts_daily</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset for daily data between two met masts.</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    ref_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    site_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+
+<span class="sd">    minimum_recovery_rate: float, default 0.7</span>
+<span class="sd">        Minimum allowable recovery rate until resampled data are excluded. </span>
+<span class="sd">        For example, by defalt, when resampling 10-minute data to daily averages you would need </span>
+<span class="sd">        at least 101 valid records to have a valid daily average.</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
     <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">minimum_recovery_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">minimum_recovery_rate</span> <span class="o">=</span> <span class="n">minimum_recovery_rate</span><span class="o">/</span><span class="mf">100.0</span>
 
-    <span class="n">ref_data_daily_mean</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">resample_sensor_data</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
-    <span class="n">site_data_daily_mean</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">resample_sensor_data</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
-    <span class="n">data_daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data_daily_mean</span><span class="p">,</span> <span class="n">site_data_daily_mean</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Site&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">data_daily</span><span class="o">.</span><span class="n">columns</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="s1">&#39;SiteWS&#39;</span><span class="p">]</span>
+    <span class="n">ref_data_daily_mean</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
+    <span class="n">site_data_daily_mean</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">site_ws_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
+    <span class="n">data_daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data_daily_mean</span><span class="p">,</span> <span class="n">site_data_daily_mean</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data_daily</span><span class="o">.</span><span class="n">columns</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span>
+    <span class="n">data_daily</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="k">if</span> <span class="n">data_daily</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Less than one week of valid overlapping data.&#39;</span><span class="p">)</span>
-    
-    <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;corr_daily&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    
-    <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">data_daily</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data_daily</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">)</span>
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data_daily</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">)</span>
-    
-    <span class="n">correlation_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;corr_daily&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">data_daily</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-    <span class="k">return</span> <span class="n">correlation_results</span><span class="p">,</span> <span class="n">data_daily</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data_daily</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 
-<span class="k">def</span> <span class="nf">correlate_masts_daily_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
-    <span class="c1">#Return slope, offset, R2, uncertainty, data</span>
-    <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    <span class="n">site_mast</span><span class="o">.</span><span class="n">check_mast_data_size</span><span class="p">()</span>
-    
+<div class="viewcode-block" id="correlate_masts_daily_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.correlate_masts_daily_by_month">[docs]</a><span class="k">def</span> <span class="nf">correlate_masts_daily_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the slope and offset for daily data, binned by month, between two met masts.</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    ref_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    site_mast: MetMast</span>
+<span class="sd">        MetMast object </span>
+
+<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    method: string, default &#39;ODR&#39;</span>
+<span class="sd">        Correlation method to use. </span>
+
+<span class="sd">        * Orthoginal distance regression: &#39;ODR&#39;</span>
+<span class="sd">        * Ordinary least squares: &#39;OLS&#39;</span>
+<span class="sd">        * Robust linear models: &#39;RLM&#39;</span>
+
+<span class="sd">    force_through_origin: boolean, default False</span>
+<span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
+
+<span class="sd">    minimum_recovery_rate: float, default 0.7</span>
+<span class="sd">        Minimum allowable recovery rate until resampled data are excluded. </span>
+<span class="sd">        For example, by defalt, when resampling 10-minute data to daily averages you would need </span>
+<span class="sd">        at least 101 valid records to have a valid daily average.</span>
+<span class="sd">    </span>
+<span class="sd">    :Returns:</span>
+
+<span class="sd">    out: DataFrame</span>
+<span class="sd">        slope, offset, R2, uncert, points for each month</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
     <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">minimum_recovery_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">minimum_recovery_rate</span> <span class="o">=</span> <span class="n">minimum_recovery_rate</span><span class="o">/</span><span class="mf">100.0</span>
 
-    <span class="n">ref_data_daily_mean</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">resample_sensor_data</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
-    <span class="n">site_data_daily_mean</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">resample_sensor_data</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
-    <span class="n">data_daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data_daily_mean</span><span class="p">,</span> <span class="n">site_data_daily_mean</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Ref&#39;</span><span class="p">,</span> <span class="s1">&#39;Site&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">data_daily</span><span class="o">.</span><span class="n">columns</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="s1">&#39;SiteWS&#39;</span><span class="p">]</span>
+    <span class="n">ref_data_daily_mean</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
+    <span class="n">site_data_daily_mean</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">site_ws_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="n">minimum_recovery_rate</span><span class="p">)</span>
+    <span class="n">data_daily</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data_daily_mean</span><span class="p">,</span> <span class="n">site_data_daily_mean</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data_daily</span><span class="o">.</span><span class="n">columns</span>  <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span>
+    <span class="n">data_daily</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="k">if</span> <span class="n">data_daily</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Less than one week of valid overlapping data.&#39;</span><span class="p">)</span>
-    
-    <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    <span class="n">correlation_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;month&#39;</span>
-
-    <span class="k">for</span> <span class="n">month</span> <span class="ow">in</span> <span class="n">correlation_results</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
-        <span class="n">data_daily_month_filtered</span> <span class="o">=</span> <span class="n">data_daily</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data_daily</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="n">month</span><span class="p">,</span> <span class="p">:]</span>
-        
-        <span class="k">if</span> <span class="n">data_daily_month_filtered</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="c1"># raise ValueError(&#39;Less than one week of valid overlapping data in month: {}.&#39;.format(month))</span>
-            <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">correlate_orthoginal_distance</span><span class="p">(</span><span class="n">data_daily_month_filtered</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data_daily_month_filtered</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">)</span>
-            <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data_daily_month_filtered</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">)</span>
-        
-            <span class="n">correlation_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">data_daily</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-    <span class="n">correlation_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">correlation_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-    <span class="n">correlation_results</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">correlation_results</span><span class="p">,</span> <span class="n">data_daily</span>
-
-<span class="c1">### Plotting ###</span>
-<span class="k">def</span> <span class="nf">plot_wind_speed_correlation</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="s1">&#39;RefWS&#39;</span><span class="p">,</span> <span class="n">site</span><span class="o">=</span><span class="s1">&#39;SiteWS&#39;</span><span class="p">,</span> <span class="n">slope</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">R2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uncert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Wind speed correlation&#39;</span><span class="p">):</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Sensors&#39;</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref</span><span class="p">,</span><span class="n">site</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ref</span> <span class="o">!=</span> <span class="n">site</span><span class="p">):</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">],</span> <span class="n">ylim</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">slope</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="o">*</span><span class="n">slope</span><span class="p">],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">R2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span> <span class="o">+</span> <span class="s1">&#39; (R2: </span><span class="si">{:.3f}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R2</span><span class="p">))</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">site</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">fig</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_binned_by_month</span><span class="p">(</span><span class="n">data_daily</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
 </pre></div>
 
           </div>

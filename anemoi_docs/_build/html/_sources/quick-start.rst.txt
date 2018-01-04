@@ -1,6 +1,15 @@
 Quick Start Guide
 =================
 
-This will be instructions to install all the needed Python packages to run Anemoi and then how to get up and running with mast data exported from Windographer.
+Instructions for getting up and running. 
+-----------------------------------------
 
-Installation: pip install git+git://github.com/coryjog/anemoi
+Assuming you have Python 3 and git installed you should be able to just pip install:
+
+.. code-block:: python
+
+    pip install git+git://github.com/coryjog/anemoi
+
+All the dependancies listed in required.txt should also install.
+
+Otherwise, you can download the anemoi package from the master branch on GitHub and place the anemoi folder in your working directory. This option requires you to separately install all the needed Python packages within required.txt.

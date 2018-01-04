@@ -73,6 +73,21 @@
 <dt>shear_sensors: list of strings</dt>
 <dd>List of anemometer columns for use in shear analysis</dd>
 </dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Data:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd><p class="first">Pandas DataFrame of a time series of measured wind data. The column labels assume EDF’s standard naming conventions.
+See ECRM for more on the format of the naming convensions:</p>
+<p class="last"><a class="reference external" href="https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx">https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx</a></p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="mast.MetMast.get_sensor_details">
 <code class="descname">get_sensor_details</code><span class="sig-paren">(</span><em>level</em>, <em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_details" title="Permalink to this definition">¶</a></dt>

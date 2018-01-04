@@ -43,27 +43,27 @@
 <span id="correlate-module"></span><h1>Correlate Module<a class="headerlink" href="#module-analysis.correlate" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="analysis.correlate.calculate_EDF_uncertainty">
-<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_EDF_uncertainty</code><span class="sig-paren">(</span><em>df</em>, <em>ref='RefWS'</em>, <em>site='SiteWS'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_EDF_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_EDF_uncertainty" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_EDF_uncertainty</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_EDF_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_EDF_uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the EDF estimated correaltion uncetianty between two wind speed columns. 
 Assumes a correalation forced through the origin</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="analysis.correlate.calculate_IEC_uncertainty">
-<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_IEC_uncertainty</code><span class="sig-paren">(</span><em>df</em>, <em>ref='RefWS'</em>, <em>site='SiteWS'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_IEC_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_IEC_uncertainty" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_IEC_uncertainty</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_IEC_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_IEC_uncertainty" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the IEC correlation uncertainty between two wind speed columns</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="analysis.correlate.calculate_R2">
-<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_R2</code><span class="sig-paren">(</span><em>df</em>, <em>ref='RefWS'</em>, <em>site='SiteWS'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_R2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_R2" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">analysis.correlate.</code><code class="descname">calculate_R2</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_R2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_R2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a single R2 between two wind speed columns</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="analysis.correlate.correlate_least_squares">
-<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_least_squares</code><span class="sig-paren">(</span><em>df</em>, <em>ref='RefWS'</em>, <em>site='SiteWS'</em>, <em>force_through_origin=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_least_squares"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_least_squares" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the slope and offset between two wind speed columns using ordinary least squares regression.</p>
+<dt id="analysis.correlate.correlate_masts_10_minute">
+<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_10_minute</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_10_minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_10_minute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset between two met masts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -73,13 +73,23 @@ Assumes a correalation forced through the origin</p>
 </tbody>
 </table>
 <dl class="docutils">
-<dt>wind speed data: DataFrame</dt>
-<dd>Measured wind speed data from MetMast.data</dd>
-<dt>ref: string, default ‘RefWS’</dt>
-<dd>Label of the reference wind speed data column</dd>
-<dt>site: string, default ‘SiteWS’</dt>
-<dd>Label of the site wind speed data column</dd>
-<dt>force_through_origin: boolean, default True</dt>
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
 <dd>Force the correlation through the origin (offset equal to zero)</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -90,7 +100,417 @@ Assumes a correalation forced through the origin</p>
 </tr>
 </tbody>
 </table>
-<p>out: slope, offset, R2, uncert, points</p>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.correlate_masts_10_minute_by_direction">
+<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_10_minute_by_direction</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>ref_dir_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>dir_sectors=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_10_minute_by_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_10_minute_by_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset, binned by direction, between two met masts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>ref_dir_sensor: string, default None (primary wind vane assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>dir_sectors: int, default 16</dt>
+<dd>Number of equally spaced direction sectors</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.correlate_masts_daily">
+<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_daily</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_daily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_daily" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset for daily data between two met masts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+<dt>minimum_recovery_rate: float, default 0.7</dt>
+<dd>Minimum allowable recovery rate until resampled data are excluded. 
+For example, by defalt, when resampling 10-minute data to daily averages you would need 
+at least 101 valid records to have a valid daily average.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.correlate_masts_daily_by_month">
+<code class="descclassname">analysis.correlate.</code><code class="descname">correlate_masts_daily_by_month</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>ref_ws_sensor=None</em>, <em>site_ws_sensor=None</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em>, <em>minimum_recovery_rate=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#correlate_masts_daily_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.correlate_masts_daily_by_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset for daily data, binned by month, between two met masts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>MetMast object</dd>
+<dt>ref_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Reference anemometer data to use. Extracted from MetMast.data</dd>
+<dt>site_ws_sensor: string, default None (primary anemometer assumed)</dt>
+<dd>Site anemometer data to use. Extracted from MetMast.data</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+<dt>minimum_recovery_rate: float, default 0.7</dt>
+<dd>Minimum allowable recovery rate until resampled data are excluded. 
+For example, by defalt, when resampling 10-minute data to daily averages you would need 
+at least 101 valid records to have a valid daily average.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points for each month</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.return_correlation_data_from_masts">
+<code class="descclassname">analysis.correlate.</code><code class="descname">return_correlation_data_from_masts</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#return_correlation_data_from_masts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.return_correlation_data_from_masts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a DataFrame of reference and site data for correlations. 
+Will be extracted from each MetMast object using the primary anemometers and wind vanes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>ref_mast: MetMast</dt>
+<dd>Anemoi MetMast object</dd>
+<dt>site_mast: MetMast</dt>
+<dd>Anemoi MetMast object</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>out: DataFrame with columns ref, site, and dir</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.valid_correlation_data">
+<code class="descclassname">analysis.correlate.</code><code class="descname">valid_correlation_data</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#valid_correlation_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.valid_correlation_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform checks on correlation data.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_binned_by_direction">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_binned_by_direction</code><span class="sig-paren">(</span><em>data</em>, <em>dir_sectors=16</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_binned_by_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_binned_by_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset, binned by direction, between two wind speed columns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>dir_sectors: int, default 16</dt>
+<dd>Number of equally spaced direction sectors</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_binned_by_month">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_binned_by_month</code><span class="sig-paren">(</span><em>data</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_binned_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_binned_by_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset, binned by month, between two wind speed columns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_least_squares_model">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_least_squares_model</code><span class="sig-paren">(</span><em>data</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_least_squares_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_least_squares_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset between two wind speed columns using ordinary least squares regression.</p>
+<p><a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.linalg.lstsq.html">https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.linalg.lstsq.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_method">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_method</code><span class="sig-paren">(</span><em>data</em>, <em>method='ODR'</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_method"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset, for a given correlation method, between two wind speed columns.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>method: string, default ‘ODR’</dt>
+<dd><p class="first">Correlation method to use.</p>
+<ul class="last simple">
+<li>Orthoginal distance regression: ‘ODR’</li>
+<li>Ordinary least squares: ‘OLS’</li>
+<li>Robust linear models: ‘RLM’</li>
+</ul>
+</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_orthoginal_distance_model">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_orthoginal_distance_model</code><span class="sig-paren">(</span><em>data</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_orthoginal_distance_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_orthoginal_distance_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset between two wind speed columns using orthoganal distance regression.</p>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy-0.18.1/reference/odr.html">https://docs.scipy.org/doc/scipy-0.18.1/reference/odr.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.ws_correlation_robust_linear_model">
+<code class="descclassname">analysis.correlate.</code><code class="descname">ws_correlation_robust_linear_model</code><span class="sig-paren">(</span><em>data</em>, <em>force_through_origin=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#ws_correlation_robust_linear_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.ws_correlation_robust_linear_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the slope and offset between two wind speed columns using robust linear model.</p>
+<p><a class="reference external" href="http://www.statsmodels.org/dev/rlm.html">http://www.statsmodels.org/dev/rlm.html</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>data: DataFrame</dt>
+<dd>DataFrame with wind speed columns ref and site, and direction data dir</dd>
+<dt>force_through_origin: boolean, default False</dt>
+<dd>Force the correlation through the origin (offset equal to zero)</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points</dd>
+</dl>
 </dd></dl>
 
 </div>

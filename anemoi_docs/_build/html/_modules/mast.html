@@ -74,6 +74,14 @@
 <span class="sd">    </span>
 <span class="sd">    shear_sensors: list of strings</span>
 <span class="sd">        List of anemometer columns for use in shear analysis</span>
+
+<span class="sd">    :Data:</span>
+
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        Pandas DataFrame of a time series of measured wind data. The column labels assume EDF&#39;s standard naming conventions.</span>
+<span class="sd">        See ECRM for more on the format of the naming convensions:</span>
+
+<span class="sd">        https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
@@ -174,10 +182,11 @@
     <span class="k">def</span> <span class="nf">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vane</span><span class="p">):</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unclear which wind vane to use.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">vane</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_names</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Wind vane not installed on mast.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">vane</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">vane</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_vane</span>
+        <span class="k">if</span> <span class="n">vane</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sensor_names</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Wind vane not installed on mast.&#39;</span><span class="p">)</span>
+        
 
         <span class="k">return</span> <span class="n">vane</span>
 

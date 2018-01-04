@@ -1,4 +1,4 @@
-Correlate Module
+Analysis Module - Correlate
 ==============================
 
 .. automodule:: analysis.correlate
