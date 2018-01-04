@@ -5,9 +5,7 @@ EDF's pre-alpha Python package for wind data analysis - may be open-sourced in t
 https://coryjog.github.io/anemoi/
 
 ## Installation
-You can simply pip install from GitHub assuming you have git and the [Python statsmodels](http://www.statsmodels.org/stable/index.html) package installed.
-
-pip install git+git://github.com/coryjog/anemoi
+https://coryjog.github.io/anemoi/quick-start.html
 
 ## Explanation
 https://en.wikipedia.org/wiki/Anemoi
