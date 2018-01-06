@@ -6,7 +6,7 @@ This will be a quick explination of how this library is structured so that analy
 Anemoi MetMast object 
 ----------------------
 
-This is the foundational object within the Anemoi wind analysis package and upon which the rest of the library is built. This is the equivalent of the DataFrame to pandas. The MetMast object is made up of two parts:
+This is the foundational object within the Anemoi wind analysis package and upon which the rest of the library is built. This is the equivalent of the `DataFrame to pandas <http://pandas.pydata.org/>`_. The MetMast object is made up of two parts:
 
 1. Data - A time series of measured wind data within a pandas DataFrame. The DataFrame is indexed by the time stamps of the time series and the columns are labeled with the sensor names. Normally this includes wind speed, direction, and temperature. It can also include pressure, relative humidity, battery voltage, and any other signals recorded by the data logger.
 2. Metadata - this is pertinent mast information such as coordinates, height, elevation, primary anemometer and wind vane. Other information could be added in the future.
