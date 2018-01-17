@@ -27,11 +27,12 @@ def plot_shear_results(shear_results, upper_height=80.0, lower_shear_bound=0.1, 
     for mast in shear_results.columns.get_level_values('Mast').unique():
         fig = plt.figure(figsize=(fig_size,fig_size))
         ax = fig.add_subplot(111)
+        
         single_mast_shear_results = shear_results[mast].replace('-',np.nan).dropna(how='all').fillna('-')
-        h1s = single_mast_shear_results.columns.get_level_values('Ht').tolist()
-        h2s = single_mast_shear_results.index.get_level_values('Ht').tolist()
         orients = single_mast_shear_results.index.get_level_values('Orient').unique().tolist()
         for i,orient in enumerate(orients):
+            h1s = single_mast_shear_results.loc[orient,:].columns.get_level_values('Ht').tolist()
+            h2s = single_mast_shear_results.loc[orient,:].index.get_level_values('Ht').tolist()
             for h1 in h1s:
                 for h2 in h2s:
                     alpha = single_mast_shear_results.loc[pd.IndexSlice[orient,h2],h1]

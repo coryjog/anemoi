@@ -5,7 +5,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-def read_mast_data_from_windographer_csv(filename, skiprows=13, na_values=-999, sensors=None):
+def from_windographer_csv(filename, skiprows=8, na_values=-999, sensors=None):
     if sensors is None:
         header = skiprows
         skiprows = 0
@@ -24,12 +24,12 @@ def read_mast_data_from_windographer_csv(filename, skiprows=13, na_values=-999, 
         data.columns = sensors
     return data
 
-def read_mast_data_from_parquet_file(filename):
+def data_from_parquet_file(filename):
     table = pq.read_table(filename)
     data = table.to_pandas()
     return data
 
-def read_mast_metadata_from_parquet_file(filename):
+def metadata_from_parquet_file(filename):
     table = pq.read_table(filename)
     data = table.to_pandas().T
     return data

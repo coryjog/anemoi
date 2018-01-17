@@ -94,7 +94,7 @@ class MetMast(object):
             sensors = self.data.columns.get_level_values(level='Sensors').tolist()
         else:
             sensors = []
-        repr_string = '''Mast {name}
+        repr_string = '''\n\nMast {name}
 # of sensors: {sensors}
 Coords: {lat}, {lon}
 Primary ano: {ano}
@@ -146,8 +146,11 @@ Primary vane: {vane}'''.format(name=name,
         if vane not in self.get_sensor_names():
             raise ValueError('Wind vane not installed on mast.')
         
-
         return vane
+
+    def infer_time_step(self):
+        freq = an.utils.mast_data.infer_time_step(self.data)
+        return freq
 
     #### MAST DATAFRAME MANIPULATION ####
     def remove_sensor_levels(self):
@@ -169,92 +172,134 @@ Primary vane: {vane}'''.format(name=name,
         return self.data.columns.get_level_values('Sensors').tolist()
 
     def get_sensor_details(self, level, sensors=None):
-        '''Returns a list of sensor details for a given column level in MetMast.data
+        '''Returns a list of sensor details for a given column level in MetMast.data.
+        See also: an.utils.mast_data.get_sensor_details
         
         :Parameters:
 
         level: string, default None
             Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+        
         sensors: list, default None
             List of specific sensors from which to return details
         '''
-        self = self.remove_and_add_sensor_levels()
-        self.is_mast_data_size_greater_than_zero()
-        if (sensors is not None) and self.is_sensor_names_included(sensors):
-            details = self.data.loc[:, pd.IndexSlice[:,:,:,:,sensors]].columns.get_level_values(level).tolist()
-        else:
-            details = self.data.columns.get_level_values(level).tolist()
+        details = an.utils.mast_data.get_sensor_details(self.data, level=level, sensors=sensors)
+        return details
+
+    def get_unique_sensor_details(self, level, sensors=None):
+        '''Returns a list of sensor details for a given column level in an.MetMast.data.
+        See also: an.utils.mast_data.get_unique_sensor_details
+        
+        :Parameters:
+
+        level: string, default None
+            Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+        
+        sensors: list, default None
+            List of specific sensors from which to return details
+        '''
+        details = an.utils.mast_data.get_unique_sensor_details(self.data, level=level, sensors=sensors)
         return details
         
     def get_sensor_types(self, sensors=None):
-        '''Returns a list of sensor types for columns in MetMast.data
+        '''Returns a list of sensor types for columns in an.MetMast.data
 
         :Parameters:
 
         sensors: list, default None
-            List of specific sensors from which to return details
+            List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        self = self.remove_and_add_sensor_levels()
         types = self.get_sensor_details(level='Type', sensors=sensors)
         return types
 
-    def get_sensor_heights(self, sensors=None):
-        '''Returns a list of sensor heights for columns in MetMast.data
+    def get_unique_sensor_types(self, sensors=None):
+            '''Returns a list of unique sensor types for columns in an.MetMast.data
 
-        :Parameters:
+            :Parameters:
 
-        sensors: list, default None
-            List of specific sensors from which to return details
-        '''
-        self = self.remove_and_add_sensor_levels()
-        heights = self.get_sensor_details(level='Ht', sensors=sensors)
-        return heights
-
-    def get_sensor_orients(self, sensors=None):
-        '''Returns a list of sensor orientations for columns in MetMast.data
-
-        :Parameters:
-
-        sensors: list, default None
-            List of specific sensors from which to return details
-        '''
-        self = self.remove_and_add_sensor_levels()
-        orients = self.get_sensor_details(level='Orient', sensors=sensors)
-        return orients
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            types = self.get_unique_sensor_details(level='Type', sensors=sensors)
+            return types
 
     def get_sensor_signals(self, sensors=None):
-        self = self.remove_and_add_sensor_levels()
-        signals = self.get_sensor_details(level='Signal', sensors=sensors)
-        return signals
+            '''Returns a list of sensor signals for columns in an.MetMast.data
 
-    def return_primary_ano_data(self):
-        '''Returns a DataFrame of measured data from the primary anemometer
-        '''
-        self.is_mast_data_size_greater_than_zero()
-        if (self.primary_ano is not None) and (self.is_sensor_names_included([self.primary_ano])):
-            data = self.remove_sensor_levels().data
-            return data.loc[:,self.primary_ano].to_frame(self.primary_ano)
-        else:
-            return None
-        
-    def return_primary_vane_data(self):
-        '''Returns a DataFrame of measured data from the primary wind vane
-        '''
-        if (self.primary_vane is not None) and (self.is_sensor_names_included([self.primary_vane])):
-            data = self.remove_sensor_levels().data
-            return data.loc[:,self.primary_vane].to_frame(self.primary_vane)
-        else:
-            return None
+            :Parameters:
 
-    def return_primary_ano_vane_data(self):
-        '''Returns a DataFrame of measured data from the primary anemometer and primary wind vane
-        '''
-        if (self.primary_ano is not None) and (self.primary_vane is not None) and (self.is_sensor_names_included([self.primary_ano, self.primary_vane])):
-            data = self.remove_sensor_levels().data
-            return data.loc[:,[self.primary_ano, self.primary_vane]]
-        else:
-            return None
-        
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            signals = self.get_sensor_details(level='Signal', sensors=sensors)
+            return signals
+
+    def get_unique_sensor_signals(self, sensors=None):
+            '''Returns a list of unique sensor signals for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            signals = self.get_unique_sensor_details(level='Signal', sensors=sensors)
+            return signals
+
+    def get_sensor_orients(self, sensors=None):
+            '''Returns a list of sensor orientations for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            orients = self.get_sensor_details(level='Orient', sensors=sensors)
+            return orients
+
+    def get_unique_sensor_orients(self, sensors=None):
+            '''Returns a list of unique sensor orientations for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            orients = self.get_unique_sensor_details(level='Orient', sensors=sensors)
+            return orients
+
+    def get_sensor_heights(self, sensors=None):
+            '''Returns a list of sensor heights for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            heights = self.get_sensor_details(level='Ht', sensors=sensors)
+            return heights
+
+    def get_unique_sensor_heights(self, sensors=None):
+            '''Returns a list of unique sensor heights for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            heights = self.get_unique_sensor_details(level='Ht', sensors=sensors)
+            return heights
+
+    def get_sensor_names(self, sensors=None):
+            '''Returns a list of sensor names for columns in an.MetMast.data
+
+            :Parameters:
+
+            sensors: list, default None
+                List of specific sensors from which to return details, otherwise all columns assumed
+            '''
+            names = self.get_sensor_details(level='Sensors', sensors=sensors)
+            return names
+
     def return_sensor_data(self, sensors=None):
         '''Returns a DataFrame of measured data from specified sensors
 
@@ -263,15 +308,25 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return data
         '''
-        if sensors is not None:
-            self.is_mast_data_size_greater_than_zero()
-            if not isinstance(sensors, list):
-                sensors = [sensors]
-            if self.is_sensor_names_included(sensors):
-                return self.remove_sensor_levels().data.loc[:,sensors]
-        else:
-            return None
+        return an.utils.mast_data.return_sensor_data(self.data, sensors=sensors)
 
+    def return_primary_ano_data(self):
+        '''Returns a DataFrame of measured data from the primary anemomter
+        '''
+        return self.return_sensor_data(sensors=self.primary_ano)
+        
+    def return_primary_vane_data(self):
+        '''Returns a DataFrame of measured data from the primary wind vane
+        '''
+        return self.return_sensor_data(sensors=self.primary_vane)
+
+    def return_primary_ano_vane_data(self):
+        '''Returns a DataFrame of measured data from the primary anemometer and primary wind vane
+        '''
+        ano_data = self.return_primary_ano_data()
+        vane_data = self.return_primary_vane_data()
+        return pd.concat([ano_data, vane_data], axis=1)
+        
     def return_sensor_type_data(self, sensor_type=None):
         '''Returns a DataFrame of measured data from a specified sensor type
 
