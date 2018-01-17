@@ -54,25 +54,42 @@
 <span class="k">def</span> <span class="nf">compare_sorted_df_columns</span><span class="p">(</span><span class="n">cols_1</span><span class="p">,</span> <span class="n">cols_2</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols_1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cols_2</span><span class="p">)</span>
 
-<div class="viewcode-block" id="valid_correlation_data"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.valid_correlation_data">[docs]</a><span class="k">def</span> <span class="nf">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Perform checks on correlation data.&#39;&#39;&#39;</span> 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_sorted_df_columns</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]):</span>
+<div class="viewcode-block" id="valid_ws_correlation_data"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.valid_ws_correlation_data">[docs]</a><span class="k">def</span> <span class="nf">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Perform checks on wind speed correlation data.</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref_ws_col and site_ws_col</span>
+
+<span class="sd">    ref_ws_col: string, default &#39;ref&#39;</span>
+<span class="sd">        Reference anemometer data column to use.</span>
+
+<span class="sd">    site_ws_col: string, default &#39;site&#39;</span>
+<span class="sd">        Site anemometer data column to use.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span> 
+    <span class="k">if</span> <span class="n">ref_ws_col</span> <span class="o">==</span> <span class="n">site_ws_col</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: Reference and site wind speed columns cannot have the same name.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_sorted_df_columns</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: the correlation data don&#39;t match the expected format.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">6</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: you are trying to correalate between less than six points.&quot;</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: trying to correalate between less than six points.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">ref_ws_col</span><span class="p">]</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">site_ws_col</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Warning: it seems you are trying to correalate a single mast against itself.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">return</span> <span class="kc">True</span></div>
 
-<span class="k">def</span> <span class="nf">return_correlation_results_frame</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">],</span>
-                            <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">)],</span> 
+                            <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">ref_label</span><span class="p">,</span> <span class="n">site_label</span><span class="p">)],</span> 
                                 <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
                             <span class="p">)</span>
     <span class="k">return</span> <span class="n">results</span>
@@ -101,48 +118,95 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_data</span><span class="p">,</span> <span class="n">site_data</span><span class="o">.</span><span class="n">site</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
     
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
         <span class="n">warning_string</span> <span class="o">=</span> <span class="s2">&quot;Warning: </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2"> don&#39;t seem to have valid concurrent data for a correlation.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_string</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">data</span></div>
 
 <span class="c1">### CORRELATION METHODS ###</span>
-<div class="viewcode-block" id="calculate_R2"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_R2">[docs]</a><span class="k">def</span> <span class="nf">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Return a single R2 between two wind speed columns&#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_R2"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_R2">[docs]</a><span class="k">def</span> <span class="nf">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Return a single R2 between two wind speed columns</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref_ws_col and site_ws_col</span>
+
+<span class="sd">    ref_ws_col: string, default &#39;ref&#39;</span>
+<span class="sd">        Reference anemometer data column to use.</span>
+
+<span class="sd">    site_ws_col: string, default &#39;site&#39;</span>
+<span class="sd">        Site anemometer data column to use.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     
-    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">r2</span></div>
 
-<div class="viewcode-block" id="calculate_IEC_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_IEC_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Calculate the IEC correlation uncertainty between two wind speed columns&#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_IEC_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_IEC_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the IEC correlation uncertainty between two wind speed columns</span>
+<span class="sd">    </span>
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref_ws_col and site_ws_col</span>
+
+<span class="sd">    ref_ws_col: string, default &#39;ref&#39;</span>
+<span class="sd">        Reference anemometer data column to use.</span>
+
+<span class="sd">    site_ws_col: string, default &#39;site&#39;</span>
+<span class="sd">        Site anemometer data column to use.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">ref_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">site_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
     <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="o">/</span><span class="n">X</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">uncert</span><span class="o">*</span><span class="mf">100.0</span></div>
     
-<div class="viewcode-block" id="calculate_EDF_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_EDF_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_EDF_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="calculate_EDF_uncertainty"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.calculate_EDF_uncertainty">[docs]</a><span class="k">def</span> <span class="nf">calculate_EDF_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the EDF estimated correaltion uncetianty between two wind speed columns. </span>
-<span class="sd">    Assumes a correalation forced through the origin&#39;&#39;&#39;</span>
+<span class="sd">    Assumes a correalation forced through the origin</span>
+
+<span class="sd">    :Parameters: </span>
+<span class="sd">    </span>
+<span class="sd">    data: DataFrame</span>
+<span class="sd">        DataFrame with wind speed columns ref_ws_col and site_ws_col</span>
+
+<span class="sd">    ref_ws_col: string, default &#39;ref&#39;</span>
+<span class="sd">        Reference anemometer data column to use.</span>
+
+<span class="sd">    site_ws_col: string, default &#39;site&#39;</span>
+<span class="sd">        Site anemometer data column to use.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
     
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">ref_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">site_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Sxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Syy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Sxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span>
     <span class="n">B</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">/</span><span class="n">Sxy</span>
     <span class="n">SU</span> <span class="o">=</span> <span class="o">-</span><span class="n">B</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">e2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">data</span><span class="o">.</span><span class="n">site</span> <span class="o">-</span> <span class="n">SU</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">e2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">SU</span><span class="o">*</span><span class="n">X</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">Xsi2</span> <span class="o">=</span> <span class="n">e2</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Xsi2</span><span class="o">*</span><span class="n">SU</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">Sxx</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.25</span><span class="o">*</span><span class="p">((</span><span class="n">Sxx</span> <span class="o">-</span> <span class="n">Syy</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Sxx</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">B</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">*</span><span class="n">Sxy</span><span class="o">**</span><span class="mi">4</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">uncert</span></div>
+    <span class="k">return</span> <span class="n">uncert</span><span class="o">*</span><span class="mf">100.0</span></div>
 
-<div class="viewcode-block" id="ws_correlation_least_squares_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_least_squares_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>    
+<div class="viewcode-block" id="ws_correlation_least_squares_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_least_squares_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>    
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using ordinary least squares regression.</span>
 <span class="sd">    </span>
 <span class="sd">    https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.linalg.lstsq.html</span>
@@ -152,6 +216,12 @@
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
 
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
 <span class="sd">    force_through_origin: boolean, default False</span>
 <span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
 <span class="sd">    </span>
@@ -161,24 +231,25 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">force_through_origin</span><span class="p">:</span>
         <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
     
-    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;offset&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span><span class="s1">&#39;offset&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">site_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
     <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
 <span class="k">def</span> <span class="nf">f_with_offset</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -187,7 +258,7 @@
 <span class="k">def</span> <span class="nf">f_without_offset</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x</span>
 
-<div class="viewcode-block" id="ws_correlation_orthoginal_distance_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_orthoginal_distance_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ws_correlation_orthoginal_distance_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_orthoginal_distance_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using orthoganal distance regression.</span>
 <span class="sd">    </span>
 <span class="sd">    https://docs.scipy.org/doc/scipy-0.18.1/reference/odr.html</span>
@@ -197,6 +268,12 @@
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
 
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
 <span class="sd">    force_through_origin: boolean, default False</span>
 <span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
 <span class="sd">    </span>
@@ -206,17 +283,18 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">ref_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">site_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
 
     <span class="n">realdata</span> <span class="o">=</span> <span class="n">odrpack</span><span class="o">.</span><span class="n">RealData</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 
@@ -230,10 +308,10 @@
         <span class="n">odr</span> <span class="o">=</span> <span class="n">odrpack</span><span class="o">.</span><span class="n">ODR</span><span class="p">(</span><span class="n">realdata</span><span class="p">,</span> <span class="n">linear</span><span class="p">,</span> <span class="n">beta0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="n">slope</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">odr</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">odr</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     
-    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
             
-<div class="viewcode-block" id="ws_correlation_robust_linear_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_robust_linear_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ws_correlation_robust_linear_model"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_robust_linear_model">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two wind speed columns using robust linear model.</span>
 <span class="sd">    </span>
 <span class="sd">    http://www.statsmodels.org/dev/rlm.html</span>
@@ -242,6 +320,12 @@
 <span class="sd">    </span>
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    force_through_origin: boolean, default False</span>
 <span class="sd">        Force the correlation through the origin (offset equal to zero)</span>
@@ -252,17 +336,18 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">results</span>    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">results</span>
 
     <span class="n">points</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">R2</span> <span class="o">=</span> <span class="n">calculate_R2</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">ref_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">site_ws_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
     
     <span class="k">if</span> <span class="ow">not</span> <span class="n">force_through_origin</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -274,16 +359,22 @@
     <span class="n">resrlm</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
     <span class="n">offset</span><span class="p">,</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">resrlm</span><span class="o">.</span><span class="n">params</span>
     <span class="n">R2</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">WLS</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">endog</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">exog</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">rsquared</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">],[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span> <span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">slope</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">uncert</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="ws_correlation_method"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_method">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ws_correlation_method"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_method">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, for a given correlation method, between two wind speed columns.</span>
 
 <span class="sd">    :Parameters: </span>
 <span class="sd">    </span>
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
 <span class="sd">        Correlation method to use. </span>
@@ -302,21 +393,30 @@
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ODR&#39;</span><span class="p">:</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_orthoginal_distance_model</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;OLS&#39;</span><span class="p">:</span> 
-        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_least_squares_model</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;RLM&#39;</span><span class="p">:</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ws_correlation_robust_linear_model</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="ws_correlation_binned_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_direction">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_direction</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ws_correlation_binned_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_direction">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_direction</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">ref_dir_col</span><span class="o">=</span><span class="s1">&#39;dir&#39;</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by direction, between two wind speed columns.</span>
 
 <span class="sd">    :Parameters: </span>
 <span class="sd">    </span>
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    ref_dir_col: string, default None (primary wind vane assumed)</span>
+<span class="sd">        Reference wind vane data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    dir_sectors: int, default 16</span>
 <span class="sd">        Number of equally spaced direction sectors</span>
@@ -337,39 +437,43 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">results</span>
-
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">,</span> <span class="n">ref_dir_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
+    
     <span class="n">dir_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">dir_sectors</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">results</span><span class="p">]</span><span class="o">*</span><span class="n">dir_sectors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">dir_bins</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">)</span>
 
-    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">wind_rose</span><span class="o">.</span><span class="n">append_dir_bin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="n">dir_sectors</span><span class="p">)</span>
+    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">wind_rose</span><span class="o">.</span><span class="n">append_dir_bin</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ref_dir_col</span><span class="p">],</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="n">dir_sectors</span><span class="p">)</span>
     
     <span class="k">for</span> <span class="n">dir_bin</span> <span class="ow">in</span> <span class="n">dir_bins</span><span class="p">:</span>
-        <span class="n">dir_bin_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
+        <span class="n">dir_bin_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dir_bin&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">dir_bin_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dir_bin_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
             <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">)</span>
+            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dir_bin_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-            <span class="n">dir_bin_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">dir_bin_data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+            <span class="n">dir_bin_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dir_bin_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dir_bin</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">dir_bin_results</span><span class="o">.</span><span class="n">values</span>
 
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="ws_correlation_binned_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_month">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_month</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ws_correlation_binned_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.ws_correlation_binned_by_month">[docs]</a><span class="k">def</span> <span class="nf">ws_correlation_binned_by_month</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by month, between two wind speed columns.</span>
 
 <span class="sd">    :Parameters: </span>
 <span class="sd">    </span>
 <span class="sd">    data: DataFrame</span>
 <span class="sd">        DataFrame with wind speed columns ref and site, and direction data dir </span>
+
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
+
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
+<span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
 <span class="sd">        Correlation method to use. </span>
@@ -387,9 +491,10 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">results</span>
 
     <span class="n">months</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">13</span><span class="p">)</span>
@@ -397,16 +502,16 @@
     <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">months</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;month&#39;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">month</span> <span class="ow">in</span> <span class="n">months</span><span class="p">:</span>
-        <span class="n">monthly_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="o">==</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span><span class="s1">&#39;site&#39;</span><span class="p">,</span><span class="s1">&#39;dir&#39;</span><span class="p">]]</span>
+        <span class="n">monthly_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="o">==</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="p">]]</span>
         <span class="n">points</span> <span class="o">=</span> <span class="n">monthly_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_correlation_data</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_ws_correlation_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">monthly_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">):</span>
             <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">points</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">)</span>
+            <span class="n">uncert</span> <span class="o">=</span> <span class="n">calculate_IEC_uncertainty</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">monthly_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-            <span class="n">monthly_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">monthly_data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+            <span class="n">monthly_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">monthly_data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="n">ref_ws_col</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="n">site_ws_col</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">month</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">monthly_results</span><span class="o">.</span><span class="n">values</span>
 
     <span class="k">return</span> <span class="n">results</span></div>
@@ -415,7 +520,7 @@
 <span class="sd">&#39;&#39;&#39; Basic outline is that for every correlate method you have to pass it</span>
 <span class="sd">reference and site mast objects along with the needed sensor names</span>
 <span class="sd">&#39;&#39;&#39;</span>
-<div class="viewcode-block" id="masts_10_minute"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_10_minute">[docs]</a><span class="k">def</span> <span class="nf">masts_10_minute</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="masts_10_minute"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_10_minute">[docs]</a><span class="k">def</span> <span class="nf">masts_10_minute</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset between two met masts.</span>
 
 <span class="sd">    :Parameters: </span>
@@ -426,10 +531,10 @@
 <span class="sd">    site_mast: MetMast</span>
 <span class="sd">        MetMast object </span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
@@ -448,24 +553,21 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
-    <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-    <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
-    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_sensor</span><span class="p">])</span>
-    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span>
     
-    <span class="n">results_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">results_index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">])</span>
-    <span class="n">valid_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">return_correlation_results_frame</span><span class="p">(</span><span class="n">ref_label</span><span class="o">=</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_label</span><span class="o">=</span><span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">valid_results</span> <span class="o">=</span> <span class="n">ws_correlation_method</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="n">force_through_origin</span><span class="p">)</span>
     <span class="n">results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;slope&#39;</span><span class="p">,</span> <span class="s1">&#39;offset&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span> <span class="p">,</span> <span class="s1">&#39;uncert&#39;</span><span class="p">,</span> <span class="s1">&#39;points&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">valid_results</span><span class="o">.</span><span class="n">values</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="masts_10_minute_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_10_minute_by_direction">[docs]</a><span class="k">def</span> <span class="nf">masts_10_minute_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<div class="viewcode-block" id="masts_10_minute_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_10_minute_by_direction">[docs]</a><span class="k">def</span> <span class="nf">masts_10_minute_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_dir_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset, binned by direction, between two met masts.</span>
 
 <span class="sd">    :Parameters: </span>
@@ -476,13 +578,13 @@
 <span class="sd">    site_mast: MetMast</span>
 <span class="sd">        MetMast object </span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    ref_dir_sensor: string, default None (primary wind vane assumed)</span>
+<span class="sd">    ref_dir_col: string, default None (primary wind vane assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_dir_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
@@ -504,13 +606,14 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
-    <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-    <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">ref_dir_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="n">ref_dir_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
+    <span class="n">site_dir_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="n">site_dir_col</span><span class="p">)</span>
     
-    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
-    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_sensor</span><span class="p">])</span>
-    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
     <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
@@ -522,7 +625,7 @@
     <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir_bin&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="masts_daily"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_daily">[docs]</a><span class="k">def</span> <span class="nf">masts_daily</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+<div class="viewcode-block" id="masts_daily"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_daily">[docs]</a><span class="k">def</span> <span class="nf">masts_daily</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset for daily data between two met masts.</span>
 
 <span class="sd">    :Parameters: </span>
@@ -533,10 +636,10 @@
 <span class="sd">    site_mast: MetMast</span>
 <span class="sd">        MetMast object </span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
@@ -560,11 +663,11 @@
 <span class="sd">        slope, offset, R2, uncert, points</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
-    <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
-    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">minimum_recovery_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">minimum_recovery_rate</span> <span class="o">=</span> <span class="n">minimum_recovery_rate</span><span class="o">/</span><span class="mf">100.0</span>
@@ -579,7 +682,7 @@
     <span class="n">results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="masts_daily_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_daily_by_month">[docs]</a><span class="k">def</span> <span class="nf">masts_daily_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+<div class="viewcode-block" id="masts_daily_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.masts_daily_by_month">[docs]</a><span class="k">def</span> <span class="nf">masts_daily_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ODR&#39;</span><span class="p">,</span> <span class="n">force_through_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">minimum_recovery_rate</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate the slope and offset for daily data, binned by month, between two met masts.</span>
 
 <span class="sd">    :Parameters: </span>
@@ -590,10 +693,10 @@
 <span class="sd">    site_mast: MetMast</span>
 <span class="sd">        MetMast object </span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    method: string, default &#39;ODR&#39;</span>
@@ -617,11 +720,11 @@
 <span class="sd">        slope, offset, R2, uncert, points for each month</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span>
-    <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span>
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">])</span>
-    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_sensor</span><span class="p">])</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">minimum_recovery_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">minimum_recovery_rate</span> <span class="o">=</span> <span class="n">minimum_recovery_rate</span><span class="o">/</span><span class="mf">100.0</span>
@@ -639,7 +742,7 @@
     <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;month&#39;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">results</span></div>
 
-<div class="viewcode-block" id="apply_10min_results_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.apply_10min_results_by_direction">[docs]</a><span class="k">def</span> <span class="nf">apply_10min_results_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">corr_results</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">splice</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_10min_results_by_direction"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.apply_10min_results_by_direction">[docs]</a><span class="k">def</span> <span class="nf">apply_10min_results_by_direction</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">corr_results</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_dir_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">splice</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Applies the slopes and offsets from a 10-minute correaltion, binned by direction, between two met masts.</span>
 
 <span class="sd">    :Parameters: </span>
@@ -653,13 +756,13 @@
 <span class="sd">    corr_results: DataFrame</span>
 <span class="sd">        slope, offset, R2, uncert, points for each direction sector</span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    ref_dir_sensor: string, default None (primary vane assumed)</span>
+<span class="sd">    ref_dir_col: string, default None (primary vane assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    splice: Boolean, default True</span>
@@ -673,20 +776,22 @@
 <span class="sd">        predicted wind speeds at the site</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">ref_ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">primary_ano</span>
-    <span class="k">if</span> <span class="n">ref_dir_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ref_dir_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">primary_vane</span>
-    <span class="k">if</span> <span class="n">site_ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">primary_ano</span>
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">ref_dir_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_dir_sensor</span><span class="p">(</span><span class="n">ref_dir_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
     
-    <span class="n">ref_mast_name</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_sensor</span><span class="p">,</span> <span class="n">ref_dir_sensor</span><span class="p">])</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">ref_dir_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_dir_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
+
+    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">ref_dir_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
     <span class="n">ref_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;dir&#39;</span><span class="p">]</span>
     
+    <span class="n">ref_mast_name</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
     <span class="n">site_mast_name</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">site_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">site_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
     
     <span class="n">corr_to_apply</span> <span class="o">=</span> <span class="n">corr_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_mast_name</span><span class="p">,</span><span class="n">site_mast_name</span><span class="p">],:]</span>
     
@@ -695,19 +800,19 @@
     <span class="n">ref_data</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">dir_bin</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">corr_to_apply</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
     <span class="n">syn</span> <span class="o">=</span> <span class="p">(</span><span class="n">ref_data</span><span class="o">.</span><span class="n">ref</span> <span class="o">*</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">slope</span> <span class="o">+</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;syn&#39;</span><span class="p">)</span>
 
-    <span class="n">syn_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">site_data</span><span class="p">,</span> <span class="n">syn</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">syn_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">),</span> <span class="n">syn</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">syn_data</span><span class="p">[</span><span class="s1">&#39;syn_splice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">syn</span>
     <span class="n">fill_index</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span>
     <span class="n">syn_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fill_index</span><span class="p">,</span> <span class="s1">&#39;syn_splice&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">fill_index</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span>
     
     <span class="k">if</span> <span class="n">splice</span><span class="p">:</span>
-         <span class="n">syn_data</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">syn_splice</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;syn&#39;</span><span class="p">)</span>
+        <span class="n">syn_data</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">syn_splice</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;syn&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">syn_data</span> <span class="o">=</span> <span class="n">syn_data</span><span class="o">.</span><span class="n">syn</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;syn&#39;</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">syn_data</span></div>
 
-<div class="viewcode-block" id="apply_daily_results_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.apply_daily_results_by_month">[docs]</a><span class="k">def</span> <span class="nf">apply_daily_results_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">corr_results</span><span class="p">,</span> <span class="n">ref_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">splice</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_daily_results_by_month"><a class="viewcode-back" href="../../code_correlate.html#analysis.correlate.apply_daily_results_by_month">[docs]</a><span class="k">def</span> <span class="nf">apply_daily_results_by_month</span><span class="p">(</span><span class="n">ref_mast</span><span class="p">,</span> <span class="n">site_mast</span><span class="p">,</span> <span class="n">corr_results</span><span class="p">,</span> <span class="n">ref_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">site_ws_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">splice</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Applies the slopes and offsets from a daily correaltion, binned by month, between two met masts.</span>
 <span class="sd">    If the reference or site masts don&#39;t have daily time series the method resamples to daily frequency, </span>
 <span class="sd">    requiring 70% data coverage within each day to be a valid day.</span>
@@ -723,13 +828,13 @@
 <span class="sd">    corr_results: DataFrame</span>
 <span class="sd">        slope, offset, R2, uncert, points for each direction sector</span>
 
-<span class="sd">    ref_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    ref_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    ref_dir_sensor: string, default None (primary vane assumed)</span>
+<span class="sd">    ref_dir_col: string, default None (primary vane assumed)</span>
 <span class="sd">        Reference anemometer data to use. Extracted from MetMast.data</span>
 
-<span class="sd">    site_ws_sensor: string, default None (primary anemometer assumed)</span>
+<span class="sd">    site_ws_col: string, default None (primary anemometer assumed)</span>
 <span class="sd">        Site anemometer data to use. Extracted from MetMast.data</span>
 
 <span class="sd">    splice: Boolean, default True</span>
@@ -743,22 +848,22 @@
 <span class="sd">        predicted wind speeds at the site</span>
 <span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">ref_ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ref_ws_sensor</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">primary_ano</span>
-    <span class="k">if</span> <span class="n">site_ws_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">site_ws_sensor</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">primary_ano</span>
-    
+    <span class="n">ref_ws_col</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">ref_ws_col</span><span class="p">)</span>
+    <span class="n">site_ws_col</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">check_and_return_mast_ws_sensor</span><span class="p">(</span><span class="n">site_ws_col</span><span class="p">)</span>
+    <span class="n">ref_ws_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">ref_ws_col</span><span class="p">])</span>
+    <span class="n">site_ws_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">([</span><span class="n">site_ws_col</span><span class="p">])</span>
+
     <span class="n">ref_mast_name</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">ref_data</span> <span class="o">=</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">ref_ws_sensor</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">ref_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">infer_time_step</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;daily&#39;</span><span class="p">:</span>
-        <span class="n">ref_data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">ref_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    
     <span class="n">site_mast_name</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">site_data</span> <span class="o">=</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">return_sensor_data</span><span class="p">(</span><span class="n">site_ws_sensor</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-    <span class="n">site_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">ref_ws_data</span><span class="p">,</span> <span class="n">site_ws_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]</span>
+
     <span class="k">if</span> <span class="n">site_mast</span><span class="o">.</span><span class="n">infer_time_step</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;daily&#39;</span><span class="p">:</span>
-        <span class="n">site_data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">site_data</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="n">site_data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">),</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">ref_mast</span><span class="o">.</span><span class="n">infer_time_step</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;daily&#39;</span><span class="p">:</span>
+        <span class="n">ref_data</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">resample_mast_data</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;ref&#39;</span><span class="p">),</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
     
     <span class="n">corr_to_apply</span> <span class="o">=</span> <span class="n">corr_results</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="n">ref_mast_name</span><span class="p">,</span><span class="n">site_mast_name</span><span class="p">],:]</span>
     

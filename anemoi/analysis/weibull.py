@@ -60,3 +60,12 @@ def return_weibull_params(mast, sensor=None, method='least_sq'):
         A = np.round(A, 3)
         k = np.round(k, 3)
         return A, k
+
+# def return_ws_column_freq_dist(wind_speed_data):
+#     data_binned = wind_speed_data.round(0).melt()
+#     data_binned['ones'] = 1
+#     data_binned = data_binned.groupby(['variable', 'value']).count().unstack('variable')
+#     data_binned.columns = data_binned.columns.get_level_values(-1).astype(int)
+#     data_binned = data_binned.sort_index(axis=1).fillna(0)
+#     data_binned = data_binned/data_binned.sum(axis=0)
+#     return data_binned

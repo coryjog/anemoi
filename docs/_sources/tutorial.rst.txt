@@ -48,7 +48,7 @@ You have now successfully created your first mast mast using anemoi. Your output
     
     Mast 1001
     # of sensors: 4
-    Coords: 0.0, 0.0
+    Coords: 45.0, -90.0
     Primary ano: SPD_58_N
     Primary vane: DIR_56
 
