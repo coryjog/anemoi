@@ -451,6 +451,57 @@
         <span class="n">result_dataframe</span> <span class="o">=</span> <span class="n">result_dataframe</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">result_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">result_dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">),:]</span>
         <span class="k">return</span> <span class="n">result_dataframe</span>
 
+    <span class="c1">#### IO ####</span>
+<div class="viewcode-block" id="MetMast.from_M2D2"><a class="viewcode-back" href="../code_MetMast.html#mast.MetMast.from_M2D2">[docs]</a>    <span class="k">def</span> <span class="nf">from_M2D2</span><span class="p">(</span><span class="n">wmm_id</span><span class="p">,</span> <span class="n">primary_ano</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_vane</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Download mast data and metadata from the met data database M2D2 (EDF specific). Currently </span>
+<span class="sd">        this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and </span>
+<span class="sd">        minimum in the future.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">        </span>
+<span class="sd">        wmm_id: int</span>
+<span class="sd">            Wind met mast id number in M2D2.</span>
+<span class="sd">            To get a list of masts in M2D2 run the following::</span>
+<span class="sd">                </span>
+<span class="sd">                import anemoi as an</span>
+<span class="sd">                m2d2 = an.io.database.M2D2()</span>
+<span class="sd">                m2d2.get_masts()</span>
+<span class="sd">        </span>
+<span class="sd">        primary_ano: string; default None</span>
+<span class="sd">            Primary anemomter sensor name </span>
+
+<span class="sd">        primary_vane: string; default None</span>
+<span class="sd">            Primary wind vane sensor name </span>
+
+<span class="sd">        start_date: string; default None</span>
+<span class="sd">            Begining of the desired data period. </span>
+<span class="sd">            If None, first available day is assumed.</span>
+<span class="sd">            Date format: &#39;yyyy-mm-dd&#39; ex:&#39;2017-01-31&#39;</span>
+
+<span class="sd">        end_date: string; default None</span>
+<span class="sd">            End of the desired data period. </span>
+<span class="sd">            If None, present day is assumed from you computers clock.</span>
+<span class="sd">            Date format: &#39;yyyy-mm-dd&#39; ex:&#39;2017-01-31&#39;</span>
+
+<span class="sd">            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</span>
+
+<span class="sd">        :Returns:</span>
+
+<span class="sd">        out: an.MetMast object</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="n">M2D2</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">M2D2</span><span class="p">()</span>
+        
+        <span class="n">mast_metadata</span> <span class="o">=</span> <span class="n">M2D2</span><span class="o">.</span><span class="n">get_wmm_id_metadata</span><span class="p">(</span><span class="n">wmm_id</span><span class="p">)</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">mast_metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;WMM_Latitude&#39;</span><span class="p">]</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">mast_metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;WMM_Longitude&#39;</span><span class="p">]</span>
+        <span class="n">elev</span> <span class="o">=</span> <span class="n">mast_metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;WMM_Elevation&#39;</span><span class="p">]</span>
+        
+        <span class="n">mast_data</span> <span class="o">=</span> <span class="n">M2D2</span><span class="o">.</span><span class="n">get_wmm_id_data</span><span class="p">(</span><span class="n">wmm_id</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">)</span>
+            
+        <span class="n">mast</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">MetMast</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">wmm_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mast</span></div>
+
     <span class="c1">#### MAST STATS ####</span>
     <span class="k">def</span> <span class="nf">return_monthly_data_recovery</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_mast_data_size_greater_than_zero</span><span class="p">()</span>
