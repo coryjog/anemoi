@@ -410,6 +410,57 @@ Primary vane: {vane}'''.format(name=name,
         result_dataframe = result_dataframe.loc[result_dataframe.index.get_level_values(0) != result_dataframe.index.get_level_values(1),:]
         return result_dataframe
 
+    #### IO ####
+    def from_M2D2(wmm_id, primary_ano=None, primary_vane=None, start_date=None, end_date=None):
+        '''Download mast data and metadata from the met data database M2D2 (EDF specific). Currently 
+        this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and 
+        minimum in the future.
+
+        :Parameters:
+        
+        wmm_id: int
+            Wind met mast id number in M2D2.
+            To get a list of masts in M2D2 run the following::
+                
+                import anemoi as an
+                m2d2 = an.io.database.M2D2()
+                m2d2.get_masts()
+        
+        primary_ano: string; default None
+            Primary anemomter sensor name 
+
+        primary_vane: string; default None
+            Primary wind vane sensor name 
+
+        start_date: string; default None
+            Begining of the desired data period. 
+            If None, first available day is assumed.
+            Date format: 'yyyy-mm-dd' ex:'2017-01-31'
+
+        end_date: string; default None
+            End of the desired data period. 
+            If None, present day is assumed from you computers clock.
+            Date format: 'yyyy-mm-dd' ex:'2017-01-31'
+
+            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+
+        :Returns:
+
+        out: an.MetMast object
+        '''
+        
+        M2D2 = an.io.database.M2D2()
+        
+        mast_metadata = M2D2.get_wmm_id_metadata(wmm_id)
+        lat = mast_metadata.loc[0,'WMM_Latitude']
+        lon = mast_metadata.loc[0,'WMM_Longitude']
+        elev = mast_metadata.loc[0,'WMM_Elevation']
+        
+        mast_data = M2D2.get_wmm_id_data(wmm_id, start_date=start_date, end_date=end_date)
+            
+        mast = an.MetMast(data=mast_data, elev=elev, lat=lat, lon=lon, name=wmm_id)
+        return mast
+
     #### MAST STATS ####
     def return_monthly_data_recovery(self):
         self.is_mast_data_size_greater_than_zero()

@@ -7,9 +7,6 @@ import scipy.odr.odrpack as odrpack
 
 import warnings
 
-### TODO: Need to rewrite so that all methods assume a DataFrame of columns: ref, site, dir ###
-### TODO: Need to rewrite so that all methods output a DataFrame of columns: slope, offset, R2, uncert, points ###
-
 def compare_sorted_df_columns(cols_1, cols_2):
     return sorted(cols_1) == sorted(cols_2)
 

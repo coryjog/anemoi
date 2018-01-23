@@ -24,21 +24,9 @@ def from_windographer_csv(filename, skiprows=8, na_values=-999, sensors=None):
         data.columns = sensors
     return data
 
-def data_from_parquet_file(filename):
-    table = pq.read_table(filename)
-    data = table.to_pandas()
-    return data
-
-def metadata_from_parquet_file(filename):
-    table = pq.read_table(filename)
-    data = table.to_pandas().T
-    return data
-
-def import_mast_from_parquet_files(filename_data, filename_metadata):
-    table = pq.read_table(filename_data)
-    data = table.to_pandas()
-    table = pq.read_table(filename_metadata)
-    metadata = table.to_pandas().T
+def from_parquet_files(filename_data, filename_metadata):
+    data = pd.read_parquet(filename_data)
+    metadata = pd.read_parquet(filename_metadata).T
     name = metadata.columns[0]
     lat = metadata.loc['lat', name]
     lon = metadata.loc['lon', name]
