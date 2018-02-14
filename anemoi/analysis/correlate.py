@@ -100,7 +100,7 @@ def calculate_R2(data, ref_ws_col='ref', site_ws_col='site'):
     if not valid_ws_correlation_data(data=data, ref_ws_col=ref_ws_col, site_ws_col=site_ws_col):
         return np.nan
     
-    r2 = data.corr().iloc[0,1]**2
+    r2 = data[ref_ws_col].corr(data[site_ws_col])**2
     return r2
 
 def calculate_IEC_uncertainty(data, ref_ws_col='ref', site_ws_col='site'):
@@ -239,7 +239,7 @@ def ws_correlation_orthoginal_distance_model(data, ref_ws_col='ref', site_ws_col
         slope, offset, R2, uncert, points
     
     '''
-    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna()
+    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna().astype(np.float)
     results = return_correlation_results_frame(ref_label=ref_ws_col, site_label=site_ws_col)
 
     if not valid_ws_correlation_data(data=data, ref_ws_col=ref_ws_col, site_ws_col=site_ws_col):
@@ -292,7 +292,7 @@ def ws_correlation_robust_linear_model(data, ref_ws_col='ref', site_ws_col='site
         slope, offset, R2, uncert, points
     
     '''
-    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna()
+    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna().astype(np.float)
     results = return_correlation_results_frame(ref_label=ref_ws_col, site_label=site_ws_col)
 
     if not valid_ws_correlation_data(data=data, ref_ws_col=ref_ws_col, site_ws_col=site_ws_col):
@@ -393,7 +393,7 @@ def ws_correlation_binned_by_direction(data, ref_ws_col='ref', site_ws_col='site
         slope, offset, R2, uncert, points
     
     '''
-    data = data.loc[:,[ref_ws_col, site_ws_col, ref_dir_col]].dropna()
+    data = data.loc[:,[ref_ws_col, site_ws_col, ref_dir_col]].dropna().astype(np.float)
     results = return_correlation_results_frame(ref_label=ref_ws_col, site_label=site_ws_col)
     
     dir_bins = np.arange(1,dir_sectors+1)
@@ -447,7 +447,7 @@ def ws_correlation_binned_by_month(data, ref_ws_col='ref', site_ws_col='site', m
         slope, offset, R2, uncert, points
     
     '''
-    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna()
+    data = data.loc[:, [ref_ws_col, site_ws_col]].dropna().astype(np.float)
     results = return_correlation_results_frame(ref_label=ref_ws_col, site_label=site_ws_col)
 
     if not valid_ws_correlation_data(data=data, ref_ws_col=ref_ws_col, site_ws_col=site_ws_col):
@@ -515,7 +515,7 @@ def masts_10_minute(ref_mast, site_mast, ref_ws_col=None, site_ws_col=None, meth
     ref_ws_data = ref_mast.return_sensor_data([ref_ws_col])
     site_ws_data = site_mast.return_sensor_data([site_ws_col])
 
-    data = pd.concat([ref_ws_data, site_ws_data], axis=1, join='inner').dropna()
+    data = pd.concat([ref_ws_data, site_ws_data], axis=1, join='inner').dropna().astype(np.float)
     data.columns = ['ref', 'site']
     
     results = return_correlation_results_frame(ref_label=ref_mast.name, site_label=site_mast.name)
@@ -571,7 +571,7 @@ def masts_10_minute_by_direction(ref_mast, site_mast, ref_ws_col=None, ref_dir_c
     ref_dir_data = ref_mast.return_sensor_data([ref_dir_col])
     site_ws_data = site_mast.return_sensor_data([site_ws_col])
 
-    data = pd.concat([ref_ws_data, site_ws_data, ref_dir_data], axis=1, join='inner').dropna()
+    data = pd.concat([ref_ws_data, site_ws_data, ref_dir_data], axis=1, join='inner').dropna().astype(np.float)
     data.columns = ['ref', 'site', 'dir']
     
     results = ws_correlation_binned_by_direction(data, dir_sectors=dir_sectors, method=method, force_through_origin=force_through_origin)
@@ -630,7 +630,7 @@ def masts_daily(ref_mast, site_mast, ref_ws_col=None, site_ws_col=None, method='
 
     ref_data_daily_mean = an.utils.mast_data.resample_mast_data(ref_ws_data, freq='daily', minimum_recovery_rate=minimum_recovery_rate)
     site_data_daily_mean = an.utils.mast_data.resample_mast_data(site_ws_data, freq='daily', minimum_recovery_rate=minimum_recovery_rate)
-    data_daily = pd.concat([ref_data_daily_mean, site_data_daily_mean], axis=1).dropna()
+    data_daily = pd.concat([ref_data_daily_mean, site_data_daily_mean], axis=1).dropna().astype(np.float)
     data_daily.columns  = ['ref', 'site']
     data_daily['dir'] = np.nan
 
@@ -687,7 +687,7 @@ def masts_daily_by_month(ref_mast, site_mast, ref_ws_col=None, site_ws_col=None,
 
     ref_data_daily_mean = an.utils.mast_data.resample_mast_data(ref_ws_data, freq='daily', minimum_recovery_rate=minimum_recovery_rate)
     site_data_daily_mean = an.utils.mast_data.resample_mast_data(site_ws_data, freq='daily', minimum_recovery_rate=minimum_recovery_rate)
-    data_daily = pd.concat([ref_data_daily_mean, site_data_daily_mean], axis=1).dropna()
+    data_daily = pd.concat([ref_data_daily_mean, site_data_daily_mean], axis=1).dropna().astype(np.float)
     data_daily.columns  = ['ref', 'site']
     data_daily['dir'] = np.nan
 
@@ -740,10 +740,10 @@ def apply_10min_results_by_direction(ref_mast, site_mast, corr_results, ref_ws_c
     ref_dir_data = ref_mast.return_sensor_data([ref_dir_col])
     site_ws_data = site_mast.return_sensor_data([site_ws_col])
 
-    data = pd.concat([ref_ws_data, site_ws_data, ref_dir_data], axis=1, join='inner').dropna()
+    data = pd.concat([ref_ws_data, site_ws_data, ref_dir_data], axis=1, join='inner').dropna().astype(np.float)
     data.columns = ['ref', 'site', 'dir']
 
-    ref_data = pd.concat([ref_ws_data, ref_dir_data], axis=1, join='inner').dropna()
+    ref_data = pd.concat([ref_ws_data, ref_dir_data], axis=1, join='inner').dropna().astype(np.float)
     ref_data.columns = ['ref', 'dir']
     
     ref_mast_name = ref_mast.name
@@ -812,7 +812,7 @@ def apply_daily_results_by_month(ref_mast, site_mast, corr_results, ref_ws_col=N
     ref_mast_name = ref_mast.name
     site_mast_name = site_mast.name
 
-    data = pd.concat([ref_ws_data, site_ws_data], axis=1, join='inner').dropna()
+    data = pd.concat([ref_ws_data, site_ws_data], axis=1, join='inner').dropna().astype(np.float)
     data.columns = ['ref', 'site']
 
     if site_mast.infer_time_step() != 'daily':
