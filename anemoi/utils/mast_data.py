@@ -333,14 +333,35 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
 
 ### Mast Statistics ###
 def return_monthly_data_recovery(mast_data):
-        is_mast_data_size_greater_than_zero(mast_data)
-        data = mast_data.copy()
-        
-        # Calculate monthly data recovery by dividing the number of valid records by the number possible
-        data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index], names=['Year', 'Month', 'Stamp'])
-        monthly_data_count = data.groupby(level=['Year', 'Month']).count()
-        monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values, 
-                                  index=monthly_data_count.index, 
-                                  columns=monthly_data_count.columns)
-        monthly_data_recovery = monthly_data_count/monthly_max*100
-        return monthly_data_recovery
+    is_mast_data_size_greater_than_zero(mast_data)
+    data = mast_data.copy()
+    
+    # Calculate monthly data recovery by dividing the number of valid records by the number possible
+    data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index], names=['Year', 'Month', 'Stamp'])
+    monthly_data_count = data.groupby(level=['Year', 'Month']).count()
+    monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values, 
+                              index=monthly_data_count.index, 
+                              columns=monthly_data_count.columns)
+    monthly_data_recovery = monthly_data_count/monthly_max*100
+    return monthly_data_recovery
+
+def return_normalized_rolling_monthly_average(mast_data, min_months=11):
+    is_mast_data_size_greater_than_zero(mast_data)
+    data = mast_data.copy().astype(np.float)
+
+    yearly_monthly_avg = data.groupby([data.index.year, data.index.month]).mean()
+    yearly_monthly_avg.index.names = ['year', 'month']
+
+    monthly_avg = data.groupby(data.index.month).mean()
+    monthly_avg.index.name = 'month'
+    monthly_avg = monthly_avg.loc[yearly_monthly_avg.index.get_level_values('month'),yearly_monthly_avg.columns.values]
+    monthly_avg.index = yearly_monthly_avg.index
+
+    yearly_monthly_avg_normalized = yearly_monthly_avg / monthly_avg
+    yearly_monthly_avg_normalized = yearly_monthly_avg_normalized.reset_index()
+    yearly_monthly_avg_normalized['day'] = 1
+    yearly_monthly_avg_normalized.index = pd.to_datetime(yearly_monthly_avg_normalized.loc[:,['year', 'month', 'day']])
+    yearly_monthly_avg_normalized = yearly_monthly_avg_normalized.drop(['year', 'month', 'day'], axis=1)
+    yearly_monthly_avg_normalized_rolling = yearly_monthly_avg_normalized.rolling(window=12, min_periods=min_months, center=True).mean()
+
+    return yearly_monthly_avg_normalized_rolling
