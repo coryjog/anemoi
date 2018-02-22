@@ -1,3 +1,9 @@
+# Import libraries
+import os
+import pandas as pd
+import pyodbc
+from datetime import datetime
+
 def return_between_date_query_string(start_date, end_date):
         if start_date != None and end_date != None:
             start_end_str = '''AND [TimeStampLocal] >= '%s' AND [TimeStampLocal] < '%s' ''' %(start_date, end_date)
@@ -9,6 +15,290 @@ def return_between_date_query_string(start_date, end_date):
             start_end_str = ''
         
         return start_end_str
+
+# Define DataBase class
+class M2D2(object):
+    '''Class to connect to standard RAG databases
+    '''
+
+    def __init__(self):
+        '''Data structure for connecting to and downloading data from M2D2. Convention is::
+
+            import anemoi as an
+            m2d2 = an.io.database.M2D2()
+        
+        :Parameters:
+        
+
+        :Returns:
+
+        out: an.M2D2 object connected to M2D2
+        '''
+        
+        self.database = 'M2D2'
+        server = '10.1.15.53'
+        db = 'M2D2_DB_BE'
+        
+        conn_str = 'DRIVER={SQL Server}; SERVER=%s; DATABASE=%s; Trusted_Connection=yes' %(server, db)
+        self.conn_str = conn_str #Assign connection string
+        
+        try:
+            self.conn = pyodbc.connect(self.conn_str) #Apply connection string to connect to database
+        except:
+            print('Database connection error: you either don\'t have permission to the database or aren\'t signed onto the VPN')
+        
+    def connection_check(self, database):
+        return self.database == database
+
+    def get_masts(self):
+        '''
+        :Returns:
+
+        out: DataFrame of all met masts with measured data in M2D2
+
+        Example::
+
+            import anemoi as an
+            m2d2 = an.io.database.M2D2()
+            m2d2.get_masts()
+
+        ''' 
+        
+        if not self.connection_check('M2D2'):
+            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database="M2D2")')
+        
+        sql_query_masts = '''
+        SELECT [Project]
+              ,[WMM_ID]
+              ,[MVS_ID]
+              ,[Name]
+              ,[Type]
+              ,[StartDate]
+              ,[StopDate]
+          FROM [M2D2_DB_BE].[dbo].[ViewProjectAssetSensors] WITH (NOLOCK)
+        '''
+        masts = pd.read_sql(sql_query_masts, self.conn)
+        masts.set_index(['Project', 'WMM_ID', 'Type'], inplace=True)
+        masts['StartDate'] = pd.to_datetime(masts['StartDate'], infer_datetime_format=True)
+        masts['StopDate'] = pd.to_datetime(masts['StopDate'], infer_datetime_format=True)
+        masts.sort_index(inplace=True)
+        return masts
+
+
+    def get_windog_raw_data(self, wmm_id, start_date, end_date):
+        # Download raw windog data from M2D2 for an identifed period
+        
+        sql_query_data = '''
+        DECLARE @RC int
+        DECLARE @WMM_ID int
+        DECLARE @startDate datetime
+        DECLARE @endDate datetime
+        DECLARE @Windog_format bit
+
+        -- TODO: Set parameter values here.
+        Set @WMM_id = {}
+        Set @startDate = '{}'
+        set @endDate = '{}'
+        Set @Windog_format = 0
+
+        EXECUTE @RC = [dbo].[proc_GetWindogRawData]
+           @WMM_ID
+          ,@startDate
+          ,@endDate
+          ,@Windog_format
+
+        '''.format(wmm_id, start_date, end_date)
+        
+        mast_data = pd.read_sql(sql_query_data, self.conn, parse_dates=['MRD_CorrectedTimestamp'])
+        
+        mast_data = mast_data.loc[mast_data.MDVT_ID == 1, ['MRD_CorrectedTimestamp', 'MVS_ID', 'CalDataValue']]
+        mast_data = mast_data.pivot_table(index='MRD_CorrectedTimestamp', columns='MVS_ID', values='CalDataValue', aggfunc='first')    
+        
+        return mast_data
+
+    def get_wmm_id_data(self, wmm_id, start_date=None, end_date=None):
+        '''Download all sensor average signals from M2D2 for a given wind met mast id
+        
+        :Parameters:
+        
+        wmm_id: int, default None
+            Wind met mast ID
+        
+        start_date: str, default None (first measured record)
+            Date at which to start the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will begin at the begining of the measured period
+        
+        end_date: str, default None (present day)
+            Date at which to end the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will stop at the present day
+        
+        :Returns:
+        
+        out: DataFrame of measured virtual sensor data with sensor names as the column labels
+        '''
+
+        sensors_metadata = self.get_masts().loc[pd.IndexSlice[:,wmm_id],:]
+        sensors = sensors_metadata.loc[:,['MVS_ID', 'Name']].set_index('MVS_ID')
+
+        if start_date is None:
+            start_date = pd.to_datetime(sensors_metadata.StartDate.min()).strftime('%Y-%m-%d')
+        if end_date is None:
+            end_date = end_date = pd.to_datetime(datetime.now()).strftime('%Y-%m-%d')
+
+        mast_data = self.get_windog_raw_data(wmm_id, start_date, end_date)
+        
+        mast_data = mast_data.rename(columns=sensors.Name.to_dict())
+        mast_data.index.name = 'Stamp'
+        mast_data.columns.name = 'Sensor'
+        
+        return mast_data
+
+    def get_wmm_id_metadata(self, wmm_id):
+        # Download raw windog data from M2D2 for an identifed period
+        
+        sql_query= '''
+        SELECT [WMM_Latitude]
+            ,[WMM_Longitude]
+            ,[WMM_Elevation]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindDataSet]
+        WHERE WMM_ID = {}
+        '''.format(wmm_id)
+        
+        mast_metadata = pd.read_sql(sql_query, self.conn)
+        
+        return mast_metadata 
+
+    def get_sensor_data(self, MVS_ID=None, sensor_name=None, start_date=None, end_date=None, signal=1):
+        '''Download sensor data from M2D2
+        
+        :Parameters:
+        
+        vs: int, default None
+            Virtual sensor ID (MVS_ID)
+        
+        sensor_name: str, default None
+            Sensor name to be used for the column
+            Good practice to use get_masts.loc[MVS_ID == vs, Name]
+        
+        start_date: str, default None
+            Date at which to start the data
+            Assumed to be ISO format 'yyyy-mm-dd' example: '2017-01-31'
+            If None, will begin at the begining of the measured period
+        
+        end_date: str, default None
+            Date at which to end the data
+            Assumed to be ISO format 'yyyy-mm-dd' example: '2017-01-31'
+            If None, will stop at the end of the measured period
+        
+        signal: int, default=1
+            Signal type to download; 1=average
+        
+        :Returns:
+        
+        out: DataFrame with signal data from virtual sensor
+        ''' 
+                
+        if not self.connection_check('M2D2'):
+            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database="M2D2")')
+        
+        #Four date conditions to take into account
+        if start_date != None and end_date != None:
+            start_end_str = '''AND MRD_CorrectedTimestamp BETWEEN '%s' and '%s' ''' %(start_date, end_date)
+        elif start_date != None and end_date == None:
+            start_end_str = '''AND MRD_CorrectedTimestamp >= '%s' ''' %(start_date)
+        elif start_date == None and end_date != None:
+            start_end_str = '''AND MRD_CorrectedTimestamp <= '%s' ''' %(end_date)
+        else:
+            start_end_str = ''
+                
+        sql_query_data = '''
+        SELECT [MRD_CorrectedTimestamp]
+              ,[CalDataValue] AS {}
+        FROM [M2D2_DB_BE].[dbo].[ViewWindogRawDataDefault] WITH (NOLOCK)
+        WHERE MDVT_ID = {} and MVS_ID = {} 
+        {}
+        ORDER BY MRD_CorrectedTimestamp'''.format(sensor_name, signal, MVS_ID, start_end_str)
+        print(sql_query_data)
+
+        sensor_data = pd.read_sql(sql_query_data, self.conn)
+        sensor_data.MRD_CorrectedTimestamp = pd.to_datetime(sensor_data.MRD_CorrectedTimestamp, infer_datetime_format=True)
+        sensor_data.set_index('MRD_CorrectedTimestamp', inplace=True)
+        sensor_data.index.name = 'Stamp'
+        return sensor_data
+    
+    def get_mast_data(self, WMM_ID, start_date=None, end_date=None):
+        '''Download all sensor data from a given mast in M2D2
+        
+        Parameters:
+        
+        project: string, default None
+            Name of the project within M2D2
+        mast: int, default None
+            WMM_ID for the mast to be downloaded
+        start_date: str, default None
+            Date at which to start the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will begin at the begining of the measured period
+        end_date: str, default None
+            Date at which to end the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will stop at the end of the measured period
+        
+        Returns:
+        DataFrame with signal data from every sensor on a mast
+        '''
+        
+        if not self.connection_check('M2D2'):
+            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database=\'M2D2\')')
+        
+        masts = self.get_masts()
+        sensors = masts.loc[pd.IndexSlice[:,:,WMM_ID],'MVS_ID'].values
+        sensor_names = masts.loc[pd.IndexSlice[:,:,WMM_ID],'Name'].values
+
+        mast_data = []
+        for i,sensor in enumerate(sensors):
+            name = sensor_names[i]
+            data = self.get_sensor_data(sensor, name, start_date=start_date, end_date=end_date)
+            mast_data.append(data)
+
+        mast_data = pd.concat(mast_data, axis=1)
+        return mast_data
+
+    def get_site_data(self, project=None, start_date=None, end_date=None):
+        '''Download all mast data from a given site in M2D2
+        
+        Parameters:
+        ___________
+        
+        project: string, default None
+            Name of the project within M2D2
+        start_date: str, default None
+            Date at which to start the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will begin at the begining of the measured period
+        end_date: str, default None
+            Date at which to end the data
+            Assumed to be ISO format 'yyyy-mm-dd'
+            If None, will stop at the end of the measured period
+        
+        Returns:
+        ________
+        DataFrame with signal data from every sensor on every mast at a site
+        '''
+
+        if not self.connection_check('M2D2'):
+            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database="M2D2")')
+
+        masts = self.get_masts().loc[pd.IndexSlice[:,project],:].index.get_level_values('AssetID').unique().tolist()
+        mast_data = []
+        
+        for mast in masts:
+            mast_data.append(self.get_mast_data(project=project, mast=mast, start_date=start_date, end_date=end_date))
+        mast_data = pd.concat(mast_data, axis=1, keys=map(int, masts), names=['Mast', 'Sensors'])
+        
+        return mast_data
 
 # Define Padre class
 class Padre(object):
@@ -273,8 +563,8 @@ class Padre(object):
         status = pd.concat([incoming, outgoing], axis=1).dropna()
         status.columns = ['asset_key', 'status_code', 'start', 'end']
 
-        status['start_10min'] = status.start.apply(lambda dt: datetime.datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
-        status['end_10min'] = status.end.apply(lambda dt: datetime.datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
+        status['start_10min'] = status.start.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
+        status['end_10min'] = status.end.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
         
         status_start_date = status.loc[:,['start_10min','end_10min']].min().min()
         status_end_date = status.loc[:,['start_10min','end_10min']].max().max()

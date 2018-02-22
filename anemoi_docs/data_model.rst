@@ -39,6 +39,9 @@ Sensor names have the following format: type_height_orientation_signal
 * Orientation: This is the cardinal direction of the sensor. N, NE, E, SE, S, SW, W, NW are all valid orientations. 
 * Signal: This is the signal type of the column. AVG, SD, MIN, MAX are all valid signal types. These labels correspond to average, standard deviation, minimum and maximum. If the sensor doesn't have a signal type in the name then average is assumed.
 
+Note: Orientation can be generic and is only used for grouping. This means you can also use custom labels such as
+SEL for selectively averaged or COMB for combined sensors. Each organization will probably have its own convention.
+
 Sensor name examples
 -------------------------
 

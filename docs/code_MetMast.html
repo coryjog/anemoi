@@ -89,6 +89,56 @@ See ECRM for more on the format of the naming convensions:</p>
 </dd>
 </dl>
 <dl class="method">
+<dt id="mast.MetMast.from_M2D2">
+<code class="descname">from_M2D2</code><span class="sig-paren">(</span><em>wmm_id</em>, <em>primary_ano=None</em>, <em>primary_vane=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.from_M2D2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.from_M2D2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download mast data and metadata from the met data database M2D2 (EDF specific). Currently 
+this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and 
+minimum in the future.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>wmm_id: int</dt>
+<dd><p class="first">Wind met mast id number in M2D2.
+To get a list of masts in M2D2 run the following:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="k">as</span> <span class="nn">an</span>
+<span class="n">m2d2</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">M2D2</span><span class="p">()</span>
+<span class="n">m2d2</span><span class="o">.</span><span class="n">get_masts</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+<dt>primary_ano: string; default None</dt>
+<dd>Primary anemomter sensor name</dd>
+<dt>primary_vane: string; default None</dt>
+<dd>Primary wind vane sensor name</dd>
+<dt>start_date: string; default None</dt>
+<dd>Begining of the desired data period. 
+If None, first available day is assumed.
+Date format: ‘yyyy-mm-dd’ ex:‘2017-01-31’</dd>
+<dt>end_date: string; default None</dt>
+<dd><p class="first">End of the desired data period. 
+If None, present day is assumed from you computers clock.
+Date format: ‘yyyy-mm-dd’ ex:‘2017-01-31’</p>
+<p class="last"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases">http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</a></p>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>out: an.MetMast object</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="mast.MetMast.get_sensor_details">
 <code class="descname">get_sensor_details</code><span class="sig-paren">(</span><em>level</em>, <em>sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.get_sensor_details"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.get_sensor_details" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of sensor details for a given column level in MetMast.data.

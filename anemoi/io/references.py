@@ -1,9 +1,35 @@
+import anemoi as an
 import pandas as pd
 import numpy as np
+import os
 from datetime import datetime
-import os.path
 import requests
 
+def get_reference_stations_north_america():
+    path = os.path.dirname(__file__)
+    filename = os.path.join(path, 'reference_stations_NA.parquet')
+    references = pd.read_parquet(filename)
+    return references
+
+def distances_to_project(lat_project, lon_project, lats, lons):
+    lat_project = np.deg2rad(lat_project)
+    lon_project = np.deg2rad(lon_project)
+    avg_earth_radius = 6371  # in km
+    lats = np.deg2rad(lats)
+    lons = np.deg2rad(lons)
+    lat = lat_project - lats
+    lon = lon_project - lons
+    d = np.sin(lat * 0.5)**2 + np.cos(lat_project) * np.cos(lats) * np.sin(lon * 0.5)**2
+    dist = 2 * avg_earth_radius * np.arcsin(np.sqrt(d))
+    return dist
+
+def get_proximate_reference_stations_north_america(lat_project, lon_project, max_dist=120.0):
+    references = get_reference_stations_north_america()
+    references['dist'] = distances_to_project(lat_project, lon_project, references.lat, references.lon)
+    references = references.loc[references.dist < max_dist, :]
+    return references
+
+### MERRA2 DATA ###
 def readslice(bin_filename,nts,timeslice):
     # inputfilename: binary file name
     # nts: number time steps packed for 1-year (8760 or 8784-leap year)
@@ -42,19 +68,21 @@ def get_local_timezone_from_google(lat, lon):
         timezone_hour = 0.0 # GMT will be used
     return timezone_hour 
 
-def get_closest_merra2_data(lat, lon, daily_only=True, local_time=True):
+def get_merra2_data_from_cellid(cell_id, lat=None, lon=None, daily_only=True, local_time=True):
     
+    if local_time & ((lat is None) | (lon is None)):
+        raise ValueError('Trying to convert MERRA2 data to local time without latitude and/or longitude.')
+
     if daily_only:
         results = create_empty_time_series_to_fill(freq='D')
     else:
         results = create_empty_time_series_to_fill(freq='H')
 
-    sttYr = results.index[0].year    # start year
-    endYr = results.index[-1].year    # end year
-
-    cell_id = closest_merra2_cell_id(lat,lon)   
     if cell_id == -999:
         return results
+
+    sttYr = results.index[0].year    # start year
+    endYr = results.index[-1].year
 
     for year in results.index.year.unique():
 
@@ -82,4 +110,10 @@ def get_closest_merra2_data(lat, lon, daily_only=True, local_time=True):
         timezone_hour = get_local_timezone_from_google(lat=lat, lon=lon)
         results.index = results.index + pd.Timedelta(timezone_hour, unit='h')
     
+    return results
+
+def get_closest_merra2_data(lat, lon, daily_only=True, local_time=True):
+    
+    cell_id = closest_merra2_cell_id(lat,lon)   
+    results = get_merra2_data_from_cellid(cell_id, lat=lat, lon=lon, daily_only=daily_only, local_time=local_time)
     return results
