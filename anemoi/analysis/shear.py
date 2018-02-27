@@ -10,7 +10,7 @@ def check_and_return_wind_speed_data_for_annual_shear(mast_data, wind_speed_sens
     
     if wind_speed_sensors is None:
         mast_data = an.utils.mast_data.return_sensor_type_data(mast_data, sensor_type='SPD')
-        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,'Avg']]
+        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,:,'Avg']]
     else:
         mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
         mast_data = mast_data.loc[:,wind_speed_sensors]
@@ -63,7 +63,7 @@ def alpha_time_series(mast_data, wind_speed_sensors=None, heights=None):
     ln_wind_speeds_avg = ln_wind_speeds.mean(axis=1)
     ln_wind_speeds = ln_wind_speeds.sub(ln_wind_speeds_avg,axis=0)
     shear_alpha = (ln_heights*ln_wind_speeds).sum(axis=1) / (ln_heights**2).sum(axis=1)
-    shear_alpha = shear_alpha.to_frame(name='Alpha')
+    shear_alpha = shear_alpha.to_frame(name='alpha')
     return shear_alpha
 
 def alpha_mean_from_alpha_time_series(mast_data, wind_speed_sensors=None, heights=None):
@@ -190,7 +190,7 @@ def mast_annual(mast):
     
     :Parameters: 
     
-    mast data: DataFrame
+    mast: an.MetMast
         Measured data from MetMast.data
 
     :Returns:
@@ -219,6 +219,25 @@ def mast_annual(mast):
     shear_analysis_mast = shear_analysis_mast.dropna(axis=1, how='all')
 
     return shear_analysis_mast
+
+def mast_annual_avg(mast):
+    '''Returns a DataFrame of an annual alpha value from a single mast, indexed by mast name.
+    
+    :Parameters: 
+    
+    mast: an.MetMast
+        Measured data from MetMast.data
+
+    :Returns:
+
+    out: DataFrame
+        Average alpha value from a single mast. 
+    
+    '''
+    annual_avg_alpha = mast_annual(mast=mast).stack().mean()
+    annual_avg_alpha = pd.DataFrame(index=[mast.name], columns=['Alpha'], data=annual_avg_alpha)
+    annual_avg_alpha.index.name = 'Mast'
+    return annual_avg_alpha
 
 def mast_directional(mast, wind_dir_sensor=None, dir_sectors=16, wind_speed_sensors=None):
     '''Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.
@@ -256,7 +275,48 @@ def mast_directional(mast, wind_dir_sensor=None, dir_sectors=16, wind_speed_sens
                                                                         dir_sectors=dir_sectors, 
                                                                         wind_speed_sensors=wind_speed_sensors)
 
+    mast.remove_and_add_sensor_levels()
     return shear_analysis_mast
+
+def mast_directional_by_orient(mast, wind_dir_sensor=None, dir_sectors=16):
+    '''Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.
+    Alpha only calcualted for time steps with valid measurements from each wind speed sensor. 
+    
+    :Parameters: 
+    
+    masts : list
+        List of MetMast objects from which all anemometer data is extracted
+
+    wind_dir_sensors: list, default mast.primary_vane
+        Specific wind wind vane for directional binning 
+    
+    dir_sectors: int, default 16
+        Number of equally spaced direction sectors in which to bin the mean shear values 
+
+    :Returns:
+
+    out: DataFrame
+        Mean alpha values indexed by the specified number of direction bins (directional shear profile)
+    
+    '''
+    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'Avg',:]].columns.get_level_values(level='Sensors').tolist()
+    anemometer_data = mast.return_sensor_data(sensors=anemometers)
+    anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='Orient').unique().tolist())
+
+    alpha_by_dir = []
+    for anemometer_orient in anemometer_orients:
+        anemometers = anemometer_data.loc[:,pd.IndexSlice[:,:,anemometer_orient]].columns.get_level_values(level='Sensors').tolist()
+        alpha_by_dir.append(an.analysis.shear.mast_directional(mast, 
+                                                                wind_dir_sensor=wind_dir_sensor, 
+                                                                dir_sectors=dir_sectors,
+                                                                wind_speed_sensors=anemometers))
+        
+    alpha_by_dir = pd.concat(alpha_by_dir, axis=1, keys=anemometer_orients, names=['Orient', 'alpha'])
+    alpha_by_dir.columns = alpha_by_dir.columns.droplevel(level='alpha')
+    alpha_by_dir.index = alpha_by_dir.index.values * 360.0/dir_sectors
+    alpha_by_dir.loc[0.0,:] = alpha_by_dir.loc[360.0,:]
+    alpha_by_dir = alpha_by_dir.sort_index()
+    return alpha_by_dir
 
 def site_annual(masts):
     '''Returns a DataFrame of annual alpha values from a multiple site masts, indexed by mast, sensor orientation, and height.
@@ -283,6 +343,23 @@ def site_annual(masts):
     shear_analysis_site = shear_analysis_site.dropna(axis=1, how='all')
     
     return shear_analysis_site
+
+def site_annual_avg(masts):
+    '''Returns a DataFrame of annual alpha values from multiple site masts, indexed by mast.
+    
+    :Parameters: 
+    
+    masts : list
+        List of MetMast objects from which all anemometer data is extracted
+
+    :Returns:
+
+    out: DataFrame
+        Alpha values from multiple site masts, indexed by mast 
+    
+    '''
+    annual_avg_alpha = site_annual(masts).stack().mean().to_frame('Alpha')
+    return annual_avg_alpha
 
 def site_directional(masts, dir_sectors=16):
     '''Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.
