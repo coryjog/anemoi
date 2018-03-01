@@ -9,4 +9,6 @@ import anemoi.analysis.weibull
 import anemoi.analysis.wind_rose
 import anemoi.analysis.correlate
 import anemoi.analysis.shear
+import anemoi.plotting.plotting
 import anemoi.plotting.shear
+import anemoi.plotting.references

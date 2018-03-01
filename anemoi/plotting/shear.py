@@ -3,10 +3,9 @@ import pandas as pd
 import numpy as np
 
 import plotly.plotly as py
-import plotly.figure_factory as ff
 import plotly.graph_objs as go
 import plotly.offline as offline
-offline.init_notebook_mode()
+offline.init_notebook_mode(connected=True)
 
 # Colors for plotting
 EDFGreen = '#509E2F'

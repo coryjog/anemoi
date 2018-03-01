@@ -29,10 +29,11 @@ def return_wind_direction_bins(mast_data, dir_sensor, dir_sectors=16):
     return dir_data
 
 def append_dir_bin(dir_data, dir_sectors=16):
+    dir_data = dir_data.dropna()
     dir_bin_width, dir_bin_width_rad, dir_bin_edges, dir_bin_labels = return_dir_bin_information(dir_sectors=dir_sectors)
     bin_width = 360.0/dir_sectors
     dir_bin = np.floor_divide(np.mod(dir_data + (bin_width/2.0),360.0),bin_width)+1
-    dir_bin = dir_bin.astype(int)
+    dir_bin = dir_bin.dropna().astype(int)
     return dir_bin
 
 def return_wind_speed_bins(df, ws_sensor, bin_width=1.0, half_first_bin=False):
