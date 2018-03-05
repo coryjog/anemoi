@@ -23,10 +23,22 @@ def distances_to_project(lat_project, lon_project, lats, lons):
     dist = 2 * avg_earth_radius * np.arcsin(np.sqrt(d))
     return dist
 
-def get_proximate_reference_stations_north_america(lat_project, lon_project, max_dist=120.0):
+def filter_references_for_top_reanalysis(references, number_reanalysis_cells_to_keep=5):
+    proximate_references = []
+    [proximate_references.append(references.loc[references.network == network,:].iloc[0:number_reanalysis_cells_to_keep,:]) for network in ['CSFR', 'ERA5', 'ERAI', 'MERRA2']]
+    proximate_references.append(references.loc[~references.network.isin(['CSFR', 'ERA5', 'ERAI', 'MERRA2']),:])
+    proximate_references = pd.concat(proximate_references, axis=0)
+    return proximate_references
+
+def get_proximate_reference_stations_north_america(lat_project, lon_project, max_dist=120.0, number_reanalysis_cells_to_keep=None):
     references = get_reference_stations_north_america()
     references['dist'] = distances_to_project(lat_project, lon_project, references.lat, references.lon)
     references = references.loc[references.dist < max_dist, :]
+    references = references.sort_values(by=['network', 'dist'])
+
+    if number_reanalysis_cells_to_keep is not None:
+        references = filter_references_for_top_reanalysis(references, number_reanalysis_cells_to_keep=number_reanalysis_cells_to_keep)
+
     return references
 
 ### MERRA2 DATA ###

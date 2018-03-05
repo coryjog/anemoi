@@ -327,7 +327,7 @@ Primary vane: {vane}'''.format(name=name,
         vane_data = self.return_primary_vane_data()
         return pd.concat([ano_data, vane_data], axis=1)
         
-    def return_sensor_type_data(self, sensor_type=None):
+    def return_sensor_type_data(self, sensor_type=None, sensor_signal='Avg'):
         '''Returns a DataFrame of measured data from a specified sensor type
 
         :Parameters:
@@ -339,7 +339,7 @@ Primary vane: {vane}'''.format(name=name,
 
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
         '''
-        return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type)
+        return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type, sensor_signal=sensor_signal)
         
     def resample_sensor_data(self, sensors, freq, agg='mean', minimum_recovery_rate=0.7):
         '''Returns a DataFrame of measured data resampled to the specified frequency

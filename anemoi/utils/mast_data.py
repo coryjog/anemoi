@@ -37,7 +37,6 @@ def is_sensor_names_included(mast_data, sensors=None):
         raise ValueError('Need to define a sensor name to verify it is installed on the mast...')
 
     sensor_names = mast_data.columns.get_level_values('Sensors').unique().tolist()
-    
     return all(sensor in sensor_names for sensor in sensors)
 
 def is_sensor_type_included(mast_data, sensor_type=None):
@@ -244,13 +243,14 @@ def return_sensor_data(mast_data, sensors):
         raise ValueError('Trying to return sensor data from a sensor not in the mast data')
                 
     sensor_data = remove_sensor_levels(mast_data).loc[:,sensors]
+    mast_data = remove_and_add_sensor_levels(mast_data)
     sensor_data = remove_and_add_sensor_levels(sensor_data)
     return sensor_data
 
-def return_sensor_type_data(mast_data, sensor_type=None):
+def return_sensor_type_data(mast_data, sensor_type=None, sensor_signal='Avg'):
     is_mast_data_size_greater_than_zero(mast_data)
     mast_data = remove_and_add_sensor_levels(mast_data)
-    return mast_data.loc[:,pd.IndexSlice[sensor_type]]
+    return mast_data.loc[:,pd.IndexSlice[sensor_type,:,:,sensor_signal]]
 
 def return_signal_type_data(mast_data, signal_type='Avg'):
     is_mast_data_size_greater_than_zero(mast_data)
@@ -332,7 +332,7 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
     return data_resampled
 
 ### Mast Statistics ###
-def return_monthly_data_recovery(mast_data):
+def monthly_data_recovery(mast_data):
     is_mast_data_size_greater_than_zero(mast_data)
     data = mast_data.copy()
     
@@ -345,7 +345,15 @@ def return_monthly_data_recovery(mast_data):
     monthly_data_recovery = monthly_data_count/monthly_max*100
     return monthly_data_recovery
 
-def return_normalized_rolling_monthly_average(mast_data, min_months=11):
+def normalized_rolling_monthly_average(mast_data, min_months=11):
+    '''Returns a DataFrame of annual rolling averages of monthly wind speeds normalized by individual monthly means
+
+    :Parameters:
+
+    min_months: int, default 11
+        Minimum number of months to be considered a valid year in the rolling average
+    '''
+
     is_mast_data_size_greater_than_zero(mast_data)
     data = mast_data.copy().astype(np.float)
 
@@ -362,6 +370,6 @@ def return_normalized_rolling_monthly_average(mast_data, min_months=11):
     yearly_monthly_avg_normalized['day'] = 1
     yearly_monthly_avg_normalized.index = pd.to_datetime(yearly_monthly_avg_normalized.loc[:,['year', 'month', 'day']])
     yearly_monthly_avg_normalized = yearly_monthly_avg_normalized.drop(['year', 'month', 'day'], axis=1)
-    yearly_monthly_avg_normalized_rolling = yearly_monthly_avg_normalized.rolling(window=12, min_periods=min_months, center=True).mean()
+    yearly_monthly_avg_normalized_rolling = yearly_monthly_avg_normalized.rolling(window=12, min_periods=min_months, center=True).mean() - 1
 
     return yearly_monthly_avg_normalized_rolling

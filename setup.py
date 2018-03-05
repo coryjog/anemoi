@@ -1,16 +1,15 @@
 from setuptools import setup, find_packages
 
-required = ['matplotlib',
-            'numpy',
+required = ['numpy',
             'pandas',
-            'pyarrow',
+            'plotly',
             'pyodbc',
             'scipy',
             'seaborn',
             'statsmodels']
 
 setup(name='anemoi',
-      version='0.0.27',
+      version='0.0.29',
       description='EDF wind data analysis package',
       url='http://github.com/coryjog/anemoi',
       author='Cory Jog',
