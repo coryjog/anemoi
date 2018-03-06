@@ -6,9 +6,7 @@ from datetime import datetime
 import requests
 
 def get_reference_stations_north_america():
-    path = os.path.dirname(__file__)
-    filename = os.path.join(path, 'reference_stations_NA.parquet')
-    references = pd.read_parquet(filename)
+    references = pd.read_parquet('https://raw.githubusercontent.com/coryjog/anemoi/master/anemoi/io/reference_stations_NA.parquet')
     return references
 
 def distances_to_project(lat_project, lon_project, lats, lons):
