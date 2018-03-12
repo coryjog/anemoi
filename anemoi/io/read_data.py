@@ -2,9 +2,6 @@ import anemoi as an
 import pandas as pd
 import numpy as np
 
-import pyarrow as pa
-import pyarrow.parquet as pq
-
 from os import walk
 
 def from_windographer_csv(filename, skiprows=8, na_values=-999, sensors=None):
@@ -14,12 +11,12 @@ def from_windographer_csv(filename, skiprows=8, na_values=-999, sensors=None):
     else:
         header = None
 
-    data = pd.read_csv(filename, 
-                    index_col=0, 
-                    infer_datetime_format=True, 
+    data = pd.read_csv(filename,
+                    index_col=0,
+                    infer_datetime_format=True,
                     parse_dates=True,
                     skiprows=skiprows,
-                    header=header, 
+                    header=header,
                     na_values=na_values)
     data.index.name = 'Stamp'
     if sensors is not None:
@@ -36,13 +33,13 @@ def from_parquet_files(filename_data, filename_metadata):
     height = metadata.loc['height', name]
     primary_ano = metadata.loc['primary_ano', name]
     primary_vane = metadata.loc['primary_vane', name]
-    mast = an.MetMast(data=data, 
-                  name=name, 
-                  lat=lat, 
-                  lon=lon, 
-                  elev=elev, 
-                  height=height, 
-                  primary_ano=primary_ano, 
+    mast = an.MetMast(data=data,
+                  name=name,
+                  lat=lat,
+                  lon=lon,
+                  elev=elev,
+                  height=height,
+                  primary_ano=primary_ano,
                   primary_vane=primary_vane)
     return mast
 
