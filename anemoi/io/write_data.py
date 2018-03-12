@@ -1,6 +1,4 @@
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 ### MAST I/O ###
 def mast_to_parquet(mast, folder_path=None):
