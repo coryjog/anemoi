@@ -6,13 +6,15 @@ from datetime import datetime
 import requests
 
 def get_reference_stations_north_america():
-    references = pd.read_parquet('https://raw.githubusercontent.com/coryjog/anemoi/master/anemoi/io/reference_stations_NA.parquet')
+    path = os.path.dirname(__file__)
+    filename = os.path.join(path, 'reference_stations_NA.parquet')
+    references = pd.read_parquet(filename)
     return references
 
 def distances_to_project(lat_project, lon_project, lats, lons):
     lat_project = np.deg2rad(lat_project)
     lon_project = np.deg2rad(lon_project)
-    avg_earth_radius = 6371  # in km
+    avg_earth_radius = 6373  # in km
     lats = np.deg2rad(lats)
     lons = np.deg2rad(lons)
     lat = lat_project - lats
@@ -23,8 +25,8 @@ def distances_to_project(lat_project, lon_project, lats, lons):
 
 def filter_references_for_top_reanalysis(references, number_reanalysis_cells_to_keep=5):
     proximate_references = []
-    [proximate_references.append(references.loc[references.network == network,:].iloc[0:number_reanalysis_cells_to_keep,:]) for network in ['CSFR', 'ERA5', 'ERAI', 'MERRA2']]
-    proximate_references.append(references.loc[~references.network.isin(['CSFR', 'ERA5', 'ERAI', 'MERRA2']),:])
+    [proximate_references.append(references.loc[references.network == network,:].iloc[0:number_reanalysis_cells_to_keep,:]) for network in ['csfr', 'era5', 'erai', 'merra2']]
+    proximate_references.append(references.loc[~references.network.isin(['csfr', 'era5', 'erai', 'merra2']),:])
     proximate_references = pd.concat(proximate_references, axis=0)
     return proximate_references
 
@@ -65,7 +67,7 @@ def create_empty_time_series_to_fill(freq):
     dates = pd.date_range('2000-01-01 00:00', '%s-12-31 23:00' %year, freq=freq)
     empty_ref_data = pd.DataFrame(index=dates, columns=['spd', 'dir', 't'])
     empty_ref_data.index.name = 'Stamp'
-    return empty_ref_data    
+    return empty_ref_data
 
 def get_local_timezone_from_google(lat, lon):
     Google_URL = 'https://maps.googleapis.com/maps/api/timezone/json?location={0},{1}&timestamp={2}&language=en&esnsor=false'
@@ -76,10 +78,10 @@ def get_local_timezone_from_google(lat, lon):
         timezone_hour = timezone_response_dict['rawOffset'] / 3600.0 # in hours
     else:
         timezone_hour = 0.0 # GMT will be used
-    return timezone_hour 
+    return timezone_hour
 
 def get_merra2_data_from_cellid(cell_id, lat=None, lon=None, daily_only=True, local_time=True):
-    
+
     if local_time & ((lat is None) | (lon is None)):
         raise ValueError('Trying to convert MERRA2 data to local time without latitude and/or longitude.')
 
@@ -97,7 +99,7 @@ def get_merra2_data_from_cellid(cell_id, lat=None, lon=None, daily_only=True, lo
     for year in results.index.year.unique():
 
         dtEnd=datetime(year,12,31,0,0)             # end of year
-        
+
         filenames = []
         if daily_only:
             nSize=dtEnd.timetuple().tm_yday        # days in for given year substitute np.sum(results.index.year==year)
@@ -115,15 +117,15 @@ def get_merra2_data_from_cellid(cell_id, lat=None, lon=None, daily_only=True, lo
     results.spd = results.spd * 0.01
     results.t = results.t * 0.1 - 273.15
     results = results.dropna(axis=1, how='all')
-    
+
     if local_time:
         timezone_hour = get_local_timezone_from_google(lat=lat, lon=lon)
         results.index = results.index + pd.Timedelta(timezone_hour, unit='h')
-    
+
     return results
 
 def get_closest_merra2_data(lat, lon, daily_only=True, local_time=True):
-    
-    cell_id = closest_merra2_cell_id(lat,lon)   
+
+    cell_id = closest_merra2_cell_id(lat,lon)
     results = get_merra2_data_from_cellid(cell_id, lat=lat, lon=lon, daily_only=daily_only, local_time=local_time)
     return results

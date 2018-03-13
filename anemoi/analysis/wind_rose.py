@@ -20,12 +20,11 @@ def return_dir_bin_information(dir_sectors=16):
 
 def return_wind_direction_bins(mast_data, dir_sensor, dir_sectors=16):
     dir_bin_width, dir_bin_width_rad, dir_bin_edges, dir_bin_labels = return_dir_bin_information(dir_sectors=dir_sectors)
-    
+
     dir_data = mast_data[dir_sensor].dropna().to_frame(dir_sensor)
-    dir_data['dir_bin_center'] = pd.cut(mast_data[dir_sensor].dropna(), dir_bin_edges, labels=dir_bin_labels)
-    dir_data.dir_bin_center = dir_data.dir_bin_center
+    dir_data['dir_bin_center'] = pd.cut(mast_data[dir_sensor], dir_bin_edges, labels=dir_bin_labels)
     dir_data.dir_bin_center = dir_data.dir_bin_center.replace(360.0, 0.0)
-    dir_data = dir_data.dropna(inplace=True)
+    dir_data = dir_data.dropna()
     return dir_data
 
 def append_dir_bin(dir_data, dir_sectors=16):
@@ -43,9 +42,9 @@ def return_wind_speed_bins(df, ws_sensor, bin_width=1.0, half_first_bin=False):
         ws_bin_edges = np.concatenate([first_wind_speed_bin_halved,ws_bin_edges])
     else:
         ws_bin_edges = np.arange(0.0,30.0+bin_width, bin_width)
-    
+
     ws_bin_labels=ws_bin_edges[1::]
-    
+
     ws_data = df[ws_sensor].dropna().to_frame(ws_sensor)
     ws_data['ws_bin'] = pd.cut(df[ws_sensor].dropna(), ws_bin_edges, labels=ws_bin_labels)
     ws_data.dropna(inplace=True)
@@ -53,7 +52,7 @@ def return_wind_speed_bins(df, ws_sensor, bin_width=1.0, half_first_bin=False):
 
 def return_directional_wind_frequencies(df, dir_sensor, dir_sectors=16):
     dir_bin_width, dir_bin_width_rad, dir_bin_edges, dir_bin_labels = return_dir_bin_information(dir_sectors=dir_sectors)
-    
+
     dir_data = return_wind_direction_bins(df, dir_sensor, dir_sectors=dir_sectors)
     dir_freqs = dir_data.groupby('dir_bin_center').sum()/dir_data.shape[0]
     dir_freqs.drop(360.0, axis=0, inplace=True)
@@ -73,7 +72,7 @@ def return_tab_file(df, ws_sensor, dir_sensor, dir_sectors=16, ws_bin_width=1.0,
         ws_dir_binned.columns = [dir_bin]
         tab_df.append(ws_dir_binned)
     tab_df = pd.concat(tab_df, axis=1)
-    
+
     if freq_as_label:
         tab_df.columns = np.round(dir_freqs.T.values,3).tolist()
     else:
@@ -121,7 +120,7 @@ def return_wind_energy_rose_figure(dir_bin_centers, dir_bin_freqs_ws, dir_bin_fr
         fig = plt.figure(figsize=(14,7))
     ax1 = fig.add_subplot(121, projection='polar')
     ax2 = fig.add_subplot(122, projection='polar')
-    
+
     plot_rose_on_axes(dir_bin_centers, dir_bin_freqs_ws, ax=ax1, title='Wind speed', color='#001A70')
     plot_rose_on_axes(dir_bin_centers, dir_bin_freqs_energy, ax=ax2, title='Energy', color='#509E2F')
     return fig
@@ -131,7 +130,7 @@ def plot_freq_dist(params, data=None, sensor=None, title='Wind speed frequency d
     Plots a wind speed frequency distribution
     Parameters:
     ___________
-    params: list of float [A,k] 
+    params: list of float [A,k]
         Array of Weibull A and k parameters
         Can be caluclated using mast.return_weibull_params()
     data: pandas Series, default None
@@ -147,7 +146,7 @@ def plot_freq_dist(params, data=None, sensor=None, title='Wind speed frequency d
     ws_bin_edges = np.arange(0.0,31.0)
     x_smooth = np.linspace(0.0, 31.0, 100)
     weibull_dist = stats.exponweib(1, k, scale=A)
-    
+
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111)
     if data is not None:
@@ -159,4 +158,3 @@ def plot_freq_dist(params, data=None, sensor=None, title='Wind speed frequency d
     ax.set_ylabel('Frequency')
     ax.set_xlabel('Wind speed [m/s]')
     return fig
-

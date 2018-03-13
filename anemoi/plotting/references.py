@@ -16,7 +16,7 @@ EDFLightBlue = '#005BBB'
 EDFColors = [EDFGreen, EDFBlue, EDFOrange, EDFLightGreen, EDFLightBlue, EDFLightOrange]
 
 def map_layout(lat, lon, zoom=7):
-    mapbox_access_token = 'pk.eyJ1IjoiamFja2x1byIsImEiOiJjajNlcnh3MzEwMHZtMzNueGw3NWw5ZXF5In0.fk8k06T96Ml9CLGgKmk81w' 
+    mapbox_access_token = 'pk.eyJ1IjoiamFja2x1byIsImEiOiJjajNlcnh3MzEwMHZtMzNueGw3NWw5ZXF5In0.fk8k06T96Ml9CLGgKmk81w'
 
     layout = dict(autosize=False,
                   width=600,
@@ -35,9 +35,9 @@ def map_layout(lat, lon, zoom=7):
     return layout
 
 def normalized_rolling_monthly_average_layout():
-    layout = go.Layout(showlegend=True, 
+    layout = go.Layout(showlegend=True,
                     autosize=True,
-                    font=dict(size=12), 
+                    font=dict(size=12),
                     title='Normalized monthly rolling average',
                     height=400,
                     yaxis=dict(title='Annual rolling average'),
@@ -55,7 +55,7 @@ def map_data_from_references(references):
     for i,network in enumerate(references.network.unique().tolist()):
         references_by_network = references.loc[references.network == network,:]
         labels = list(zip(references_by_network.station_name, [' Distance [km]: ']*references_by_network.shape[0], references_by_network.dist.round(0)))
-        
+
         reference_traces.append(dict(type='scattermapbox',
                           lon=references_by_network.lon.values,
                           lat=references_by_network.lat.values,
@@ -78,9 +78,9 @@ def map_data_from_site(lat,lon):
                       text='Site',
                       hoverinfo='text',
                       name='Site',
-                      marker=dict(size=15,
+                      marker=dict(size=30,
                                   opacity=1,
-                                  color='red')
+                                  color=EDFGreen)
                     )
     return site_trace
 
