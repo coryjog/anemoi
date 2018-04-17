@@ -9,7 +9,7 @@ required = ['numpy',
             'statsmodels']
 
 setup(name='anemoi',
-      version='0.0.31',
+      version='0.0.32',
       description='EDF wind data analysis package',
       url='http://github.com/coryjog/anemoi',
       author='Cory Jog',
