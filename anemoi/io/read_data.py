@@ -63,8 +63,9 @@ def import_all_files_from_windplot(path='./'):
 
     ref_data = []
     for filename in filenames:
-        data = from_windplot(filename, path=path)
-        ref_data.append(data)
+        if filename.endswith(".txt"):
+            data = from_windplot(filename, path=path)
+            ref_data.append(data)
 
     ref_data = pd.concat(ref_data, axis=1)
     return ref_data

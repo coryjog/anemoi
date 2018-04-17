@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 Site
--------
+
 A site import and analysis class built
 with the pandas library
 '''
@@ -15,8 +15,9 @@ class Site(object):
        met mast data.'''
 
     def __init__(self, masts=None, meta_data=None, primary_mast=None):
-        '''Data structure with an array of anemoi.MetMasts and a DataFrame of results: 
-        
+        '''Data structure with an array of anemoi.MetMasts and a DataFrame of
+        results:
+
         Parameters
         ----------
         masts: array of anemoi.MetMasts
@@ -24,7 +25,7 @@ class Site(object):
         primary_mast: string or int, default None
             Longest-term mast installed on site
         '''
-        
+
         if masts is not None:
             mast_names = []
             mast_lats = []
@@ -32,7 +33,7 @@ class Site(object):
             mast_heights = []
             mast_primary_anos = []
             mast_primary_vanes = []
-            
+
             for mast in masts:
                 if isinstance(mast, an.MetMast):
                     mast_names.append(mast.name)
@@ -43,16 +44,16 @@ class Site(object):
                     mast_primary_vanes.append(mast.primary_vane)
 
         if meta_data is None:
-            meta_data = pd.DataFrame(columns=mast_names, 
+            meta_data = pd.DataFrame(columns=mast_names,
               index=['Lat', 'Lon', 'Height', 'PrimaryAno', 'PrimaryVane'])
             meta_data.loc['Lat', :] = mast_lats
             meta_data.loc['Lon', :] = mast_lons
             meta_data.loc['Height', :] = mast_heights
             meta_data.loc['PrimaryAno', :] = mast_primary_anos
             meta_data.loc['PrimaryVane', :] = mast_primary_vanes
-        
+
         meta_data.columns.name = 'Masts'
-        self.masts = masts    
+        self.masts = masts
         self.meta_data = meta_data
 
     def __repr__(self):
@@ -86,7 +87,7 @@ class Site(object):
                 site_mast = mast_pair[1]
                 results = an.correlate.correlate_masts_10_minute_by_direction(ref_mast=ref_mast, site_mast=site_mast)
                 site_correlation_results.append(results)
-    
+
             site_correlation_results = pd.concat(site_correlation_results, axis=0)
             return site_correlation_results
 
@@ -105,7 +106,7 @@ class Site(object):
         if self.check_has_masts():
             for mast in self.masts.Masts:
                 self.meta_data.loc['Meas MoMM', mast.name] = mast.return_momm(sensors=mast.primary_ano).iloc[0,0]
-    
+
     def calculate_self_corr_results(self):
         if self.check_has_masts():
             cross_corr_results = self.return_cross_corr_results_dataframe()
@@ -114,11 +115,11 @@ class Site(object):
             site = mast_pair[1]
             ref_mast = self.masts.loc[ref,'Masts']
             site_mast = self.masts.loc[site,'Masts']
-            
+
             slope, offset, uncert, R2 = site_mast.correlate_to_reference(reference_mast=ref_mast, method='ODR')
             results_cols = ['Slope', 'Offset', 'R2', 'Uncert']
             cross_corr_results.loc[pd.IndexSlice[ref, site], results_cols] = [slope, offset, R2, uncert]
-        
+
         return cross_corr_results
 
     def calculate_annual_shear_results(self):
@@ -161,7 +162,7 @@ class Site(object):
 
     def plot_ws_corr_results_binned_by_direction(self):
         site_correlation_results = self.return_ws_corr_results_binned_by_direction()
-        
+
         dir_bins = site_correlation_results.index.get_level_values('DirBin').unique()
 
         for mast_pair in itertools.permutations(self.masts, 2):
@@ -176,7 +177,7 @@ class Site(object):
             df.columns = ['RefWS', 'RefDir', 'SiteWS']
             df = an.correlate.append_dir_bin(df, dir_column='RefDir')
 
-            an.plotting.plot_ws_correlation_by_direction(df=df, 
-                                                        site_corr_results=site_correlation_results, 
+            an.plotting.plot_ws_correlation_by_direction(df=df,
+                                                        site_corr_results=site_correlation_results,
                                                         site_mast_name=site_mast_name,
                                                         ref_mast_name=ref_mast_name)

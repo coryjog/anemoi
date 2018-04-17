@@ -4,6 +4,7 @@ import numpy as np
 import os
 from datetime import datetime
 import requests
+from pyathenajdbc import connect
 
 def get_reference_stations_north_america():
     path = os.path.dirname(__file__)
@@ -77,7 +78,7 @@ def get_local_timezone_from_google(lat, lon):
     if timezone_response_dict['status'] == 'OK':
         timezone_hour = timezone_response_dict['rawOffset'] / 3600.0 # in hours
     else:
-        timezone_hour = 0.0 # GMT will be used
+        timezone_hour = int((lon + 360.0)*24.0/360.0 + 0.5) - 24.0 # Estimate from longitude
     return timezone_hour
 
 def get_merra2_data_from_cellid(cell_id, lat=None, lon=None, daily_only=True, local_time=True):
@@ -129,3 +130,49 @@ def get_closest_merra2_data(lat, lon, daily_only=True, local_time=True):
     cell_id = closest_merra2_cell_id(lat,lon)
     results = get_merra2_data_from_cellid(cell_id, lat=lat, lon=lon, daily_only=daily_only, local_time=local_time)
     return results
+
+### ATHENA ###
+def where_station_id_string(station_ids):
+    if not isinstance(station_ids, list):
+        station_ids = list(station_ids)
+        
+    station_id_equals = 'station_id={}'
+    where_station_id = [station_id_equals.format(station_id) for station_id in station_ids]
+    station_string = ' OR '.join([station_id_equals.format(station_id) for station_id in station_ids])
+    return station_string
+
+def daily_ref_data_query(station_ids):
+    if not isinstance(station_ids, list):
+        station_ids = [station_ids]
+
+    sql_query = '''
+    SELECT year(ref_data.stamp) as year,
+      month(ref_data.stamp) as month,
+      day(ref_data.stamp) as day,
+      avg(ref_data.spd) as spd,
+      ref_data.station_id as station_id
+
+    FROM
+    (SELECT stamp, spd, station_id 
+    FROM "reference_station_data"."ref_data" 
+    WHERE {}) as ref_data
+
+    GROUP BY (year(ref_data.stamp),
+      month(ref_data.stamp),
+      day(ref_data.stamp),
+      ref_data.station_id)'''.format(where_station_id_string(station_ids))
+    
+    return sql_query
+
+def get_daily_ref_data_from_athena(station_ids, access_key, secret_key):
+
+    conn = connect(access_key=access_key,
+               secret_key=secret_key,
+               s3_staging_dir='s3://aws-athena-query-results-142959028981-us-east-1/jupyter_queries',
+               region_name='us-east-1')
+    ref_data = pd.read_sql(daily_ref_data_query(station_ids), conn)
+    ref_data.index = pd.DatetimeIndex(pd.to_datetime(ref_data[['year', 'month', 'day']]), 
+                                                    name='stamp')
+    ref_data = ref_data.loc[:,['station_id', 'spd']].pivot(columns='station_id')
+    ref_data.columns = ref_data.columns.get_level_values(level='station_id')
+    return ref_data
