@@ -58,7 +58,7 @@ def remove_sensor_levels(mast_data):
     Removes kind, type, height, and orient levels from sensor columns in mast data DataFrame
     '''
     is_mast_data_size_greater_than_zero(mast_data)
-    if 'Sensors' in mast_data.columns.names: 
+    if 'Sensors' in mast_data.columns.names:
         mast_data.columns = mast_data.columns.get_level_values('Sensors')
     else:
         mast_data.columns = mast_data.columns.get_level_values(-1)
@@ -86,7 +86,7 @@ def add_sensor_levels(mast_data):
     height = [float(ht) for ht in height]
     orient = sensors.orient.astype(str)
     signal = sensors.signal.astype(str)
-    cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, mast_data.columns], 
+    cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, mast_data.columns],
         names=['Type', 'Ht', 'Orient', 'Signal', 'Sensors'])
     mast_data.columns = cols
     return mast_data
@@ -98,12 +98,12 @@ def remove_and_add_sensor_levels(mast_data):
 
 def get_sensor_details(mast_data, level, sensors=None):
         '''Returns a list of sensor details for a given column level in mast data
-        
+
         :Parameters:
 
         level: string
             Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
-        
+
         sensors: list, default None
             List of specific sensors from which to return details
         '''
@@ -118,12 +118,12 @@ def get_sensor_details(mast_data, level, sensors=None):
 
 def get_unique_sensor_details(mast_data, level, sensors=None):
         '''Returns a list of unique sensor details for a given column level in mast data
-        
+
         :Parameters:
 
         level: string
             Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
-        
+
         sensors: list, default None
             List of specific sensors from which to return details
         '''
@@ -241,7 +241,7 @@ def return_sensor_data(mast_data, sensors):
         sensors = [sensors]
     if not is_sensor_names_included(mast_data, sensors):
         raise ValueError('Trying to return sensor data from a sensor not in the mast data')
-                
+
     sensor_data = remove_sensor_levels(mast_data).loc[:,sensors]
     mast_data = remove_and_add_sensor_levels(mast_data)
     sensor_data = remove_and_add_sensor_levels(sensor_data)
@@ -262,17 +262,21 @@ def return_anemometer_data(mast_data):
     mast_data = an.utils.mast_data.return_signal_type_data(mast_data, signal_type='Avg')
     mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
     return mast_data
-        
+
 def return_monthly_days():
-    days = pd.DataFrame(index=np.arange(1,13), 
-                        data=[31.0,28.25,31.0,30.0,31.0,30.0,31.0,31.0,30.0,31.0,30.0,31.0], 
+    days = pd.DataFrame(index=np.arange(1,13),
+                        data=[31.0,28.25,31.0,30.0,31.0,30.0,31.0,31.0,30.0,31.0,30.0,31.0],
                         columns=['Days'])
     days.index.name = 'Month'
     return days
 
 def return_momm(mast_data):
-    mast_data = mast_data.groupby(mast_data.index.month).apply(np.mean)
-    mast_data.index.name = 'Month'
+    if isinstance(mast_data.index, pd.DatetimeIndex):
+        mast_data = mast_data.groupby(mast_data.index.month).apply(np.mean)
+    if 'month' in mast_data.index.names:
+        mast_data = mast_data.groupby(level='month').apply(np.mean)
+
+    mast_data.index.name = 'month'
     days = pd.concat([return_monthly_days()]*mast_data.shape[1], axis=1)
     days.columns = mast_data.columns
     momm = (mast_data*days).sum()/365.25
@@ -283,26 +287,26 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
     '''Returns a DataFrame of measured data resampled to the specified frequency
 
     :Parameters:
-    
+
     freq: string; ('hourly', 'daily', 'weekly', 'monthly', 'yearly')
-        Frequency to resample. 
+        Frequency to resample.
 
         Accepts Python offset aliases.
 
         http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
 
     agg: string; default 'mean'
-        Aggregator ('mean', 'std', 'max', 'min', 'count', 'first', 'last') 
-    
+        Aggregator ('mean', 'std', 'max', 'min', 'count', 'first', 'last')
+
     minimum_recovery_rate: float, default 0.7
-        Minimum allowable recovery rate until resampled data are excluded. 
-        For example, by defalt, when resampling 10-minute data to daily averages you would need 
+        Minimum allowable recovery rate until resampled data are excluded.
+        For example, by defalt, when resampling 10-minute data to daily averages you would need
         at least 101 valid records to have a valid daily average.
     '''
     is_mast_data_size_greater_than_zero(mast_data)
 
     start_time = mast_data.index[0]
-    
+
     if freq == 'hourly':
         freq = 'H'
         start_time = pd.to_datetime('{}/{}/{} {}:00'.format(start_time.year, start_time.month, start_time.day, start_time.hour))
@@ -320,7 +324,7 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
 
     if minimum_recovery_rate > 1:
         minimum_recovery_rate = minimum_recovery_rate/100.0
-    
+
     data_resampled = mast_data.resample(freq).agg(agg)
     data_count = mast_data.resample(freq).agg('count')
     date_range = pd.date_range(start_time, mast_data.index[-1], freq=mast_data.index[1]-mast_data.index[0])
@@ -335,12 +339,12 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
 def monthly_data_recovery(mast_data):
     is_mast_data_size_greater_than_zero(mast_data)
     data = mast_data.copy()
-    
+
     # Calculate monthly data recovery by dividing the number of valid records by the number possible
     data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index], names=['Year', 'Month', 'Stamp'])
     monthly_data_count = data.groupby(level=['Year', 'Month']).count()
-    monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values, 
-                              index=monthly_data_count.index, 
+    monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values,
+                              index=monthly_data_count.index,
                               columns=monthly_data_count.columns)
     monthly_data_recovery = monthly_data_count/monthly_max*100
     return monthly_data_recovery

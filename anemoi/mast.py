@@ -10,27 +10,27 @@ from scipy.special import gamma
 
 class MetMast(object):
     '''Primary Anemoi object. Data structure made up of two components:
-    
+
     * Metadata (mast coordinates, mast height, primary anemometer, primary wind vane)
     * Pandas DataFrame of time series wind measurements which assumes EDF's standard sensor naming conventions.
-    
-    :Metadata:    
-    
+
+    :Metadata:
+
     lat: float, default None
         Latitude of met mast
-    
+
     long: float, default None
         Longitude of met mast
-    
+
     height: float or int, default None
         Height of met mast in meters
-    
+
     primary_ano: string
         Column label of the primary anemometer
-    
+
     primary_vane: string
         Column label of the primary wind vane
-    
+
     shear_sensors: list of strings
         List of anemometer columns for use in shear analysis
 
@@ -43,17 +43,17 @@ class MetMast(object):
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
     '''
 
-    def __init__(self, 
-                data=None, 
-                name=None, 
-                lat=None, 
+    def __init__(self,
+                data=None,
+                name=None,
+                lat=None,
                 lon=None,
-                elev=None, 
-                height=None, 
-                primary_ano=None, 
-                primary_vane=None, 
+                elev=None,
+                height=None,
+                primary_ano=None,
+                primary_vane=None,
                 shear_sensors=None):
-        
+
         self.lat = lat
         self.lon = lon
         self.elev = elev
@@ -80,12 +80,12 @@ class MetMast(object):
             height = [float(ht) for ht in height]
             orient = sensors.orient.astype(str)
             signal = sensors.signal.astype(str)
-            cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, data.columns], 
+            cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, data.columns],
                 names=['Type', 'Ht', 'Orient', 'Signal', 'Sensors'])
             mast_data = data.copy()
             mast_data.columns = cols
             mast_data.sort_index(axis=1, inplace=True)
-             
+
         self.data = mast_data
 
     def __repr__(self):
@@ -98,8 +98,8 @@ class MetMast(object):
 # of sensors: {sensors}
 Coords: {lat}, {lon}
 Primary ano: {ano}
-Primary vane: {vane}'''.format(name=name, 
-                            sensors=len(sensors), 
+Primary vane: {vane}'''.format(name=name,
+                            sensors=len(sensors),
                             lat=self.lat,
                             lon=self.lon,
                             ano=self.primary_ano,
@@ -135,7 +135,7 @@ Primary vane: {vane}'''.format(name=name,
             ano = self.primary_ano
         if ano not in self.get_sensor_names():
             raise ValueError('Anemometer not installed on mast.')
-                
+
         return ano
 
     def check_and_return_mast_dir_sensor(self, vane):
@@ -145,7 +145,7 @@ Primary vane: {vane}'''.format(name=name,
             vane = self.primary_vane
         if vane not in self.get_sensor_names():
             raise ValueError('Wind vane not installed on mast.')
-        
+
         return vane
 
     def infer_time_step(self):
@@ -174,12 +174,12 @@ Primary vane: {vane}'''.format(name=name,
     def get_sensor_details(self, level, sensors=None):
         '''Returns a list of sensor details for a given column level in MetMast.data.
         See also: an.utils.mast_data.get_sensor_details
-        
+
         :Parameters:
 
         level: string, default None
             Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
-        
+
         sensors: list, default None
             List of specific sensors from which to return details
         '''
@@ -189,18 +189,18 @@ Primary vane: {vane}'''.format(name=name,
     def get_unique_sensor_details(self, level, sensors=None):
         '''Returns a list of sensor details for a given column level in an.MetMast.data.
         See also: an.utils.mast_data.get_unique_sensor_details
-        
+
         :Parameters:
 
         level: string, default None
             Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
-        
+
         sensors: list, default None
             List of specific sensors from which to return details
         '''
         details = an.utils.mast_data.get_unique_sensor_details(self.data, level=level, sensors=sensors)
         return details
-        
+
     def get_sensor_types(self, sensors=None):
         '''Returns a list of sensor types for columns in an.MetMast.data
 
@@ -304,7 +304,7 @@ Primary vane: {vane}'''.format(name=name,
         '''Returns a DataFrame of measured data from specified sensors
 
         :Parameters:
-        
+
         sensors: list, default None
             List of specific sensors from which to return data
         '''
@@ -314,7 +314,7 @@ Primary vane: {vane}'''.format(name=name,
         '''Returns a DataFrame of measured data from the primary anemomter
         '''
         return self.return_sensor_data(sensors=self.primary_ano)
-        
+
     def return_primary_vane_data(self):
         '''Returns a DataFrame of measured data from the primary wind vane
         '''
@@ -326,44 +326,44 @@ Primary vane: {vane}'''.format(name=name,
         ano_data = self.return_primary_ano_data()
         vane_data = self.return_primary_vane_data()
         return pd.concat([ano_data, vane_data], axis=1)
-        
+
     def return_sensor_type_data(self, sensor_type=None, sensor_signal='Avg'):
         '''Returns a DataFrame of measured data from a specified sensor type
 
         :Parameters:
-        
+
         sensor_type: string, default None
             Sensor type ('SPD', 'DIR', 'T', 'RH')
-        
+
         see ECRM for more on naming convensions
 
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
         '''
         return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type, sensor_signal=sensor_signal)
-        
+
     def resample_sensor_data(self, sensors, freq, agg='mean', minimum_recovery_rate=0.7):
         '''Returns a DataFrame of measured data resampled to the specified frequency
 
         :Parameters:
-        
+
         sensors: list of sensors
             List of specific sensor columns to resample
-        
+
         freq: string; ('hourly', 'daily', 'weekly', 'monthly', 'yearly')
-            Frequency to resample. 
+            Frequency to resample.
 
             Accepts Python offset aliases.
 
             http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
 
         agg: string; default 'mean'
-            Aggregator ('mean', 'std', 'max', 'min', 'count', 'first', 'last') 
+            Aggregator ('mean', 'std', 'max', 'min', 'count', 'first', 'last')
         '''
         self.is_mast_data_size_greater_than_zero()
-        
+
         if not isinstance(sensors, list):
             sensors = [sensors]
-        
+
         start_time = self.data.index[0]
         if freq == 'hourly':
             freq = 'H'
@@ -382,7 +382,7 @@ Primary vane: {vane}'''.format(name=name,
 
         if minimum_recovery_rate > 1:
             minimum_recovery_rate = minimum_recovery_rate/100.0
-        
+
         data = self.return_sensor_data(sensors)
         data_agg = data.resample(freq).agg(agg)
         data_count = data.resample(freq).agg('count')
@@ -412,33 +412,33 @@ Primary vane: {vane}'''.format(name=name,
 
     #### IO ####
     def from_M2D2(wmm_id, primary_ano=None, primary_vane=None, start_date=None, end_date=None):
-        '''Download mast data and metadata from the met data database M2D2 (EDF specific). Currently 
-        this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and 
+        '''Download mast data and metadata from the met data database M2D2 (EDF specific). Currently
+        this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and
         minimum in the future.
 
         :Parameters:
-        
+
         wmm_id: int
             Wind met mast id number in M2D2.
             To get a list of masts in M2D2 run the following::
-                
+
                 import anemoi as an
                 m2d2 = an.io.database.M2D2()
                 m2d2.get_masts()
-        
+
         primary_ano: string; default None
-            Primary anemomter sensor name 
+            Primary anemomter sensor name
 
         primary_vane: string; default None
-            Primary wind vane sensor name 
+            Primary wind vane sensor name
 
         start_date: string; default None
-            Begining of the desired data period. 
+            Begining of the desired data period.
             If None, first available day is assumed.
             Date format: 'yyyy-mm-dd' ex:'2017-01-31'
 
         end_date: string; default None
-            End of the desired data period. 
+            End of the desired data period.
             If None, present day is assumed from you computers clock.
             Date format: 'yyyy-mm-dd' ex:'2017-01-31'
 
@@ -448,16 +448,16 @@ Primary vane: {vane}'''.format(name=name,
 
         out: an.MetMast object
         '''
-        
+
         M2D2 = an.io.database.M2D2()
-        
+
         mast_metadata = M2D2.get_wmm_id_metadata(wmm_id)
         lat = mast_metadata.loc[0,'WMM_Latitude']
         lon = mast_metadata.loc[0,'WMM_Longitude']
         elev = mast_metadata.loc[0,'WMM_Elevation']
-        
+
         mast_data = M2D2.get_wmm_id_data(wmm_id, start_date=start_date, end_date=end_date)
-            
+
         mast = an.MetMast(data=mast_data, elev=elev, lat=lat, lon=lon, name=wmm_id)
         return mast
 
@@ -465,12 +465,12 @@ Primary vane: {vane}'''.format(name=name,
     def return_monthly_data_recovery(self):
         self.is_mast_data_size_greater_than_zero()
         data = self.data.copy()
-        
+
         # Calculate monthly data recovery by dividing the number of valid records by the number possible
         data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index], names=['Year', 'Month', 'Stamp'])
         monthly_data_count = data.groupby(level=['Year', 'Month']).count()
-        monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values, 
-                                  index=monthly_data_count.index, 
+        monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values,
+                                  index=monthly_data_count.index,
                                   columns=monthly_data_count.columns)
         monthly_data_recovery = monthly_data_count/monthly_max*100
         return monthly_data_recovery
@@ -481,7 +481,7 @@ Primary vane: {vane}'''.format(name=name,
             df = self.return_sensor_data(sensors=sensors)
         else:
             df = self.return_sensor_type_data(sensor_type=sensor_type)
-        
+
         df = df.groupby(df.index.month).mean()
         df.index.name = 'Month'
         df.columns = df.columns.get_level_values(-1)
@@ -503,9 +503,9 @@ Primary vane: {vane}'''.format(name=name,
             ws_sensor = self.primary_ano
 
         data = self.return_sensor_data([dir_sensor, ws_sensor])
-        freqs = an.freq_dist.return_directional_energy_frequencies(df=data, 
-                                                                  dir_sensor=dir_sensor, 
-                                                                  ws_sensor=ws_sensor, 
+        freqs = an.analysis.wind_rose.return_directional_energy_frequencies(df=data, 
+                                                                  dir_sensor=dir_sensor,
+                                                                  ws_sensor=ws_sensor,
                                                                   dir_sectors=dir_sectors)
         return freqs
 
@@ -520,15 +520,15 @@ Primary vane: {vane}'''.format(name=name,
     #     site_data = self.return_sensor_data(site_ano)
     #     reference_data = reference_mast.return_sensor_data(reference_ano)
     #     data = pd.concat(
-    #         [reference_data, site_data], 
-    #         axis=1, 
+    #         [reference_data, site_data],
+    #         axis=1,
     #         join='inner').dropna()
     #     data.columns = ['Ref', 'Site']
 
     #     slope, offset = corr.correlate_orthoginal_distance(
-    #         df=data, 
-    #         ref='Ref', 
-    #         site='Site', 
+    #         df=data,
+    #         ref='Ref',
+    #         site='Site',
     #         force_through_origin=False)
     #     uncertainty = corr.calculate_IEC_uncertainty(data)
     #     R2 = data.corr().loc['Ref', 'Site']**2
@@ -542,8 +542,8 @@ Primary vane: {vane}'''.format(name=name,
     #         site = i[1]
     #         df = self.return_sensor_data(sensors=[ref, site]).dropna()
     #         df.columns = df.columns.get_level_values(level='Sensors')
-    #         slope = corr.correlate_principal_component(df=df, 
-    #                                                   ref=ref, 
+    #         slope = corr.correlate_principal_component(df=df,
+    #                                                   ref=ref,
     #                                                   site=site)
     #         results_dataframe.loc[pd.IndexSlice[ref, site], 'Slope'] = slope
     #         results_dataframe.loc[pd.IndexSlice[ref, site], 'R2'] = corr.calculate_R2(df=df, ref=ref, site=site)
@@ -562,7 +562,7 @@ Primary vane: {vane}'''.format(name=name,
     #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
 
     #     df.columns = df.columns.get_level_values(level='Sensors')
-    #     shear_time_series = shear.shear_alpha_time_series(df=df, 
+    #     shear_time_series = shear.shear_alpha_time_series(df=df,
     #                                                     wind_speed_columns=wind_speed_sensors,
     #                                                     heights=heights)
     #     return shear_time_series
@@ -574,14 +574,14 @@ Primary vane: {vane}'''.format(name=name,
     #         wind_speed_sensors = df.columns.get_level_values(level='Sensors')
     #     else:
     #         df = self.return_sensor_data(sensors=wind_speed_sensors)
-        
+
     #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
 
     #     df.columns = df.columns.get_level_values(level='Sensors')
     #     df = df.groupby(df.index.month).mean()
     #     df.index.name = 'Month'
 
-    #     monthly_shear = shear.shear_alpha_time_series(df=df, 
+    #     monthly_shear = shear.shear_alpha_time_series(df=df,
     #                                                     wind_speed_columns=wind_speed_sensors,
     #                                                     heights=heights)
     #     return monthly_shear
@@ -593,14 +593,14 @@ Primary vane: {vane}'''.format(name=name,
     #         wind_speed_sensors = df.columns.get_level_values(level='Sensors')
     #     else:
     #         df = self.return_sensor_data(sensors=wind_speed_sensors)
-        
+
     #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
 
     #     df.columns = df.columns.get_level_values(level='Sensors')
     #     df = df.groupby(df.index.year).mean()
     #     df.index.name = 'Year'
 
-    #     annual_shear = shear.shear_alpha_time_series(df=df, 
+    #     annual_shear = shear.shear_alpha_time_series(df=df,
     #                                                 wind_speed_columns=wind_speed_sensors,
     #                                                 heights=heights)
     #     return annual_shear
@@ -610,7 +610,7 @@ Primary vane: {vane}'''.format(name=name,
     #     **Returns:**
     #     If data in df
     #     '''
-        
+
     #     self.is_mast_data_size_greater_than_zero()
     #     if wind_speed_sensors is None:
     #         wind_speed_sensors = self.shear_sensors
@@ -618,7 +618,7 @@ Primary vane: {vane}'''.format(name=name,
     #     if self.is_sensor_names_included(sensors=wind_speed_sensors):
     #         momm = self.return_momm(sensors=wind_speed_sensors).T
     #         heights = np.array(map(np.float, self.get_sensor_heights(sensors=wind_speed_sensors)))
-    #         alpha = shear.shear_alpha_time_series(df=momm, 
+    #         alpha = shear.shear_alpha_time_series(df=momm,
     #                                             wind_speed_columns=momm.columns,
     #                                             heights=heights)
     #         return alpha.iloc[0,0]
@@ -630,14 +630,14 @@ Primary vane: {vane}'''.format(name=name,
     #     *Parameters:*
     #     valid_recovery: int, default 70
     #     Threshold to consider valid month
-        
+
     #     color: str, default #001A70
     #     Color to plot the months
-    #     Default is EDF Dark Blue 
+    #     Default is EDF Dark Blue
 
     #     *Returns:*
     #     Valid recovery plot
-    #     ''' 
+    #     '''
 
     #     self.is_mast_data_size_greater_than_zero()
     #     sensors = self.get_sensor_names()
@@ -655,21 +655,21 @@ Primary vane: {vane}'''.format(name=name,
     #     plot_width = len(monthly_data_recovery)/1.75
     #     if plot_width < 5:
     #         plot_width = 5
-            
+
     #     fig = plt.figure(figsize=(plot_width,0.4*no_of_sensors))
     #     ax = fig.add_subplot(111)
     #     if self.name is None:
     #       title = 'Valid months of data (>{}% recovery)'.format(valid_recovery)
     #     else:
-    #       title = 'Mast {} - Valid months of data (>{}% recovery)'.format(self.name, 
+    #       title = 'Mast {} - Valid months of data (>{}% recovery)'.format(self.name,
     #                                                                       valid_recovery)
     #     for sensor in sensors:
-    #         ax.scatter(pd.date_range('%s-%s-01' %(str(monthly_data_recovery.index.get_level_values('Year')[0]), str(monthly_data_recovery.index.get_level_values('Month')[0])), 
-    #                                  periods=len(monthly_data_recovery), 
-    #                                  freq='MS'), 
-    #                    monthly_data_recovery[sensor].values, 
-    #                    s=140, 
-    #                    marker='s', 
+    #         ax.scatter(pd.date_range('%s-%s-01' %(str(monthly_data_recovery.index.get_level_values('Year')[0]), str(monthly_data_recovery.index.get_level_values('Month')[0])),
+    #                                  periods=len(monthly_data_recovery),
+    #                                  freq='MS'),
+    #                    monthly_data_recovery[sensor].values,
+    #                    s=140,
+    #                    marker='s',
     #                    color=color)
     #     ax.xaxis.set_minor_locator(mdates.MonthLocator())
     #     ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
@@ -687,10 +687,10 @@ Primary vane: {vane}'''.format(name=name,
     #     Plots valid months with data recovery above a threshhold
 
     #     **Parameters:**
-        
+
     #     sensor_type: string, default 'SPD'
     #     Type of sensor to plot
-        
+
     #     **Returns:**
     #     Time series plot
     #     '''
@@ -747,16 +747,16 @@ Primary vane: {vane}'''.format(name=name,
     #     ax.set_xlabel('')
     #     ax.legend(loc='best')
     #     ax.set_ylabel(ylabel)
-    
+
     # def plot_freq_dist(self, wind_speed_sensor=None):
     #     '''
     #     Plots wind speed frequency distribution and weibull fit
 
     #     **Parameters:**
-        
+
     #     wind_speed_sensor: string, default None
     #     Wind speed sensor from which to get the measured data
-        
+
     #     **Returns:**
     #     Frequency distribution plot
     #     '''
@@ -766,7 +766,7 @@ Primary vane: {vane}'''.format(name=name,
 
     #     self.is_mast_data_size_greater_than_zero()
     #     A, k = self.return_weibull_params(sensor=wind_speed_sensor)
-    #     freq_dist.plot_freq_dist(params=(A,k), 
+    #     freq_dist.plot_freq_dist(params=(A,k),
     #                             data=self.return_sensor_data([wind_speed_sensor]),
     #                             title='Mast {}: Wind speed frequency distribution'.format(self.name))
 
@@ -775,16 +775,16 @@ Primary vane: {vane}'''.format(name=name,
     #     Plots wind rose
 
     #     **Parameters:**
-        
+
     #     wind_vane: string, default None
     #     Wind speed sensor from which to get the measured data
     #     bins: int, default 16
     #     Number of wind direction bins to plot
-        
+
     #     **Returns:**
     #     Wind rose plot
     #     '''
-        
+
     #     self.is_mast_data_size_greater_than_zero()
     #     if wind_vane is None:
     #         wind_vane = self.primary_vane
@@ -804,11 +804,11 @@ Primary vane: {vane}'''.format(name=name,
     #     if (ws_sensor is None) and (self.primary_ano is not None):
     #         ws_sensor = self.primary_ano
 
-    #     freqs = self.return_directional_energy_frequencies(dir_sensor=dir_sensor, 
-    #                                                       ws_sensor=ws_sensor, 
+    #     freqs = self.return_directional_energy_frequencies(dir_sensor=dir_sensor,
+    #                                                       ws_sensor=ws_sensor,
     #                                                       dir_sectors=dir_sectors)
-    #     fig = an.freq_dist.return_wind_energy_rose_figure(dir_bin_centers=freqs.index.values, 
-    #                                                       dir_bin_freqs_ws=freqs.dir.values, 
+    #     fig = an.freq_dist.return_wind_energy_rose_figure(dir_bin_centers=freqs.index.values,
+    #                                                       dir_bin_freqs_ws=freqs.dir.values,
     #                                                       dir_bin_freqs_energy=freqs.energy.values)
     #     return fig
 
@@ -817,28 +817,28 @@ Primary vane: {vane}'''.format(name=name,
     # def plot_self_corrs(self, pdf_filename='_self_corrs.pdf', save_pdf=True):
     #     '''
     #     Plots wind speed correlations up and down the mast
-        
+
     #     **Returns:**
     #     A list of wind speed correlation plots, will also save as a .pdf file
     #     '''
-        
+
     #     self.is_mast_data_size_greater_than_zero()
     #     self = self.remove_sensor_levels()
     #     self = self.add_sensor_levels()
     #     self_corr_results = self.calculate_self_corr_results()
-        
+
     #     df = self.data
     #     df.columns = df.columns.get_level_values(level='Sensors')
-        
+
     #     self_corr_plots = []
     #     for mast_pair in self_corr_results.index:
     #         ref = mast_pair[0]
     #         site = mast_pair[1]
-          
-    #         self_corr_plot = corr.plot_wind_speed_correlation(df=df, 
-    #                                      ref=ref, 
+
+    #         self_corr_plot = corr.plot_wind_speed_correlation(df=df,
+    #                                      ref=ref,
     #                                      site=site,
-    #                                      title= 'Mast {}'.format(self.name), 
+    #                                      title= 'Mast {}'.format(self.name),
     #                                      slope=self_corr_results.loc[pd.IndexSlice[ref, site], 'Slope'],
     #                                      R2=self_corr_results.loc[pd.IndexSlice[ref, site], 'R2'])
     #         self_corr_plots.append(self_corr_plot)

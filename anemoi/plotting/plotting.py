@@ -24,3 +24,17 @@ def plotly_data_by_column(df):
 
     plotting_data = [{'x': df.index, 'y': df[col], 'name': col, 'mode':'lines'} for col in df.columns]
     return plotting_data
+
+def plotly_data_by_column_line(df, kind='line'):
+    if df.columns.nlevels > 1:
+        new_cols = []
+        for level in df.columns.names:
+            new_cols.append(df.columns.get_level_values(level=level).astype(str))
+        new_cols = pd.MultiIndex.from_arrays(new_cols).map('_'.join)
+        df.columns = new_cols
+
+    if kind=='line':
+        plotting_data = [{'x': df.index, 'y': df[col], 'name': col, 'mode':'lines'} for col in df.columns]
+    elif kind=='bar':
+        plotting_data = [go.Bar(x=df.index, y=df[col], name=col) for col in df.columns]
+    return plotting_data

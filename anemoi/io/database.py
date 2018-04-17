@@ -15,6 +15,10 @@ def return_between_date_query_string(start_date, end_date):
             start_end_str = ''
         
         return start_end_str
+    
+def sql_or_string_from_mvs_ids(mvs_ids):
+    or_string = ' OR '.join(['MVS_ID = {}'.format(mvs_id) for mvs_id in mvs_ids])
+    return or_string
 
 # Define DataBase class
 class M2D2(object):
@@ -36,7 +40,7 @@ class M2D2(object):
         '''
         
         self.database = 'M2D2'
-        server = '10.1.15.53'
+        server = 'sdhqragdbprd01'
         db = 'M2D2_DB_BE'
         
         conn_str = 'DRIVER={SQL Server}; SERVER=%s; DATABASE=%s; Trusted_Connection=yes' %(server, db)
@@ -69,13 +73,14 @@ class M2D2(object):
         
         sql_query_masts = '''
         SELECT [Project]
-              ,[WMM_ID]
-              ,[MVS_ID]
-              ,[Name]
-              ,[Type]
-              ,[StartDate]
-              ,[StopDate]
-          FROM [M2D2_DB_BE].[dbo].[ViewProjectAssetSensors] WITH (NOLOCK)
+            ,[AssetID]
+            ,[WMM_ID]
+            ,[MVS_ID]
+            ,[Name]
+            ,[Type]
+            ,[StartDate]
+            ,[StopDate]
+        FROM [M2D2_DB_BE].[dbo].[ViewProjectAssetSensors] WITH (NOLOCK)
         '''
         masts = pd.read_sql(sql_query_masts, self.conn)
         masts.set_index(['Project', 'WMM_ID', 'Type'], inplace=True)
@@ -84,7 +89,22 @@ class M2D2(object):
         masts.sort_index(inplace=True)
         return masts
 
+    def get_column_labels(self, wmm_id):
+        masts = self.get_masts()
+        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].MVS_ID.unique().tolist()
+        or_string = ' OR '.join(['MVS_ID = {}'.format(mvs_id) for mvs_id in mvs_ids])
+        
+        column_label_sql_query = '''
+        SELECT [column_id]
+            ,[label]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindogMetaData]
+        WITH (NOLOCK)
+        WHERE {}'''.format(or_string)
 
+        column_labels = pd.read_sql(column_label_sql_query, m2d2.conn)
+        column_labels = column_labels.set_index('column_id')
+        return column_labels        
+    
     def get_windog_raw_data(self, wmm_id, start_date, end_date):
         # Download raw windog data from M2D2 for an identifed period
         
@@ -102,15 +122,13 @@ class M2D2(object):
         Set @Windog_format = 0
 
         EXECUTE @RC = [dbo].[proc_GetWindogRawData]
-           @WMM_ID
-          ,@startDate
-          ,@endDate
-          ,@Windog_format
-
-        '''.format(wmm_id, start_date, end_date)
+        @WMM_ID
+        ,@startDate
+        ,@endDate
+        ,@Windog_format'''.format(wmm_id, start_date, end_date)
         
         mast_data = pd.read_sql(sql_query_data, self.conn, parse_dates=['MRD_CorrectedTimestamp'])
-        
+                
         mast_data = mast_data.loc[mast_data.MDVT_ID == 1, ['MRD_CorrectedTimestamp', 'MVS_ID', 'CalDataValue']]
         mast_data = mast_data.pivot_table(index='MRD_CorrectedTimestamp', columns='MVS_ID', values='CalDataValue', aggfunc='first')    
         
@@ -154,7 +172,48 @@ class M2D2(object):
         mast_data.columns.name = 'Sensor'
         
         return mast_data
+    
+    def get_columns_from_wmm_id(self, wmm_id):
+        masts = self.get_masts()
+        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].MVS_ID.unique().tolist()
+        or_string = sql_or_string_from_mvs_ids(mvs_ids)
 
+        column_id_sql_query = '''
+        SELECT [column_id]
+          ,[label]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindogMetaData]
+        WITH (NOLOCK)
+        WHERE {}
+        '''.format(or_string)
+
+        column_ids = pd.read_sql(column_id_sql_query, self.conn)
+        column_ids = column_ids.set_index('column_id')
+        return column_ids
+
+    def get_data_from_column_id(self, column_id):
+        masts = self.get_masts()
+        column_id_sql_query = '''
+        SELECT [MRD_CorrectedTimestamp]
+          ,[CalDataValue]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindogRawDataDefault]
+        WITH (NOLOCK)
+        WHERE column_id = '{}'
+        '''.format(column_id)
+
+        sensor_data = pd.read_sql(column_id_sql_query, self.conn, parse_dates=['MRD_CorrectedTimestamp'])
+        sensor_data = sensor_data.set_index('MRD_CorrectedTimestamp')
+        return sensor_data
+    
+    def get_mast_data_from_wmm_id(self, wmm_id):
+        column_ids = self.get_columns_from_wmm_id(wmm_id)
+        mast_data = [self.get_data_from_column_id(column_id) for column_id in column_ids.index]
+        mast_data = pd.concat(mast_data, axis=1)
+        mast_data.columns = column_ids.label.values
+        mast_data.index.name = 'Stamp'
+        mast_data.columns.name = 'Sensor'
+        mast_data = mast_data.astype(np.float64).groupby(level=0, axis=1).mean()
+        return mast_data
+    
     def get_wmm_id_metadata(self, wmm_id):
         # Download raw windog data from M2D2 for an identifed period
         
