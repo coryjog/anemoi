@@ -82,10 +82,19 @@ class M2D2(object):
             ,[StopDate]
         FROM [M2D2_DB_BE].[dbo].[ViewProjectAssetSensors] WITH (NOLOCK)
         '''
-        masts = pd.read_sql(sql_query_masts, self.conn)
-        masts.set_index(['Project', 'WMM_ID', 'Type'], inplace=True)
-        masts['StartDate'] = pd.to_datetime(masts['StartDate'], infer_datetime_format=True)
-        masts['StopDate'] = pd.to_datetime(masts['StopDate'], infer_datetime_format=True)
+        
+        sql_query_coordinates='''
+        SELECT [WMM_ID]
+            ,[WMM_Latitude]
+            ,[WMM_Longitude]
+            ,[WMM_Elevation]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindDataSet]'''
+        
+        masts = pd.read_sql(sql_query_masts, self.conn, parse_dates=['StartDate', 'StopDate'])
+        coordinates = pd.read_sql(sql_query_coordinates, self.conn)
+        masts = masts.merge(coordinates, left_on='WMM_ID', right_on='WMM_ID')
+
+        masts.set_index(['Project', 'WMM_ID', 'WMM_Latitude', 'WMM_Longitude', 'Type'], inplace=True)
         masts.sort_index(inplace=True)
         return masts
 
