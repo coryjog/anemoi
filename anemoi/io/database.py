@@ -783,3 +783,24 @@ class EIA(object):
     	data = [eia.get_eia_data(project) for project in projects]
     	data = pd.concat(data, axis=1)
     	return data
+
+    def get_eia_project_metadata(self):
+        
+        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_project_report.csv'
+        metadata = pd.read_csv(filename, index_col='EIA Plant ID')
+        columns_to_keep = ['Project Phase','Project Status','Turbine Count','Turbine Capacity (MW)','Turbine Manufacturer','Turbine Model','Hub Height (m)','State']
+        metadata = metadata.loc[np.isfinite(pd.to_numeric(metadata.index, errors='coerce')),columns_to_keep]
+        metadata.index = pd.to_numeric(metadata.index, errors='coerce').astype(np.int)
+        return metadata
+
+    def get_eia_turbine_metadata(self):
+        
+        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_Turb_Report_20171207.parquet'
+        metadata = pd.read_parquet(filename)
+        return metadata
+
+    def get_project_centroids(self):
+
+        metadata = self.get_eia_turbine_metadata()
+        centroids = metadata.loc[:,['Turbine Latitude','Turbine Longitude']].groupby(metadata.index).mean()
+        return centroids
