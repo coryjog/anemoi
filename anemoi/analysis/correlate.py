@@ -252,16 +252,19 @@ def ws_correlation_orthoginal_distance_model(data, ref_ws_col='ref', site_ws_col
     X = data.loc[:, ref_ws_col].values
     Y = data.loc[:, site_ws_col].values
 
+    data_mean = data.mean()
+    slope_estimate_via_ratio = data_mean[site_ws_col]/data_mean[ref_ws_col]
+    
     realdata = odrpack.RealData(X, Y)
 
     if force_through_origin:
         linear = odrpack.Model(f_without_offset)
-        odr = odrpack.ODR(realdata, linear, beta0=[1.0])
+        odr = odrpack.ODR(realdata, linear, beta0=[slope_estimate_via_ratio])
         slope = odr.run().beta[0]
         offset = 0
     else:
         linear = odrpack.Model(f_with_offset)
-        odr = odrpack.ODR(realdata, linear, beta0=[1.0, 0.0])
+        odr = odrpack.ODR(realdata, linear, beta0=[slope_estimate_via_ratio, 0.0])
         slope, offset = odr.run().beta[0], odr.run().beta[1]
 
     results.loc[pd.IndexSlice[ref_ws_col, site_ws_col],['slope', 'offset' , 'R2', 'uncert', 'points']] = np.array([slope, offset, R2, uncert, points])
