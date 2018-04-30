@@ -1,8 +1,14 @@
 # Import libraries
 import os
+import sys
 import pandas as pd
 import pyodbc
 from datetime import datetime
+
+import requests
+import collections
+import json
+import urllib3
 
 def return_between_date_query_string(start_date, end_date):
         if start_date != None and end_date != None:
@@ -82,10 +88,19 @@ class M2D2(object):
             ,[StopDate]
         FROM [M2D2_DB_BE].[dbo].[ViewProjectAssetSensors] WITH (NOLOCK)
         '''
-        masts = pd.read_sql(sql_query_masts, self.conn)
-        masts.set_index(['Project', 'WMM_ID', 'Type'], inplace=True)
-        masts['StartDate'] = pd.to_datetime(masts['StartDate'], infer_datetime_format=True)
-        masts['StopDate'] = pd.to_datetime(masts['StopDate'], infer_datetime_format=True)
+        
+        sql_query_coordinates='''
+        SELECT [WMM_ID]
+            ,[WMM_Latitude]
+            ,[WMM_Longitude]
+            ,[WMM_Elevation]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindDataSet]'''
+        
+        masts = pd.read_sql(sql_query_masts, self.conn, parse_dates=['StartDate', 'StopDate'])
+        coordinates = pd.read_sql(sql_query_coordinates, self.conn)
+        masts = masts.merge(coordinates, left_on='WMM_ID', right_on='WMM_ID')
+
+        masts.set_index(['Project', 'WMM_ID', 'WMM_Latitude', 'WMM_Longitude', 'Type'], inplace=True)
         masts.sort_index(inplace=True)
         return masts
 
@@ -404,18 +419,20 @@ class Padre(object):
             raise ValueError('Need to connect to Padre to retrieve turbines. Use anemoi.DataBase(database="Padre")')
         
         sql_query_assets = '''
-        SELECT [AssetKey]
-          ,Projects.[ProjectName] 
-          ,[AssetType]
-          ,[AssetName]
-          ,Turbines.[Latitude]
-          ,Turbines.[Longitude]
-          ,[elevation_mt]
-        FROM [PADREScada].[dbo].[Asset] as Turbines
-        WITH (NOLOCK)
-        INNER JOIN [PADREScada].[dbo].[Project] as Projects on Turbines.ProjectKey = Projects.ProjectKey
-        '''
+            SELECT [AssetKey]
+              ,Projects.[ProjectName] 
+              ,[AssetType]
+              ,[AssetName]
+              ,Turbines.[Latitude]
+              ,Turbines.[Longitude]
+              ,[elevation_mt]
+            FROM [PADREScada].[dbo].[Asset] as Turbines
+            WITH (NOLOCK)
+            INNER JOIN [PADREScada].[dbo].[Project] as Projects on Turbines.ProjectKey = Projects.ProjectKey
+            '''
+        
         assets = pd.read_sql(sql_query_assets, self.conn)
+        
         assets.set_index(['ProjectName', 'AssetName'], inplace=True)
         assets.sort_index(axis=0, inplace=True)
         
@@ -426,7 +443,7 @@ class Padre(object):
         if project is not None:
             assets = assets.loc[project, :]
 
-        return assets.loc[project, :]
+        return assets
 
     def get_operational_projects(self):
         '''Returns:
@@ -501,6 +518,7 @@ class Padre(object):
           [TimeStampLocal]
           ,[Average_Nacelle_Wdspd]
           ,[Average_Active_Power]
+          ,[Average_Nacelle_Direction]
           ,[Average_Blade_Pitch]
           ,[Minimum_Blade_Pitch]
           ,[Maximum_Blade_Pitch]
@@ -720,3 +738,69 @@ class Padre(object):
         meter_data.index.name = 'Stamp'
         meter_data.sort_index(axis=0, inplace=True)
         return meter_data
+
+class EIA(object):
+    '''Class to connect to EIA database via HTTP
+    '''
+
+    def __init__(self):
+        '''Data structure for connecting to and downloading data from EIA. Convention is::
+
+            import anemoi as an
+            eia = an.io.database.EIA()
+        
+        :Parameters:
+        
+
+        :Returns:
+
+        out: an.EIA object connected to EIA.gov
+        '''
+        
+        self.database = 'EIA'
+        self.api_key = '9B2EDFF62577B236B5D66044ACECA2EF'
+
+    def get_eia_data_from_id(self, eia_id):
+        
+        url = 'http://api.eia.gov/series/?api_key={}&series_id=ELEC.PLANT.GEN.{}-WND-WT.M'.format(self.api_key, eia_id)
+        
+        http = urllib3.PoolManager()
+        r = http.request('GET', url)
+
+        if r.status != 200:
+            print('No EIA data for station: {}'.format(eia_id))
+            return pd.DataFrame()
+        
+        data = json.loads(r.data.decode('utf-8'))['series'][0]['data']
+        data = pd.DataFrame(data, columns=['Stamp', eia_id])
+        data.Stamp = pd.to_datetime(data.Stamp, format='%Y%m')
+        data = data.set_index('Stamp')
+        data = data.sort_index().astype(int)
+        return data
+
+    def get_eia_data_from_ids(self, eia_ids):
+    	
+    	data = [eia.get_eia_data(project) for project in projects]
+    	data = pd.concat(data, axis=1)
+    	return data
+
+    def get_eia_project_metadata(self):
+        
+        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_project_report.csv'
+        metadata = pd.read_csv(filename, index_col='EIA Plant ID')
+        columns_to_keep = ['Project Phase','Project Status','Turbine Count','Turbine Capacity (MW)','Turbine Manufacturer','Turbine Model','Hub Height (m)','State']
+        metadata = metadata.loc[np.isfinite(pd.to_numeric(metadata.index, errors='coerce')),columns_to_keep]
+        metadata.index = pd.to_numeric(metadata.index, errors='coerce').astype(np.int)
+        return metadata
+
+    def get_eia_turbine_metadata(self):
+        
+        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_Turb_Report_20171207.parquet'
+        metadata = pd.read_parquet(filename)
+        return metadata
+
+    def get_project_centroids(self):
+
+        metadata = self.get_eia_turbine_metadata()
+        centroids = metadata.loc[:,['Turbine Latitude','Turbine Longitude']].groupby(metadata.index).mean()
+        return centroids
