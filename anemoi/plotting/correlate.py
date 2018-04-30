@@ -46,9 +46,9 @@ def plot_layout(xlabel=None, ylabel=None, title=None, non_negative_values=True):
                 )
     return layout
 
-def plot_data_from_df(data, ref_ws_col, site_ws_col, color=EDFBlue):
+def plot_data_from_df(df, ref_ws_col, site_ws_col, color=EDFBlue):
 
-    data=data.dropna()
+    data=df.dropna()
 
     plot_data = [go.Scattergl(
                     x=data[ref_ws_col],
