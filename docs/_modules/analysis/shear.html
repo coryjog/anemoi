@@ -46,7 +46,7 @@
 <span class="kn">import</span> <span class="nn">scipy.odr.odrpack</span> <span class="k">as</span> <span class="nn">odrpack</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 
-<div class="viewcode-block" id="check_and_return_wind_speed_data_for_annual_shear"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.check_and_return_wind_speed_data_for_annual_shear">[docs]</a><span class="k">def</span> <span class="nf">check_and_return_wind_speed_data_for_annual_shear</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="check_and_return_wind_speed_data_for_annual_shear"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.check_and_return_wind_speed_data_for_annual_shear">[docs]</a><span class="k">def</span> <span class="nf">check_and_return_wind_speed_data_for_annual_shear</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Perform checks on wind speed data for shear calculations.&#39;&#39;&#39;</span>
     
     <span class="k">if</span> <span class="n">wind_speed_sensors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -64,7 +64,7 @@
 
     <span class="k">return</span> <span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="p">,</span> <span class="n">heights</span></div>
 
-<div class="viewcode-block" id="check_and_return_wind_dir_data_for_shear"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.check_and_return_wind_dir_data_for_shear">[docs]</a><span class="k">def</span> <span class="nf">check_and_return_wind_dir_data_for_shear</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="p">):</span>
+<div class="viewcode-block" id="check_and_return_wind_dir_data_for_shear"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.check_and_return_wind_dir_data_for_shear">[docs]</a><span class="k">def</span> <span class="nf">check_and_return_wind_dir_data_for_shear</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Perform checks on wind direction data for shear calculations.&#39;&#39;&#39;</span>
 
     <span class="k">if</span> <span class="n">wind_dir_sensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -74,7 +74,7 @@
     <span class="k">return</span> <span class="n">wind_dir_data</span></div>
 
 <span class="c1">### SHEAR METHODS - Single Mast ###</span>
-<div class="viewcode-block" id="alpha_time_series"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.alpha_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="alpha_time_series"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.alpha_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a time series of alpha values from a time series of wind speeds.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -107,7 +107,7 @@
     <span class="n">shear_alpha</span> <span class="o">=</span> <span class="n">shear_alpha</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;alpha&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">shear_alpha</span></div>
 
-<div class="viewcode-block" id="alpha_mean_from_alpha_time_series"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.alpha_mean_from_alpha_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_mean_from_alpha_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="alpha_mean_from_alpha_time_series"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.alpha_mean_from_alpha_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_mean_from_alpha_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns the mean of monthly means of the alpha time series from wind speed mast data.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -133,7 +133,7 @@
     <span class="n">alpha</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">mast_data</span><span class="o">.</span><span class="n">return_momm</span><span class="p">(</span><span class="n">alpha_ts</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">alpha</span></div>
 
-<div class="viewcode-block" id="alpha_annual_profile_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.alpha_annual_profile_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_annual_profile_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="alpha_annual_profile_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.alpha_annual_profile_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_annual_profile_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns monthly mean alpha values from a time series of wind speeds.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -160,7 +160,7 @@
     <span class="n">alpha_profile</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Month&#39;</span>
     <span class="k">return</span> <span class="n">alpha_profile</span></div>
 
-<div class="viewcode-block" id="alpha_dir_profile_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.alpha_dir_profile_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_dir_profile_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="alpha_dir_profile_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.alpha_dir_profile_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_dir_profile_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns mean alpha values by direction bin from a time series of wind speeds.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -199,7 +199,7 @@
     
     <span class="k">return</span> <span class="n">alpha_by_dir</span></div>
 
-<div class="viewcode-block" id="alpha_mean_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.alpha_mean_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_mean_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="alpha_mean_from_wind_speed_time_series"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.alpha_mean_from_wind_speed_time_series">[docs]</a><span class="k">def</span> <span class="nf">alpha_mean_from_wind_speed_time_series</span><span class="p">(</span><span class="n">mast_data</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns alpha values from the mean of monthly means of a time series of wind speeds.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -226,7 +226,7 @@
     <span class="n">alpha</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;MoMM&#39;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Alpha&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">alpha</span></div>
 
-<div class="viewcode-block" id="mast_annual"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_annual">[docs]</a><span class="k">def</span> <span class="nf">mast_annual</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_annual"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_annual">[docs]</a><span class="k">def</span> <span class="nf">mast_annual</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from a single mast, indexed by sensor orientation and height.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -261,7 +261,7 @@
 
     <span class="k">return</span> <span class="n">shear_analysis_mast</span></div>
 
-<div class="viewcode-block" id="mast_annual_avg"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_annual_avg">[docs]</a><span class="k">def</span> <span class="nf">mast_annual_avg</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_annual_avg"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_annual_avg">[docs]</a><span class="k">def</span> <span class="nf">mast_annual_avg</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of an annual alpha value from a single mast, indexed by mast name.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -280,7 +280,7 @@
     <span class="n">annual_avg_alpha</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Mast&#39;</span>
     <span class="k">return</span> <span class="n">annual_avg_alpha</span></div>
 
-<div class="viewcode-block" id="mast_directional"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_directional">[docs]</a><span class="k">def</span> <span class="nf">mast_directional</span><span class="p">(</span><span class="n">mast</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_directional"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_directional">[docs]</a><span class="k">def</span> <span class="nf">mast_directional</span><span class="p">(</span><span class="n">mast</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">wind_speed_sensors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.</span>
 <span class="sd">    Alpha only calcualted for time steps with valid measurements from each wind speed sensor. </span>
 <span class="sd">    </span>
@@ -319,7 +319,7 @@
     <span class="n">mast</span><span class="o">.</span><span class="n">remove_and_add_sensor_levels</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">shear_analysis_mast</span></div>
 
-<div class="viewcode-block" id="mast_directional_by_orient"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_directional_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_directional_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_directional_by_orient"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_directional_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_directional_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">,</span> <span class="n">wind_dir_sensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.</span>
 <span class="sd">    Alpha only calcualted for time steps with valid measurements from each wind speed sensor. </span>
 <span class="sd">    </span>
@@ -359,7 +359,7 @@
     <span class="n">alpha_by_dir</span> <span class="o">=</span> <span class="n">alpha_by_dir</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">alpha_by_dir</span></div>
 
-<div class="viewcode-block" id="mast_monthly_by_orient"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_monthly_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_monthly_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_monthly_by_orient"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_monthly_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_monthly_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of monthly time series of alpha values from a single mast for each sensor orientation.</span>
 <span class="sd">    Alpha only calcualted for time steps with valid measurements from each wind speed sensor. </span>
 <span class="sd">    </span>
@@ -390,7 +390,7 @@
     <span class="n">monthly_alpha_ts_by_orient</span> <span class="o">=</span> <span class="n">alpha_ts_by_orient</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s1">&#39;MS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">monthly_alpha_ts_by_orient</span></div>
 
-<div class="viewcode-block" id="mast_annual_profile_by_orient"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.mast_annual_profile_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_annual_profile_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
+<div class="viewcode-block" id="mast_annual_profile_by_orient"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.mast_annual_profile_by_orient">[docs]</a><span class="k">def</span> <span class="nf">mast_annual_profile_by_orient</span><span class="p">(</span><span class="n">mast</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha profiles from a single mast for each sensor orientation.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -410,7 +410,7 @@
     <span class="n">annual_alpha_profiles_by_orient</span> <span class="o">=</span> <span class="n">annual_alpha_profiles_by_orient</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;year&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">annual_alpha_profiles_by_orient</span></div>
 
-<div class="viewcode-block" id="site_annual"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.site_annual">[docs]</a><span class="k">def</span> <span class="nf">site_annual</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
+<div class="viewcode-block" id="site_annual"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.site_annual">[docs]</a><span class="k">def</span> <span class="nf">site_annual</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from a multiple site masts, indexed by mast, sensor orientation, and height.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -436,7 +436,7 @@
     
     <span class="k">return</span> <span class="n">shear_analysis_site</span></div>
 
-<div class="viewcode-block" id="site_annual_avg"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.site_annual_avg">[docs]</a><span class="k">def</span> <span class="nf">site_annual_avg</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
+<div class="viewcode-block" id="site_annual_avg"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.site_annual_avg">[docs]</a><span class="k">def</span> <span class="nf">site_annual_avg</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from multiple site masts, indexed by mast.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -453,7 +453,7 @@
     <span class="n">annual_avg_alpha</span> <span class="o">=</span> <span class="n">site_annual</span><span class="p">(</span><span class="n">masts</span><span class="p">)</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;Alpha&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">annual_avg_alpha</span></div>
 
-<div class="viewcode-block" id="site_directional"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.site_directional">[docs]</a><span class="k">def</span> <span class="nf">site_directional</span><span class="p">(</span><span class="n">masts</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<div class="viewcode-block" id="site_directional"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.site_directional">[docs]</a><span class="k">def</span> <span class="nf">site_directional</span><span class="p">(</span><span class="n">masts</span><span class="p">,</span> <span class="n">dir_sectors</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.</span>
 <span class="sd">    Alpha only calcualted for time steps with valid measurements from each wind speed sensor. </span>
 <span class="sd">    </span>
@@ -484,7 +484,7 @@
     
     <span class="k">return</span> <span class="n">shear_analysis_site</span></div>
 
-<div class="viewcode-block" id="site_mean"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.site_mean">[docs]</a><span class="k">def</span> <span class="nf">site_mean</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
+<div class="viewcode-block" id="site_mean"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.site_mean">[docs]</a><span class="k">def</span> <span class="nf">site_mean</span><span class="p">(</span><span class="n">masts</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of the mean annual alpha value from each site masts. Uses all avaialble anemometer combinations.</span>
 <span class="sd">    </span>
 <span class="sd">    :Parameters: </span>
@@ -502,7 +502,7 @@
     <span class="n">shear_results</span> <span class="o">=</span> <span class="n">shear_results</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;Alpha&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">shear_results</span></div>
 
-<div class="viewcode-block" id="site_mean_from_results"><a class="viewcode-back" href="../../code_shear.html#analysis.shear.site_mean_from_results">[docs]</a><span class="k">def</span> <span class="nf">site_mean_from_results</span><span class="p">(</span><span class="n">shear_results</span><span class="p">):</span>
+<div class="viewcode-block" id="site_mean_from_results"><a class="viewcode-back" href="../../code_analysis_shear.html#analysis.shear.site_mean_from_results">[docs]</a><span class="k">def</span> <span class="nf">site_mean_from_results</span><span class="p">(</span><span class="n">shear_results</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Returns a DataFrame of the mean annual alpha value from each site mast from a previously run shear analysis.</span>
 <span class="sd">    This allows the user to choose the heights and oreintations used within the final calculated alpha value.</span>
 <span class="sd">    </span>
@@ -538,14 +538,18 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../quick-start.html">Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../data_model.html">Data Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code_MetMast.html">Class - MetMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code_RefMast.html">Class - RefMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code_shear.html">Analysis Module - Shear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code_correlate.html">Analysis Module - Correlate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code_freq_dist.html">Analysis Module - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_start-from-scratch.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_plotting.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_plotting_correlate.html">Plotting - Correlate</a></li>
 </ul>
 
 <div class="relations">
