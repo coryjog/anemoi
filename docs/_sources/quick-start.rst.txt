@@ -13,7 +13,7 @@ Then from the command line you pip install:
 .. code-block:: none
     
     conda install statsmodels
-    pip install git+git://github.com/coryjog/anemoi
+    pip install anemoi
 
 All the dependancies listed in required.txt will also be installed.
 
