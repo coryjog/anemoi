@@ -241,7 +241,7 @@
 </tbody>
 </table>
 <dl class="docutils">
-<dt>mast data: DataFrame</dt>
+<dt>mast: an.MetMast</dt>
 <dd>Measured data from MetMast.data</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -259,6 +259,66 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="analysis.shear.mast_annual_avg">
+<code class="descclassname">analysis.shear.</code><code class="descname">mast_annual_avg</code><span class="sig-paren">(</span><em>mast</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#mast_annual_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.mast_annual_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of an annual alpha value from a single mast, indexed by mast name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast: an.MetMast</dt>
+<dd>Measured data from MetMast.data</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Average alpha value from a single mast.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.mast_annual_profile_by_orient">
+<code class="descclassname">analysis.shear.</code><code class="descname">mast_annual_profile_by_orient</code><span class="sig-paren">(</span><em>mast</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#mast_annual_profile_by_orient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.mast_annual_profile_by_orient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of annual alpha profiles from a single mast for each sensor orientation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast: an.MetMast</dt>
+<dd>Measured data from MetMast.data</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Annual alpha profiles for each sensor orientation, indexed by month</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="analysis.shear.mast_directional">
 <code class="descclassname">analysis.shear.</code><code class="descname">mast_directional</code><span class="sig-paren">(</span><em>mast</em>, <em>wind_dir_sensor=None</em>, <em>dir_sectors=16</em>, <em>wind_speed_sensors=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#mast_directional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.mast_directional" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.
@@ -272,8 +332,8 @@ Alpha only calcualted for time steps with valid measurements from each wind spee
 </tbody>
 </table>
 <dl class="docutils">
-<dt>masts <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>List of MetMast objects from which all anemometer data is extracted</dd>
+<dt>mast: an.MetMast</dt>
+<dd>Measured data from MetMast.data</dd>
 <dt>wind_dir_sensors: list, default mast.primary_vane</dt>
 <dd>Specific wind wind vane for directional binning</dd>
 <dt>dir_sectors: int, default 16</dt>
@@ -292,6 +352,72 @@ Alpha only calcualted for time steps with valid measurements from each wind spee
 <dl class="docutils">
 <dt>out: DataFrame</dt>
 <dd>Mean alpha values indexed by the specified number of direction bins (directional shear profile)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.mast_directional_by_orient">
+<code class="descclassname">analysis.shear.</code><code class="descname">mast_directional_by_orient</code><span class="sig-paren">(</span><em>mast</em>, <em>wind_dir_sensor=None</em>, <em>dir_sectors=16</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#mast_directional_by_orient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.mast_directional_by_orient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of annual alpha values from a single mast, indexed by direction bin.
+Alpha only calcualted for time steps with valid measurements from each wind speed sensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast: an.MetMast</dt>
+<dd>Measured data from MetMast.data</dd>
+<dt>wind_dir_sensors: list, default mast.primary_vane</dt>
+<dd>Specific wind wind vane for directional binning</dd>
+<dt>dir_sectors: int, default 16</dt>
+<dd>Number of equally spaced direction sectors in which to bin the mean shear values</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Mean alpha values indexed by the specified number of direction bins (directional shear profile)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.mast_monthly_by_orient">
+<code class="descclassname">analysis.shear.</code><code class="descname">mast_monthly_by_orient</code><span class="sig-paren">(</span><em>mast</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#mast_monthly_by_orient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.mast_monthly_by_orient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of monthly time series of alpha values from a single mast for each sensor orientation.
+Alpha only calcualted for time steps with valid measurements from each wind speed sensor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast: an.MetMast</dt>
+<dd>Measured data from MetMast.data</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Mean alpha values for each sensor orientation, indexed by month</dd>
 </dl>
 </dd></dl>
 
@@ -322,6 +448,36 @@ Alpha only calcualted for time steps with valid measurements from each wind spee
 <dl class="docutils">
 <dt>out: DataFrame</dt>
 <dd>Alpha values from multiple site masts by mast, sensor orientation, and height</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.shear.site_annual_avg">
+<code class="descclassname">analysis.shear.</code><code class="descname">site_annual_avg</code><span class="sig-paren">(</span><em>masts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/shear.html#site_annual_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.shear.site_annual_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of annual alpha values from multiple site masts, indexed by mast.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>masts <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of MetMast objects from which all anemometer data is extracted</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: DataFrame</dt>
+<dd>Alpha values from multiple site masts, indexed by mast</dd>
 </dl>
 </dd></dl>
 
@@ -476,7 +632,7 @@ This allows the user to choose the heights and oreintations used within the fina
       &copy;2017, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

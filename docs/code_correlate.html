@@ -76,7 +76,7 @@
 <dd>Site anemometer data to use. Extracted from MetMast.data</dd>
 <dt>splice: Boolean, default True</dt>
 <dd>Returns site data where available and gap-fills any missing periods between the site mast
-and the reference mast’s measurement period. Otherwise, returns purely sythesized data without 
+and the reference mast’s measurement period. Otherwise, returns purely sythesized data without
 taking into account the measured wind speeds.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -97,7 +97,7 @@ taking into account the measured wind speeds.</dd>
 <dt id="analysis.correlate.apply_daily_results_by_month">
 <code class="descclassname">analysis.correlate.</code><code class="descname">apply_daily_results_by_month</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em>, <em>corr_results</em>, <em>ref_ws_col=None</em>, <em>site_ws_col=None</em>, <em>splice=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#apply_daily_results_by_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.apply_daily_results_by_month" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies the slopes and offsets from a daily correaltion, binned by month, between two met masts.
-If the reference or site masts don’t have daily time series the method resamples to daily frequency, 
+If the reference or site masts don’t have daily time series the method resamples to daily frequency,
 requiring 70% data coverage within each day to be a valid day.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -122,7 +122,47 @@ requiring 70% data coverage within each day to be a valid day.</p>
 <dd>Site anemometer data to use. Extracted from MetMast.data</dd>
 <dt>splice: Boolean, default True</dt>
 <dd>Returns site data where available and gap-fills any missing periods between the site mast
-and the reference mast’s measurement period. Otherwise, returns purely sythesized data without 
+and the reference mast’s measurement period. Otherwise, returns purely sythesized data without
+taking into account the measured wind speeds.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>out: time series DataFrame</dt>
+<dd>predicted wind speeds at the site</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis.correlate.apply_daily_results_by_month_to_mast_data">
+<code class="descclassname">analysis.correlate.</code><code class="descname">apply_daily_results_by_month_to_mast_data</code><span class="sig-paren">(</span><em>mast_data</em>, <em>corr_results</em>, <em>ref_ws_col='ref'</em>, <em>site_ws_col='site'</em>, <em>splice=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#apply_daily_results_by_month_to_mast_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.apply_daily_results_by_month_to_mast_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the slopes and offsets from a daily correaltion, binned by month, to a DataFrame of wind speed data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>mast_data: DataFrame</dt>
+<dd>timeseries of wind speed data</dd>
+<dt>corr_results: DataFrame</dt>
+<dd>slope, offset, R2, uncert, points for each month</dd>
+<dt>ref_ws_col: string, default ‘ref’</dt>
+<dd>Reference anemometer data to use. Extracted from mast_data DataFrame.</dd>
+<dt>site_ws_col: string, default ‘site’</dt>
+<dd>Site anemometer data to use. Extracted from mast_data DataFrame</dd>
+<dt>splice: Boolean, default True</dt>
+<dd>Returns site data where available and gap-fills any missing periods between the site mast
+and the reference mast’s measurement period. Otherwise, returns purely sythesized data without
 taking into account the measured wind speeds.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -142,7 +182,7 @@ taking into account the measured wind speeds.</dd>
 <dl class="function">
 <dt id="analysis.correlate.calculate_EDF_uncertainty">
 <code class="descclassname">analysis.correlate.</code><code class="descname">calculate_EDF_uncertainty</code><span class="sig-paren">(</span><em>data</em>, <em>ref_ws_col='ref'</em>, <em>site_ws_col='site'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#calculate_EDF_uncertainty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.calculate_EDF_uncertainty" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the EDF estimated correaltion uncetianty between two wind speed columns. 
+<dd><p>Calculate the EDF estimated correaltion uncetianty between two wind speed columns.
 Assumes a correalation forced through the origin</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -334,8 +374,8 @@ Assumes a correalation forced through the origin</p>
 <dt>force_through_origin: boolean, default False</dt>
 <dd>Force the correlation through the origin (offset equal to zero)</dd>
 <dt>minimum_recovery_rate: float, default 0.7</dt>
-<dd>Minimum allowable recovery rate until resampled data are excluded. 
-For example, by defalt, when resampling 10-minute data to daily averages you would need 
+<dd>Minimum allowable recovery rate until resampled data are excluded.
+For example, by defalt, when resampling 10-minute data to daily averages you would need
 at least 101 valid records to have a valid daily average.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -384,8 +424,8 @@ at least 101 valid records to have a valid daily average.</dd>
 <dt>force_through_origin: boolean, default False</dt>
 <dd>Force the correlation through the origin (offset equal to zero)</dd>
 <dt>minimum_recovery_rate: float, default 0.7</dt>
-<dd>Minimum allowable recovery rate until resampled data are excluded. 
-For example, by defalt, when resampling 10-minute data to daily averages you would need 
+<dd>Minimum allowable recovery rate until resampled data are excluded.
+For example, by defalt, when resampling 10-minute data to daily averages you would need
 at least 101 valid records to have a valid daily average.</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
@@ -405,7 +445,7 @@ at least 101 valid records to have a valid daily average.</dd>
 <dl class="function">
 <dt id="analysis.correlate.return_correlation_data_from_masts">
 <code class="descclassname">analysis.correlate.</code><code class="descname">return_correlation_data_from_masts</code><span class="sig-paren">(</span><em>ref_mast</em>, <em>site_mast</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/correlate.html#return_correlation_data_from_masts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis.correlate.return_correlation_data_from_masts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a DataFrame of reference and site data for correlations. 
+<dd><p>Return a DataFrame of reference and site data for correlations.
 Will be extracted from each MetMast object using the primary anemometers and wind vanes.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -758,7 +798,7 @@ Will be extracted from each MetMast object using the primary anemometers and win
       &copy;2017, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

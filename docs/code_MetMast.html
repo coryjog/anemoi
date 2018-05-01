@@ -91,8 +91,8 @@ See ECRM for more on the format of the naming convensions:</p>
 <dl class="method">
 <dt id="mast.MetMast.from_M2D2">
 <code class="descname">from_M2D2</code><span class="sig-paren">(</span><em>wmm_id</em>, <em>primary_ano=None</em>, <em>primary_vane=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.from_M2D2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.from_M2D2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download mast data and metadata from the met data database M2D2 (EDF specific). Currently 
-this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and 
+<dd><p>Download mast data and metadata from the met data database M2D2 (EDF specific). Currently
+this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and
 minimum in the future.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -117,11 +117,11 @@ To get a list of masts in M2D2 run the following:</p>
 <dt>primary_vane: string; default None</dt>
 <dd>Primary wind vane sensor name</dd>
 <dt>start_date: string; default None</dt>
-<dd>Begining of the desired data period. 
+<dd>Begining of the desired data period.
 If None, first available day is assumed.
 Date format: ‘yyyy-mm-dd’ ex:‘2017-01-31’</dd>
 <dt>end_date: string; default None</dt>
-<dd><p class="first">End of the desired data period. 
+<dd><p class="first">End of the desired data period.
 If None, present day is assumed from you computers clock.
 Date format: ‘yyyy-mm-dd’ ex:‘2017-01-31’</p>
 <p class="last"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases">http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</a></p>
@@ -405,7 +405,7 @@ See also: an.utils.mast_data.get_unique_sensor_details</p>
 
 <dl class="method">
 <dt id="mast.MetMast.return_sensor_type_data">
-<code class="descname">return_sensor_type_data</code><span class="sig-paren">(</span><em>sensor_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.return_sensor_type_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.return_sensor_type_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">return_sensor_type_data</code><span class="sig-paren">(</span><em>sensor_type=None</em>, <em>sensor_signal='Avg'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.return_sensor_type_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.return_sensor_type_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a DataFrame of measured data from a specified sensor type</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -482,7 +482,7 @@ See also: an.utils.mast_data.get_unique_sensor_details</p>
       &copy;2017, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
