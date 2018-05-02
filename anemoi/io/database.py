@@ -2,6 +2,7 @@
 import os
 import sys
 import pandas as pd
+import numpy as np
 import pyodbc
 from datetime import datetime
 
@@ -769,28 +770,30 @@ class EIA(object):
 
         if r.status != 200:
             print('No EIA data for station: {}'.format(eia_id))
-            return pd.DataFrame()
+            return pd.DataFrame(columns=[eia_id])
         
-        data = json.loads(r.data.decode('utf-8'))['series'][0]['data']
-        data = pd.DataFrame(data, columns=['Stamp', eia_id])
-        data.Stamp = pd.to_datetime(data.Stamp, format='%Y%m')
-        data = data.set_index('Stamp')
-        data = data.sort_index().astype(int)
-        return data
+        try:
+            data = json.loads(r.data.decode('utf-8'))['series'][0]['data']
+            data = pd.DataFrame(data, columns=['Stamp', eia_id])
+            data.Stamp = pd.to_datetime(data.Stamp, format='%Y%m')
+            data = data.set_index('Stamp')
+            data = data.sort_index().astype(int)
+            return data
+        except:
+            return pd.DataFrame(columns=[eia_id])
 
     def get_eia_data_from_ids(self, eia_ids):
-    	
-    	data = [eia.get_eia_data(project) for project in projects]
-    	data = pd.concat(data, axis=1)
-    	return data
+        
+        data = [eia.get_eia_data(project) for project in projects]
+        data = pd.concat(data, axis=1)
+        return data
 
     def get_eia_project_metadata(self):
         
-        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_project_report.csv'
-        metadata = pd.read_csv(filename, index_col='EIA Plant ID')
-        columns_to_keep = ['Project Phase','Project Status','Turbine Count','Turbine Capacity (MW)','Turbine Manufacturer','Turbine Model','Hub Height (m)','State']
-        metadata = metadata.loc[np.isfinite(pd.to_numeric(metadata.index, errors='coerce')),columns_to_keep]
-        metadata.index = pd.to_numeric(metadata.index, errors='coerce').astype(np.int)
+        filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_database_metadata_multiple.parquet'
+        metadata = pd.read_parquet(filename)
+        metadata.index = metadata.index.astype(np.int)
+        metadata.index.name = 'eia_id'
         return metadata
 
     def get_eia_turbine_metadata(self):
