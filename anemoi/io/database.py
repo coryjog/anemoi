@@ -793,6 +793,7 @@ class EIA(object):
         filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_database_metadata_multiple.parquet'
         metadata = pd.read_parquet(filename)
         metadata.index = metadata.index.astype(np.int)
+        metadata.index.name = 'eia_id'
         return metadata
 
     def get_eia_turbine_metadata(self):

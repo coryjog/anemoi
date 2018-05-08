@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Analysis Module - Correlate &#8212; anemoi  documentation</title>
+    <title>Analysis - Correlate &#8212; anemoi  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,8 +23,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Analysis Module - Freq Dist" href="code_freq_dist.html" />
-    <link rel="prev" title="Analysis Module - Shear" href="code_shear.html" />
+    <link rel="next" title="Analysis - Freq Dist" href="code_analysis_freq_dist.html" />
+    <link rel="prev" title="Analysis - Shear" href="code_analysis_shear.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -40,8 +40,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="analysis-module-correlate">
-<h1>Analysis Module - Correlate<a class="headerlink" href="#analysis-module-correlate" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="analysis-correlate">
+<h1>Analysis - Correlate<a class="headerlink" href="#analysis-correlate" title="Permalink to this headline">¶</a></h1>
 <p>This module is for correlation analysis between multiple masts. The typical format is to give the method the site and reference MetMast or RefMast objects. The method then returns a DataFrame of results. Those results can then be applied with a separate method.</p>
 <p>For example, correlations typically require two lines of text. One for running the actual correlation between masts and one for applying that correlation to synthesize missing data:</p>
 <div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
@@ -761,22 +761,25 @@ Will be extracted from each MetMast object using the primary anemometers and win
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">Class - MetMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_RefMast.html">Class - RefMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis Module - Correlate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_freq_dist.html">Analysis Module - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_plotting.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="code_shear.html" title="previous chapter">Analysis Module - Shear</a></li>
-      <li>Next: <a href="code_freq_dist.html" title="next chapter">Analysis Module - Freq Dist</a></li>
+      <li>Previous: <a href="code_analysis_shear.html" title="previous chapter">Analysis - Shear</a></li>
+      <li>Next: <a href="code_analysis_freq_dist.html" title="next chapter">Analysis - Freq Dist</a></li>
   </ul></li>
 </ul>
 </div>
@@ -802,7 +805,7 @@ Will be extracted from each MetMast object using the primary anemometers and win
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/code_correlate.rst.txt"
+      <a href="_sources/code_analysis_correlate.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
