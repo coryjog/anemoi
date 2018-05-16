@@ -67,31 +67,18 @@ class MetMast(object):
                                     data=[height, elev, lat, lon, primary_ano, primary_vane])
 
         if data is not None:
-            sensor_details = pd.Series(data.columns).str.split('_', expand=True)
-            sensor_cols = ['kind', 'height', 'orient', 'signal']
-            sensors = pd.DataFrame(index=sensor_details.index, columns=sensor_cols)
-            sensor_details.columns = sensors.columns[0: sensor_details.shape[1]]
-            sensors = sensors.merge(sensor_details, how='right')
-            sensors.signal.fillna('Avg', inplace=True)
-            sensors.height.fillna('0', inplace=True)
-            kind = sensors.kind.astype(str)
-            height = sensors.height.values
-            height = list(map(lambda hts: ''.join([ht for ht in hts if ht in '1234567890.']), height))
-            height = [float(ht) for ht in height]
-            orient = sensors.orient.astype(str)
-            signal = sensors.signal.astype(str)
-            cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, data.columns],
-                names=['Type', 'Ht', 'Orient', 'Signal', 'Sensors'])
-            mast_data = data.copy()
-            mast_data.columns = cols
-            mast_data.sort_index(axis=1, inplace=True)
+            if data.columns.nlevels > 1:
+                data = an.utils.mast_data.remove_sensor_levels(data)
+            
+            data = an.utils.mast_data.add_sensor_levels(data)
+            data.sort_index(axis=1, inplace=True)
 
-        self.data = mast_data
+        self.data = data
 
     def __repr__(self):
         name = self.name
         if self.data is not None:
-            sensors = self.data.columns.get_level_values(level='Sensors').tolist()
+            sensors = self.data.columns.get_level_values(level='sensor').tolist()
         else:
             sensors = []
         repr_string = '''\n\nMast {name}
@@ -169,7 +156,7 @@ Primary vane: {vane}'''.format(name=name,
         '''Returns a list of sensor columns from the MetMast.data DataFrame
         '''
         self.is_mast_data_size_greater_than_zero()
-        return self.data.columns.get_level_values('Sensors').tolist()
+        return self.data.columns.get_level_values('sensor').tolist()
 
     def get_sensor_details(self, level, sensors=None):
         '''Returns a list of sensor details for a given column level in MetMast.data.
@@ -178,7 +165,7 @@ Primary vane: {vane}'''.format(name=name,
         :Parameters:
 
         level: string, default None
-            Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+            Level from which to return details ('type', 'height', 'orient', 'signal', 'sensor')
 
         sensors: list, default None
             List of specific sensors from which to return details
@@ -193,7 +180,7 @@ Primary vane: {vane}'''.format(name=name,
         :Parameters:
 
         level: string, default None
-            Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+            Level from which to return details ('type', 'height', 'orient', 'signal', 'sensor')
 
         sensors: list, default None
             List of specific sensors from which to return details
@@ -209,7 +196,7 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        types = self.get_sensor_details(level='Type', sensors=sensors)
+        types = self.get_sensor_details(level='type', sensors=sensors)
         return types
 
     def get_unique_sensor_types(self, sensors=None):
@@ -220,7 +207,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            types = self.get_unique_sensor_details(level='Type', sensors=sensors)
+            types = self.get_unique_sensor_details(level='type', sensors=sensors)
             return types
 
     def get_sensor_signals(self, sensors=None):
@@ -231,7 +218,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            signals = self.get_sensor_details(level='Signal', sensors=sensors)
+            signals = self.get_sensor_details(level='signal', sensors=sensors)
             return signals
 
     def get_unique_sensor_signals(self, sensors=None):
@@ -242,7 +229,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            signals = self.get_unique_sensor_details(level='Signal', sensors=sensors)
+            signals = self.get_unique_sensor_details(level='signal', sensors=sensors)
             return signals
 
     def get_sensor_orients(self, sensors=None):
@@ -253,7 +240,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            orients = self.get_sensor_details(level='Orient', sensors=sensors)
+            orients = self.get_sensor_details(level='orient', sensors=sensors)
             return orients
 
     def get_unique_sensor_orients(self, sensors=None):
@@ -264,7 +251,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            orients = self.get_unique_sensor_details(level='Orient', sensors=sensors)
+            orients = self.get_unique_sensor_details(level='orient', sensors=sensors)
             return orients
 
     def get_sensor_heights(self, sensors=None):
@@ -275,7 +262,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            heights = self.get_sensor_details(level='Ht', sensors=sensors)
+            heights = self.get_sensor_details(level='height', sensors=sensors)
             return heights
 
     def get_unique_sensor_heights(self, sensors=None):
@@ -286,7 +273,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            heights = self.get_unique_sensor_details(level='Ht', sensors=sensors)
+            heights = self.get_unique_sensor_details(level='height', sensors=sensors)
             return heights
 
     def get_sensor_names(self, sensors=None):
@@ -297,7 +284,7 @@ Primary vane: {vane}'''.format(name=name,
             sensors: list, default None
                 List of specific sensors from which to return details, otherwise all columns assumed
             '''
-            names = self.get_sensor_details(level='Sensors', sensors=sensors)
+            names = self.get_sensor_details(level='sensor', sensors=sensors)
             return names
 
     def return_sensor_data(self, sensors=None):
@@ -327,7 +314,7 @@ Primary vane: {vane}'''.format(name=name,
         vane_data = self.return_primary_vane_data()
         return pd.concat([ano_data, vane_data], axis=1)
 
-    def return_sensor_type_data(self, sensor_type=None, sensor_signal='Avg'):
+    def return_sensor_type_data(self, sensor_type=None, sensor_signal='AVG'):
         '''Returns a DataFrame of measured data from a specified sensor type
 
         :Parameters:
@@ -397,11 +384,11 @@ Primary vane: {vane}'''.format(name=name,
     def return_self_corr_result_dataframe(self):
         self = self.remove_and_add_sensor_levels()
         df = self.data.loc[:,'SPD']
-        df.columns = df.columns.droplevel(level='Ht')
-        orients = df.columns.get_level_values(level='Orient').unique().tolist()
+        df.columns = df.columns.droplevel(level='height')
+        orients = df.columns.get_level_values(level='orient').unique().tolist()
         result_dataframe = []
         for orient in orients:
-            oriented_sensors = df.loc[:,orient].columns.get_level_values(level='Sensors').unique().tolist()
+            oriented_sensors = df.loc[:,orient].columns.get_level_values(level='sensor').unique().tolist()
             orientated_result = pd.DataFrame(index=pd.MultiIndex.from_product([oriented_sensors]*2, names=['Ref', 'Site']),
                                              columns=['Slope', 'R2', 'Uncert'])
             result_dataframe.append(orientated_result)
@@ -541,7 +528,7 @@ Primary vane: {vane}'''.format(name=name,
     #         ref = i[0]
     #         site = i[1]
     #         df = self.return_sensor_data(sensors=[ref, site]).dropna()
-    #         df.columns = df.columns.get_level_values(level='Sensors')
+    #         df.columns = df.columns.get_level_values(level='sensor')
     #         slope = corr.correlate_principal_component(df=df,
     #                                                   ref=ref,
     #                                                   site=site)
@@ -555,13 +542,13 @@ Primary vane: {vane}'''.format(name=name,
     #     self.is_mast_data_size_greater_than_zero()
     #     if wind_speed_sensors is None:
     #         df = self.return_sensor_type_data(sensor_type='SPD')
-    #         wind_speed_sensors = df.columns.get_level_values(level='Sensors')
+    #         wind_speed_sensors = df.columns.get_level_values(level='sensor')
     #     else:
     #         df = self.return_sensor_data(sensors=wind_speed_sensors)
 
-    #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
+    #     heights = df.columns.get_level_values(level='height').values.astype(np.float)
 
-    #     df.columns = df.columns.get_level_values(level='Sensors')
+    #     df.columns = df.columns.get_level_values(level='sensor')
     #     shear_time_series = shear.shear_alpha_time_series(df=df,
     #                                                     wind_speed_columns=wind_speed_sensors,
     #                                                     heights=heights)
@@ -571,13 +558,13 @@ Primary vane: {vane}'''.format(name=name,
     #     self.is_mast_data_size_greater_than_zero()
     #     if wind_speed_sensors is None:
     #         df = self.return_sensor_type_data(sensor_type='SPD')
-    #         wind_speed_sensors = df.columns.get_level_values(level='Sensors')
+    #         wind_speed_sensors = df.columns.get_level_values(level='sensor')
     #     else:
     #         df = self.return_sensor_data(sensors=wind_speed_sensors)
 
-    #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
+    #     heights = df.columns.get_level_values(level='height').values.astype(np.float)
 
-    #     df.columns = df.columns.get_level_values(level='Sensors')
+    #     df.columns = df.columns.get_level_values(level='sensor')
     #     df = df.groupby(df.index.month).mean()
     #     df.index.name = 'Month'
 
@@ -590,13 +577,13 @@ Primary vane: {vane}'''.format(name=name,
     #     self.is_mast_data_size_greater_than_zero()
     #     if wind_speed_sensors is None:
     #         df = self.return_sensor_type_data(sensor_type='SPD')
-    #         wind_speed_sensors = df.columns.get_level_values(level='Sensors')
+    #         wind_speed_sensors = df.columns.get_level_values(level='sensor')
     #     else:
     #         df = self.return_sensor_data(sensors=wind_speed_sensors)
 
-    #     heights = df.columns.get_level_values(level='Ht').values.astype(np.float)
+    #     heights = df.columns.get_level_values(level='height').values.astype(np.float)
 
-    #     df.columns = df.columns.get_level_values(level='Sensors')
+    #     df.columns = df.columns.get_level_values(level='sensor')
     #     df = df.groupby(df.index.year).mean()
     #     df.index.name = 'Year'
 
@@ -644,7 +631,7 @@ Primary vane: {vane}'''.format(name=name,
     #     no_of_sensors = len(sensors)
 
     #     monthly_data_recovery = self.return_monthly_data_recovery()
-    #     monthly_data_recovery.columns = monthly_data_recovery.columns.get_level_values('Sensors')
+    #     monthly_data_recovery.columns = monthly_data_recovery.columns.get_level_values('sensor')
     #     monthly_data_recovery[monthly_data_recovery<=valid_recovery] = np.nan
 
     #     #Set y-axis height for each valid month from each sensor
@@ -700,7 +687,7 @@ Primary vane: {vane}'''.format(name=name,
     #         data = pd.DataFrame(index=self.data.index.values, columns=['Empty'])
     #     else:
     #         data = self.data[sensor_type]
-    #         data.columns = data.columns.get_level_values('Sensors')
+    #         data.columns = data.columns.get_level_values('sensor')
 
     #     if sensor_type == 'SPD':
     #         fig_size = (30,6)
@@ -828,7 +815,7 @@ Primary vane: {vane}'''.format(name=name,
     #     self_corr_results = self.calculate_self_corr_results()
 
     #     df = self.data
-    #     df.columns = df.columns.get_level_values(level='Sensors')
+    #     df.columns = df.columns.get_level_values(level='sensor')
 
     #     self_corr_plots = []
     #     for mast_pair in self_corr_results.index:
