@@ -1,7 +1,9 @@
-matplotlib
-numpy
-pandas
-pyarrow
-scipy
-seaborn
+anemoi
+pandas,
+numpy,
+scipy,
+matplotlib,
+plotly,
+pyodbc,
+pyathenajdbc,
 statsmodels
