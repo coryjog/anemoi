@@ -16,13 +16,13 @@ def infer_time_step(mast_data):
     avg_time_delta = np.mean(time_delta_days)
 
     if avg_time_delta < 0.01:
-        freq = '10-min'
+        freq = '10min'
     elif avg_time_delta < 0.05:
-        freq = 'hourly'
+        freq = '1hour'
     elif avg_time_delta < 1.1:
-        freq = 'daily'
+        freq = '1day'
     elif (avg_time_delta > 28.0) and (avg_time_delta < 32):
-        freq = 'monthly'
+        freq = 'month'
     return freq
 
 def is_sensor_name_included(mast_data, sensor_name=None):

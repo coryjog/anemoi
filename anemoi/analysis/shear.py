@@ -10,7 +10,7 @@ def check_and_return_wind_speed_data_for_annual_shear(mast_data, wind_speed_sens
     
     if wind_speed_sensors is None:
         mast_data = an.utils.mast_data.return_sensor_type_data(mast_data, sensor_type='SPD')
-        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,:,'Avg']]
+        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,:,'AVG']]
     else:
         mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
         mast_data = mast_data.loc[:,wind_speed_sensors]
@@ -299,7 +299,7 @@ def mast_directional_by_orient(mast, wind_dir_sensor=None, dir_sectors=16):
         Mean alpha values indexed by the specified number of direction bins (directional shear profile)
     
     '''
-    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'Avg',:]].columns.get_level_values(level='Sensors').tolist()
+    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'AVG',:]].columns.get_level_values(level='Sensors').tolist()
     anemometer_data = mast.return_sensor_data(sensors=anemometers)
     anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='Orient').unique().tolist())
 
@@ -333,7 +333,7 @@ def mast_monthly_by_orient(mast):
         Mean alpha values for each sensor orientation, indexed by month
     
     '''
-    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'Avg',:]].columns.get_level_values(level='Sensors').tolist()
+    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'AVG',:]].columns.get_level_values(level='Sensors').tolist()
     anemometer_data = mast.return_sensor_data(sensors=anemometers)
     anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='Orient').unique().tolist())
 
