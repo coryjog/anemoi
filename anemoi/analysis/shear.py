@@ -10,15 +10,15 @@ def check_and_return_wind_speed_data_for_annual_shear(mast_data, wind_speed_sens
     
     if wind_speed_sensors is None:
         mast_data = an.utils.mast_data.return_sensor_type_data(mast_data, sensor_type='SPD')
-        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,:,'Avg']]
+        mast_data = mast_data.loc[:,pd.IndexSlice[:,:,:,'AVG']]
     else:
         mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
         mast_data = mast_data.loc[:,wind_speed_sensors]
 
-    heights = an.utils.mast_data.remove_and_add_sensor_levels(mast_data).columns.get_level_values('Ht')
-    wind_speed_sensors = mast_data.columns.get_level_values('Sensors').tolist()
-    mast_data.columns = mast_data.columns.get_level_values('Sensors').tolist()
-    mast_data.columns.names = ['Sensors']
+    heights = an.utils.mast_data.remove_and_add_sensor_levels(mast_data).columns.get_level_values('height')
+    wind_speed_sensors = mast_data.columns.get_level_values('sensor').tolist()
+    mast_data.columns = mast_data.columns.get_level_values('sensor').tolist()
+    mast_data.columns.names = ['sensor']
     mast_data = mast_data.dropna()
 
     return mast_data, wind_speed_sensors, heights
@@ -205,7 +205,7 @@ def mast_annual(mast):
     
     shear_analysis_mast = []
     for orient in unique_orients:
-        heights = wind_speed_data.loc[:,pd.IndexSlice[:,:,orient]].columns.get_level_values('Ht').unique()
+        heights = wind_speed_data.loc[:,pd.IndexSlice[:,:,orient]].columns.get_level_values('height').unique()
 
         alphas = pd.DataFrame(index=heights, columns=heights)
         for height_combination in itertools.combinations(heights,2):
@@ -215,7 +215,7 @@ def mast_annual(mast):
         
         shear_analysis_mast.append(alphas)
     
-    shear_analysis_mast = pd.concat(shear_analysis_mast, axis=0, keys=unique_orients, names=['Orient', 'Ht']).dropna(how='all')
+    shear_analysis_mast = pd.concat(shear_analysis_mast, axis=0, keys=unique_orients, names=['orient', 'height']).dropna(how='all')
     shear_analysis_mast = shear_analysis_mast.dropna(axis=1, how='all')
 
     return shear_analysis_mast
@@ -299,13 +299,13 @@ def mast_directional_by_orient(mast, wind_dir_sensor=None, dir_sectors=16):
         Mean alpha values indexed by the specified number of direction bins (directional shear profile)
     
     '''
-    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'Avg',:]].columns.get_level_values(level='Sensors').tolist()
+    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'AVG',:]].columns.get_level_values(level='sensor').tolist()
     anemometer_data = mast.return_sensor_data(sensors=anemometers)
-    anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='Orient').unique().tolist())
+    anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='orient').unique().tolist())
 
     alpha_by_dir = []
     for anemometer_orient in anemometer_orients:
-        anemometers = anemometer_data.loc[:,pd.IndexSlice[:,:,anemometer_orient]].columns.get_level_values(level='Sensors').tolist()
+        anemometers = anemometer_data.loc[:,pd.IndexSlice[:,:,anemometer_orient]].columns.get_level_values(level='sensor').tolist()
         alpha_by_dir.append(mast_directional(mast=mast, 
                                             wind_dir_sensor=wind_dir_sensor, 
                                             dir_sectors=dir_sectors,
@@ -333,14 +333,14 @@ def mast_monthly_by_orient(mast):
         Mean alpha values for each sensor orientation, indexed by month
     
     '''
-    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'Avg',:]].columns.get_level_values(level='Sensors').tolist()
+    anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'AVG',:]].columns.get_level_values(level='sensor').tolist()
     anemometer_data = mast.return_sensor_data(sensors=anemometers)
-    anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='Orient').unique().tolist())
+    anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='orient').unique().tolist())
 
     alpha_ts_by_orient = []
     for anemometer_orient in anemometer_orients:
         anemometer_data = an.utils.mast_data.remove_and_add_sensor_levels(anemometer_data)
-        anemometers = anemometer_data.loc[:,pd.IndexSlice[:,:,anemometer_orient]].columns.get_level_values(level='Sensors').tolist()
+        anemometers = anemometer_data.loc[:,pd.IndexSlice[:,:,anemometer_orient]].columns.get_level_values(level='sensor').tolist()
         alpha_ts = an.analysis.shear.alpha_time_series(anemometer_data, wind_speed_sensors=anemometers)
         alpha_ts_by_orient.append(alpha_ts)
         
@@ -390,7 +390,7 @@ def site_annual(masts):
         shear_analysis_site.append(mast_annual(mast))
     
     shear_analysis_site = pd.concat(shear_analysis_site, axis=1, keys=mast_names)
-    shear_analysis_site.columns.names = ['Mast', 'Ht']
+    shear_analysis_site.columns.names = ['Mast', 'height']
     shear_analysis_site = shear_analysis_site.dropna(axis=1, how='all')
     
     return shear_analysis_site

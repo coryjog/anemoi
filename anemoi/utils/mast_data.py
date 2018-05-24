@@ -16,34 +16,34 @@ def infer_time_step(mast_data):
     avg_time_delta = np.mean(time_delta_days)
 
     if avg_time_delta < 0.01:
-        freq = '10-min'
+        freq = '10min'
     elif avg_time_delta < 0.05:
-        freq = 'hourly'
+        freq = '1hour'
     elif avg_time_delta < 1.1:
-        freq = 'daily'
+        freq = '1day'
     elif (avg_time_delta > 28.0) and (avg_time_delta < 32):
-        freq = 'monthly'
+        freq = 'month'
     return freq
 
 def is_sensor_name_included(mast_data, sensor_name=None):
     if sensor_name is None:
         raise ValueError('Need to define a sensor name to verify it is installed on the mast...')
 
-    sensor_names = mast_data.columns.get_level_values('Sensors').unique().tolist()
+    sensor_names = mast_data.columns.get_level_values('sensor').unique().tolist()
     return sensor_name in sensor_names
 
 def is_sensor_names_included(mast_data, sensors=None):
     if sensors is None:
         raise ValueError('Need to define a sensor name to verify it is installed on the mast...')
 
-    sensor_names = mast_data.columns.get_level_values('Sensors').unique().tolist()
+    sensor_names = mast_data.columns.get_level_values('sensor').unique().tolist()
     return all(sensor in sensor_names for sensor in sensors)
 
 def is_sensor_type_included(mast_data, sensor_type=None):
     if sensor_type is None:
         raise ValueError('Need to define a sensor type to verify it is installed on the mast...')
 
-    sensor_types = mast_data.columns.get_level_values('Type').unique().tolist()
+    sensor_types = mast_data.columns.get_level_values('type').unique().tolist()
     return sensor_type in sensor_types
 
 def is_mast_data_size_greater_than_zero(mast_data):
@@ -58,11 +58,11 @@ def remove_sensor_levels(mast_data):
     Removes kind, type, height, and orient levels from sensor columns in mast data DataFrame
     '''
     is_mast_data_size_greater_than_zero(mast_data)
-    if 'Sensors' in mast_data.columns.names:
-        mast_data.columns = mast_data.columns.get_level_values('Sensors')
+    if 'sensor' in mast_data.columns.names:
+        mast_data.columns = mast_data.columns.get_level_values('sensor')
     else:
         mast_data.columns = mast_data.columns.get_level_values(-1)
-    mast_data.columns.names = ['Sensors']
+    mast_data.columns.names = ['sensor']
     return mast_data
 
 def add_sensor_levels(mast_data):
@@ -73,22 +73,17 @@ def add_sensor_levels(mast_data):
         mast_data = remove_sensor_levels(mast_data)
 
     is_mast_data_size_greater_than_zero(mast_data)
-    sensor_details = pd.Series(mast_data.columns).str.split('_', expand=True)
-    sensor_cols = ['kind', 'height', 'orient', 'signal']
-    sensors = pd.DataFrame(index=sensor_details.index, columns=sensor_cols)
-    sensor_details.columns = sensors.columns[0: sensor_details.shape[1]]
-    sensors = sensors.merge(sensor_details, how='right')
-    sensors.signal.fillna('Avg', inplace=True)
-    sensors.height.fillna('0', inplace=True)
-    kind = sensors.kind.astype(str)
-    height = sensors.height.values
-    height = list(map(lambda hts: ''.join([ht for ht in hts if ht in '1234567890.']), height))
-    height = [float(ht) for ht in height]
-    orient = sensors.orient.astype(str)
-    signal = sensors.signal.astype(str)
-    cols = pd.MultiIndex.from_arrays([kind, height, orient, signal, mast_data.columns],
-        names=['Type', 'Ht', 'Orient', 'Signal', 'Sensors'])
-    mast_data.columns = cols
+    sensors = pd.DataFrame(mast_data.columns.get_level_values('sensor'))
+    details = pd.Series(mast_data.columns).str.split('_', expand=True)
+    details.columns = ['type', 'height', 'orient', 'signal']
+    details = pd.concat([details,sensors], axis=1)
+    null_signal = details.signal[details.signal.isnull()].index
+    details.signal[null_signal] = details.orient[null_signal]
+    details.orient[null_signal] = '-'
+    details.height.fillna('0', inplace=True)
+    details.height = details.height.astype(np.float)
+    mast_data.columns = pd.MultiIndex.from_arrays(details.T.values, names=details.columns)
+
     return mast_data
 
 def remove_and_add_sensor_levels(mast_data):
@@ -102,7 +97,7 @@ def get_sensor_details(mast_data, level, sensors=None):
         :Parameters:
 
         level: string
-            Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+            Level from which to return details ('type', 'height', 'orient', 'signal', 'sensor')
 
         sensors: list, default None
             List of specific sensors from which to return details
@@ -122,7 +117,7 @@ def get_unique_sensor_details(mast_data, level, sensors=None):
         :Parameters:
 
         level: string
-            Level from which to return details ('Type', 'Ht', 'Orient', 'Signal', 'Sensors')
+            Level from which to return details ('type', 'height', 'orient', 'signal', 'sensor')
 
         sensors: list, default None
             List of specific sensors from which to return details
@@ -144,7 +139,7 @@ def get_sensor_types(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        types = get_sensor_details(mast_data, level='Type', sensors=sensors)
+        types = get_sensor_details(mast_data, level='type', sensors=sensors)
         return types
 
 def get_unique_sensor_types(mast_data, sensors=None):
@@ -155,7 +150,7 @@ def get_unique_sensor_types(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        types = get_unique_sensor_details(mast_data, level='Type', sensors=sensors)
+        types = get_unique_sensor_details(mast_data, level='type', sensors=sensors)
         return types
 
 def get_sensor_signals(mast_data, sensors=None):
@@ -166,7 +161,7 @@ def get_sensor_signals(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        signals = get_sensor_details(mast_data, level='Signal', sensors=sensors)
+        signals = get_sensor_details(mast_data, level='signal', sensors=sensors)
         return signals
 
 def get_unique_sensor_signals(mast_data, sensors=None):
@@ -177,7 +172,7 @@ def get_unique_sensor_signals(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        signals = get_unique_sensor_details(mast_data, level='Signal', sensors=sensors)
+        signals = get_unique_sensor_details(mast_data, level='signal', sensors=sensors)
         return signals
 
 def get_sensor_orients(mast_data, sensors=None):
@@ -188,7 +183,7 @@ def get_sensor_orients(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        orients = get_sensor_details(mast_data, level='Orient', sensors=sensors)
+        orients = get_sensor_details(mast_data, level='orient', sensors=sensors)
         return orients
 
 def get_unique_sensor_orients(mast_data, sensors=None):
@@ -199,7 +194,7 @@ def get_unique_sensor_orients(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        orients = get_unique_sensor_details(mast_data, level='Orient', sensors=sensors)
+        orients = get_unique_sensor_details(mast_data, level='orient', sensors=sensors)
         return orients
 
 def get_sensor_heights(mast_data, sensors=None):
@@ -210,7 +205,7 @@ def get_sensor_heights(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        heights = get_sensor_details(mast_data, level='Ht', sensors=sensors)
+        heights = get_sensor_details(mast_data, level='height', sensors=sensors)
         return heights
 
 def get_unique_sensor_heights(mast_data, sensors=None):
@@ -221,7 +216,7 @@ def get_unique_sensor_heights(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        heights = get_unique_sensor_details(mast_data, level='Ht', sensors=sensors)
+        heights = get_unique_sensor_details(mast_data, level='height', sensors=sensors)
         return heights
 
 def get_sensor_names(mast_data, sensors=None):
@@ -232,7 +227,7 @@ def get_sensor_names(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        names = get_sensor_details(mast_data, level='Sensors', sensors=sensors)
+        names = get_sensor_details(mast_data, level='sensor', sensors=sensors)
         return names
 
 def return_sensor_data(mast_data, sensors):
@@ -247,19 +242,19 @@ def return_sensor_data(mast_data, sensors):
     sensor_data = remove_and_add_sensor_levels(sensor_data)
     return sensor_data
 
-def return_sensor_type_data(mast_data, sensor_type=None, sensor_signal='Avg'):
+def return_sensor_type_data(mast_data, sensor_type=None, sensor_signal='AVG'):
     is_mast_data_size_greater_than_zero(mast_data)
     mast_data = remove_and_add_sensor_levels(mast_data)
     return mast_data.loc[:,pd.IndexSlice[sensor_type,:,:,sensor_signal]]
 
-def return_signal_type_data(mast_data, signal_type='Avg'):
+def return_signal_type_data(mast_data, signal_type='AVG'):
     is_mast_data_size_greater_than_zero(mast_data)
     mast_data = remove_and_add_sensor_levels(mast_data)
     return mast_data.loc[:,pd.IndexSlice[:,:,:,signal_type]]
 
 def return_anemometer_data(mast_data):
     mast_data = an.utils.mast_data.return_sensor_type_data(mast_data, sensor_type='SPD')
-    mast_data = an.utils.mast_data.return_signal_type_data(mast_data, signal_type='Avg')
+    mast_data = an.utils.mast_data.return_signal_type_data(mast_data, signal_type='AVG')
     mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
     return mast_data
 

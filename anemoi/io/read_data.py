@@ -17,8 +17,14 @@ def from_windographer_csv(filename, skiprows=8, na_values=-999, sensors=None):
                     parse_dates=True,
                     skiprows=skiprows,
                     header=header,
-                    na_values=na_values)
-    data.index.name = 'Stamp'
+                    na_values=na_values,
+                    encoding='iso-8859-1')
+    data = data.dropna(axis=1, how='all')
+    
+    data.columns = data.columns.str.split(' ', expand=True).get_level_values(0)
+    data.columns.name = 'sensor'
+    data.index.name = 'stamp'
+    
     if sensors is not None:
         data.columns = sensors
     return data
