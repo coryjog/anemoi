@@ -38,6 +38,7 @@ def annual_mast_results(mast_shear_results, lower_shear_bound=0.1, upper_shear_b
         raise ValueError('Mast shear results expect two index levels for plotting, you may be trying to pass site shear results.')
 
     orients = mast_shear_results.index.get_level_values(level='orient').unique().tolist()
+    mast_shear_results.columns.name = ''
     stacked_shear_results = mast_shear_results.stack().to_frame('alpha')
     stacked_shear_results.index.names = ['orient', 'ht1', 'ht2']
 

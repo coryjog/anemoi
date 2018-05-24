@@ -74,7 +74,7 @@ def add_sensor_levels(mast_data):
 
     is_mast_data_size_greater_than_zero(mast_data)
     sensors = pd.DataFrame(mast_data.columns.get_level_values('sensor'))
-    details = pd.Series(mast_data.columns).str.split('_', expand=True)
+    details = pd.Series(sensors.sensor).str.split('_', expand=True)
     details.columns = ['type', 'height', 'orient', 'signal']
     details = pd.concat([details,sensors], axis=1)
     null_signal = details.signal[details.signal.isnull()].index
