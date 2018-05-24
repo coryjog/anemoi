@@ -5,6 +5,7 @@ exec(open('anemoi/_version.py').read())
 required = ['pandas',
             'numpy',
             'scipy',
+            'matplotlib',
             'plotly',
             'pyodbc',
             'pyathenajdbc',

@@ -1,5 +1,7 @@
 [![Examples](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/coryjog/anemoi_binder/master?urlpath=lab)
 
+<img src="https://github.com/coryjog/anemoi/blob/master/anemoi_docs/_static/Original%20on%20White.png" width="200"/>
+
 # anemoi - Greek gods of wind
 EDF's pre-alpha Python package for wind data analysis - may be open-sourced in the future but primarily for internal use at the moment.
 
