@@ -300,7 +300,6 @@ def mast_directional_by_orient(mast, wind_dir_sensor=None, dir_sectors=16):
     
     '''
     anemometers = mast.data.loc[:,pd.IndexSlice['SPD',:,:,'AVG',:]].columns.get_level_values(level='sensor').tolist()
-
     anemometer_data = mast.return_sensor_data(sensors=anemometers)
     anemometer_orients = sorted(anemometer_data.columns.get_level_values(level='orient').unique().tolist())
 
