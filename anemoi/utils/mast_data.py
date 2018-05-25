@@ -3,15 +3,71 @@ import pandas as pd
 import numpy as np
 
 ### MAST DATA CHECKS AND VALIDATIONS ###
-def is_mast_data_size_greater_than_zero(mast_data):
-    if (mast_data.shape[0] > 0) and (mast_data.shape[1] > 0):
-        return None
-    raise ValueError('No data associated within mast_data DataFrame.')
+def check_mast_data_not_empty(mast_data):
+    assert not mast_data.empty, 'No data in mast_data DataFrame.'
+
+def check_sensor_names_in_mast_data_columns(mast_data_columns, sensor_names):
+    if not isinstance(sensor_names, list):
+        sensor_names = [sensor_names]
+    
+    mast_data_sensor_names = mast_data_columns.get_level_values('sensor').unique().tolist()
+    assert all(sensor_name in mast_data_sensor_names for sensor_name in sensor_names)
+
+def check_sensor_types_in_mast_data_columns(mast_data_columns, sensor_types):
+    if not isinstance(sensor_types, list):
+        sensor_types = [sensor_types]
+    
+    mast_data_sensor_types = mast_data_columns.get_level_values('type').unique().tolist()
+    assert all(sensor_type in mast_data_sensor_types for sensor_type in sensor_types)
+
+def check_sensor_orients_in_mast_data_columns(mast_data_columns, sensor_orients):
+    if not isinstance(sensor_orients, list):
+        sensor_orients = [sensor_orients]
+    
+    mast_data_sensor_orients = mast_data_columns.get_level_values('orient').unique().tolist()
+    assert all(sensor_orient in mast_data_sensor_orients for sensor_orient in sensor_orients)
+
+def list_of_sensor_names_from_mast_data_columns(mast_data_columns):
+    assert 'sensor' in mast_data_columns.names, 'Sensor names not in mast_data column levels'
+    return sorted(mast_data_columns.get_level_values('sensor').tolist())
+
+def remove_sensor_levels_from_mast_data_columns(mast_data_columns):
+    '''
+    Removes kind, type, height, and orient levels from sensor columns in mast data DataFrame
+    '''
+    assert 'sensor' in mast_data_columns.names, '"sensor" level not in mast_data columns'
+    mast_data_columns = mast_data_columns.get_level_values('sensor')
+    return mast_data_columns
+
+def add_sensor_levels_to_from_mast_data_columns(mast_data_columns):
+    '''
+    Add kind, type, height, and orient levels to sensor columns in mast data DataFrame
+    '''
+    if mast_data_columns.nlevels > 1:
+        mast_data_columns = remove_sensor_levels_from_mast_data_columns(mast_data_columns)
+
+    sensors = pd.DataFrame(mast_data_columns.get_level_values('sensor'))
+    details = pd.Series(sensors.sensor).str.split('_', expand=True)
+    details.columns = ['type', 'height', 'orient', 'signal']
+    details = pd.concat([details,sensors], axis=1)
+    null_signal = details.signal[details.signal.isnull()].index
+    details.signal[null_signal] = details.orient[null_signal]
+    details.orient[null_signal] = '-'
+    details.height.fillna('0', inplace=True)
+    details.height = details.height.astype(np.float)
+    mast_data_columns = pd.MultiIndex.from_arrays(details.T.values, names=details.columns)
+
+    return mast_data_columns
+
+def remove_and_add_sensor_levels_to_mast_data_columns(mast_data_columns):
+    mast_data_columns = remove_sensor_levels_from_mast_data_columns(mast_data_columns)
+    mast_data_columns = add_sensor_levels_to_from_mast_data_columns(mast_data_columns)
+    return mast_data_columns
 
 def infer_time_step(mast_data):
     '''Returns the frequency of the mast data time step; 10-min, hourly, daily, or monthly
     '''
-    is_mast_data_size_greater_than_zero(mast_data)
+    check_mast_data_not_empty(mast_data)
     time_delta_days = np.diff(mast_data.index.values)/np.timedelta64(1,'D')
     avg_time_delta = np.mean(time_delta_days)
 
@@ -25,73 +81,7 @@ def infer_time_step(mast_data):
         freq = 'month'
     return freq
 
-def is_sensor_name_included(mast_data, sensor_name=None):
-    if sensor_name is None:
-        raise ValueError('Need to define a sensor name to verify it is installed on the mast...')
-
-    sensor_names = mast_data.columns.get_level_values('sensor').unique().tolist()
-    return sensor_name in sensor_names
-
-def is_sensor_names_included(mast_data, sensors=None):
-    if sensors is None:
-        raise ValueError('Need to define a sensor name to verify it is installed on the mast...')
-
-    sensor_names = mast_data.columns.get_level_values('sensor').unique().tolist()
-    return all(sensor in sensor_names for sensor in sensors)
-
-def is_sensor_type_included(mast_data, sensor_type=None):
-    if sensor_type is None:
-        raise ValueError('Need to define a sensor type to verify it is installed on the mast...')
-
-    sensor_types = mast_data.columns.get_level_values('type').unique().tolist()
-    return sensor_type in sensor_types
-
-def is_mast_data_size_greater_than_zero(mast_data):
-        if mast_data.shape[0] < 1:
-            raise ValueError('No data associated with mast.')
-        if mast_data.shape[1] < 0:
-            raise ValueError('No data associated with mast.')
-        return None
-
-def remove_sensor_levels(mast_data):
-    '''
-    Removes kind, type, height, and orient levels from sensor columns in mast data DataFrame
-    '''
-    is_mast_data_size_greater_than_zero(mast_data)
-    if 'sensor' in mast_data.columns.names:
-        mast_data.columns = mast_data.columns.get_level_values('sensor')
-    else:
-        mast_data.columns = mast_data.columns.get_level_values(-1)
-    mast_data.columns.names = ['sensor']
-    return mast_data
-
-def add_sensor_levels(mast_data):
-    '''
-    Add kind, type, height, and orient levels to sensor columns in mast data DataFrame
-    '''
-    if mast_data.columns.nlevels > 1:
-        mast_data = remove_sensor_levels(mast_data)
-
-    is_mast_data_size_greater_than_zero(mast_data)
-    sensors = pd.DataFrame(mast_data.columns.get_level_values('sensor'))
-    details = pd.Series(sensors.sensor).str.split('_', expand=True)
-    details.columns = ['type', 'height', 'orient', 'signal']
-    details = pd.concat([details,sensors], axis=1)
-    null_signal = details.signal[details.signal.isnull()].index
-    details.signal[null_signal] = details.orient[null_signal]
-    details.orient[null_signal] = '-'
-    details.height.fillna('0', inplace=True)
-    details.height = details.height.astype(np.float)
-    mast_data.columns = pd.MultiIndex.from_arrays(details.T.values, names=details.columns)
-
-    return mast_data
-
-def remove_and_add_sensor_levels(mast_data):
-    mast_data = remove_sensor_levels(mast_data)
-    mast_data = add_sensor_levels(mast_data)
-    return mast_data
-
-def get_sensor_details(mast_data, level, sensors=None):
+def sensor_details(mast_data, level, sensors=None):
         '''Returns a list of sensor details for a given column level in mast data
 
         :Parameters:
@@ -102,16 +92,16 @@ def get_sensor_details(mast_data, level, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details
         '''
-        mast_data = remove_and_add_sensor_levels(mast_data)
-        is_mast_data_size_greater_than_zero(mast_data)
-        if (sensors is not None) and is_sensor_names_included(mast_data, sensors):
+        check_mast_data_not_empty(mast_data)
+        mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+        if (sensors is not None) and check_sensor_names_in_mast_data_columns(mast_data.columns, sensors):
             details_data = mast_data.loc[:, pd.IndexSlice[:,:,:,:,sensors]]
             details = details_data.columns.get_level_values(level)
         else:
             details = mast_data.columns.get_level_values(level)
         return details.tolist()
 
-def get_unique_sensor_details(mast_data, level, sensors=None):
+def sensor_details_unique(mast_data, level, sensors=None):
         '''Returns a list of unique sensor details for a given column level in mast data
 
         :Parameters:
@@ -122,16 +112,15 @@ def get_unique_sensor_details(mast_data, level, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details
         '''
-        mast_data = remove_and_add_sensor_levels(mast_data)
-        is_mast_data_size_greater_than_zero(mast_data)
-        if (sensors is not None) and is_sensor_names_included(mast_data, sensors):
+        mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+        if (sensors is not None) and check_sensor_names_in_mast_data_columns(mast_data, sensors):
             details_data = mast_data.loc[:, pd.IndexSlice[:,:,:,:,sensors]]
             details = details_data.columns.get_level_values(level)
         else:
             details = mast_data.columns.get_level_values(level)
         return sorted(details.unique().tolist())
 
-def get_sensor_types(mast_data, sensors=None):
+def sensor_types(mast_data, sensors=None):
         '''Returns a list of sensor types for columns in mast data
 
         :Parameters:
@@ -139,10 +128,10 @@ def get_sensor_types(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        types = get_sensor_details(mast_data, level='type', sensors=sensors)
+        types = sensor_details(mast_data, level='type', sensors=sensors)
         return types
 
-def get_unique_sensor_types(mast_data, sensors=None):
+def sensor_types_unique(mast_data, sensors=None):
         '''Returns a list of unique sensor types for columns in mast data
 
         :Parameters:
@@ -150,10 +139,10 @@ def get_unique_sensor_types(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        types = get_unique_sensor_details(mast_data, level='type', sensors=sensors)
+        types = sensor_details_unique(mast_data, level='type', sensors=sensors)
         return types
 
-def get_sensor_signals(mast_data, sensors=None):
+def sensor_signals(mast_data, sensors=None):
         '''Returns a list of sensor signals for columns in mast data
 
         :Parameters:
@@ -161,10 +150,10 @@ def get_sensor_signals(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        signals = get_sensor_details(mast_data, level='signal', sensors=sensors)
+        signals = sensor_details(mast_data, level='signal', sensors=sensors)
         return signals
 
-def get_unique_sensor_signals(mast_data, sensors=None):
+def sensor_signals_unique(mast_data, sensors=None):
         '''Returns a list of unique sensor signals for columns in mast data
 
         :Parameters:
@@ -172,10 +161,10 @@ def get_unique_sensor_signals(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        signals = get_unique_sensor_details(mast_data, level='signal', sensors=sensors)
+        signals = sensor_details_unique(mast_data, level='signal', sensors=sensors)
         return signals
 
-def get_sensor_orients(mast_data, sensors=None):
+def sensor_orients(mast_data, sensors=None):
         '''Returns a list of sensor orientations for columns in mast data
 
         :Parameters:
@@ -183,10 +172,10 @@ def get_sensor_orients(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        orients = get_sensor_details(mast_data, level='orient', sensors=sensors)
+        orients = sensor_details(mast_data, level='orient', sensors=sensors)
         return orients
 
-def get_unique_sensor_orients(mast_data, sensors=None):
+def sensor_orients_unique(mast_data, sensors=None):
         '''Returns a list of unique sensor orientations for columns in mast data
 
         :Parameters:
@@ -194,10 +183,10 @@ def get_unique_sensor_orients(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        orients = get_unique_sensor_details(mast_data, level='orient', sensors=sensors)
+        orients = sensor_details_unique(mast_data, level='orient', sensors=sensors)
         return orients
 
-def get_sensor_heights(mast_data, sensors=None):
+def sensor_heights(mast_data, sensors=None):
         '''Returns a list of sensor heights for columns in mast data
 
         :Parameters:
@@ -205,10 +194,10 @@ def get_sensor_heights(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        heights = get_sensor_details(mast_data, level='height', sensors=sensors)
+        heights = sensor_details(mast_data, level='height', sensors=sensors)
         return heights
 
-def get_unique_sensor_heights(mast_data, sensors=None):
+def sensor_heights_unique(mast_data, sensors=None):
         '''Returns a list of unique sensor heights for columns in mast data
 
         :Parameters:
@@ -216,10 +205,10 @@ def get_unique_sensor_heights(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        heights = get_unique_sensor_details(mast_data, level='height', sensors=sensors)
+        heights = sensor_details_unique(mast_data, level='height', sensors=sensors)
         return heights
 
-def get_sensor_names(mast_data, sensors=None):
+def sensor_names(mast_data, sensors=None):
         '''Returns a list of sensor names for columns in mast data
 
         :Parameters:
@@ -227,38 +216,49 @@ def get_sensor_names(mast_data, sensors=None):
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         '''
-        names = get_sensor_details(mast_data, level='sensor', sensors=sensors)
+        names = sensor_details(mast_data, level='sensor', sensors=sensors)
         return names
 
-def return_sensor_data(mast_data, sensors):
-    is_mast_data_size_greater_than_zero(mast_data)
+def return_data_from_sensors(mast_data, sensors):
+    check_mast_data_not_empty(mast_data)
+    check_sensor_names_in_mast_data_columns(mast_data.columns, sensors)
+    
     if not isinstance(sensors, list):
         sensors = [sensors]
-    if not is_sensor_names_included(mast_data, sensors):
-        raise ValueError('Trying to return sensor data from a sensor not in the mast data')
 
-    sensor_data = remove_sensor_levels(mast_data).loc[:,sensors]
-    mast_data = remove_and_add_sensor_levels(mast_data)
-    sensor_data = remove_and_add_sensor_levels(sensor_data)
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+    sensor_data = mast_data.loc[:,pd.IndexSlice[:,:,:,:,sensors]]
+    # sensor_data = remove_and_add_sensor_levels_to_mast_data_columns(sensor_data)
     return sensor_data
 
-def return_sensor_type_data(mast_data, sensor_type=None, sensor_signal='AVG'):
-    is_mast_data_size_greater_than_zero(mast_data)
-    mast_data = remove_and_add_sensor_levels(mast_data)
+def return_data_from_sensors_by_type(mast_data, sensor_type=None, sensor_signal='AVG'):
+    check_mast_data_not_empty(mast_data)
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
     return mast_data.loc[:,pd.IndexSlice[sensor_type,:,:,sensor_signal]]
 
-def return_signal_type_data(mast_data, signal_type='AVG'):
-    is_mast_data_size_greater_than_zero(mast_data)
-    mast_data = remove_and_add_sensor_levels(mast_data)
+def return_data_from_sensors_by_orient(mast_data, sensor_orient=None, sensor_signal='AVG'):
+    check_mast_data_not_empty(mast_data)
+    valid_orients = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'COMB', 'EXT']
+    assert sensor_orient in valid_orients, 'Must be a valid orient to extract sensor data by orientation'
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+    return mast_data.loc[:,pd.IndexSlice[:,:,sensor_orient,sensor_signal]]
+
+def return_data_from_sensors_by_signal(mast_data, signal_type='AVG'):
+    check_mast_data_not_empty(mast_data)
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
     return mast_data.loc[:,pd.IndexSlice[:,:,:,signal_type]]
 
-def return_anemometer_data(mast_data):
-    mast_data = an.utils.mast_data.return_sensor_type_data(mast_data, sensor_type='SPD')
-    mast_data = an.utils.mast_data.return_signal_type_data(mast_data, signal_type='AVG')
-    mast_data = an.utils.mast_data.remove_sensor_levels(mast_data)
-    return mast_data
+def return_data_from_anemometers(mast_data):
+    check_mast_data_not_empty(mast_data)
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+    return mast_data.loc[:,pd.IndexSlice['SPD',:,:,'AVG']]
 
-def return_monthly_days():
+def return_data_from_vanes(mast_data):
+    check_mast_data_not_empty(mast_data)
+    mast_data.columns = remove_and_add_sensor_levels_to_mast_data_columns(mast_data.columns)
+    return mast_data.loc[:,pd.IndexSlice['DIR',:,:,'AVG']]
+
+def monthly_days():
     days = pd.DataFrame(index=np.arange(1,13),
                         data=[31.0,28.25,31.0,30.0,31.0,30.0,31.0,31.0,30.0,31.0,30.0,31.0],
                         columns=['Days'])
@@ -266,16 +266,19 @@ def return_monthly_days():
     return days
 
 def return_momm(mast_data):
+    check_mast_data_not_empty(mast_data)
     if isinstance(mast_data.index, pd.DatetimeIndex):
         mast_data = mast_data.groupby(mast_data.index.month).apply(np.mean)
-    if 'month' in mast_data.index.names:
+    elif 'month' in mast_data.index.names:
         mast_data = mast_data.groupby(level='month').apply(np.mean)
+    else: 
+        raise ValueError('DatetimeIndex or index level "month" needed for MoMM calculation.')
 
     mast_data.index.name = 'month'
-    days = pd.concat([return_monthly_days()]*mast_data.shape[1], axis=1)
+    days = pd.concat([monthly_days()]*mast_data.shape[1], axis=1)
     days.columns = mast_data.columns
     momm = (mast_data*days).sum()/365.25
-    momm = momm.to_frame(name='MoMM').T
+    momm = momm.to_frame(name='MoMM')
     return momm
 
 def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
@@ -298,7 +301,7 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
         For example, by defalt, when resampling 10-minute data to daily averages you would need
         at least 101 valid records to have a valid daily average.
     '''
-    is_mast_data_size_greater_than_zero(mast_data)
+    check_mast_data_not_empty(mast_data)
 
     start_time = mast_data.index[0]
 
@@ -332,7 +335,7 @@ def resample_mast_data(mast_data, freq, agg='mean', minimum_recovery_rate=0.7):
 
 ### Mast Statistics ###
 def monthly_data_recovery(mast_data):
-    is_mast_data_size_greater_than_zero(mast_data)
+    check_mast_data_not_empty(mast_data)
     data = mast_data.copy()
 
     # Calculate monthly data recovery by dividing the number of valid records by the number possible
@@ -353,7 +356,7 @@ def normalized_rolling_monthly_average(mast_data, min_months=11):
         Minimum number of months to be considered a valid year in the rolling average
     '''
 
-    is_mast_data_size_greater_than_zero(mast_data)
+    check_mast_data_not_empty(mast_data)
     data = mast_data.copy().astype(np.float)
 
     yearly_monthly_avg = data.groupby([data.index.year, data.index.month]).mean()
