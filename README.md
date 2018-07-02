@@ -1,3 +1,5 @@
+<a href="https://pypi.python.org/pypi/anemoi/">![PyPiVersion](https://img.shields.io/pypi/v/anemoi.svg)</a>
+
 [![Examples](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/coryjog/anemoi_binder/master?urlpath=lab)
 
 <img src="https://github.com/coryjog/anemoi/blob/master/anemoi_docs/_static/Original%20on%20White.png" width="200"/>
