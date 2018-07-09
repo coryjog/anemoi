@@ -1,9 +1,8 @@
-anemoi
-pandas,
-numpy,
-scipy,
-matplotlib,
-plotly,
-pyodbc,
-pyathenajdbc,
-statsmodels
+pandas >= 0.23,
+numpy >= 1.14.3,
+scipy >= 1.0.0,
+matplotlib >= 2.2.2,
+plotly >= 2.7.0,
+pyodbc >= 4.0.23,
+statsmodels >= 0.9.0,
+pyarrow >= 0.9.0
