@@ -13,28 +13,31 @@ Anemoi were Greek wind gods. Each god was ascribed a cardinal direction from whi
 **Requirements:** 
 
 * Python 3
-* matplotlib
 * numpy
 * pandas
-* pyarrow
+* plotly
 * pyodbc
 * requests
 * scipy
-* seaborn
 * statsmodels
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   quick-start.rst
-   data_model.rst
-   tutorial.rst
-   code_MetMast.rst
-   code_RefMast.rst
-   code_shear.rst
-   code_correlate.rst
-   code_freq_dist.rst
+   docs_quick-start.rst
+   docs_start-from-scratch.rst
+   docs_data_model.rst
+   docs_tutorial.rst
+   docs_plotting.rst
+   code_class_MetMast.rst
+   code_class_RefMast.rst
+   code_io_references.rst
+   code_analysis_shear.rst
+   code_analysis_correlate.rst
+   code_analysis_freq_dist.rst
+   code_plotting_shear.rst
+   code_plotting_correlate.rst
 
 
 Indices and tables
