@@ -4,7 +4,7 @@ Quick Start Guide
 Instructions for installing anemoi. 
 -----------------------------------
 
-Anemoi only supports Python 3 and requires statsmodels, which is distributed via Anaconda. 
+Anemoi only supports Python 3 and requires statsmodels, which is distributed via Anaconda. First, if you have a Windows machine you'll need to install a C++ compiler. You can do this by installing the most recent version of Visual Studio Community edition from `here <https://visualstudio.microsoft.com/downloads/>`_. Then, assuming you've already installed Anaconda, run the following:  
 
 .. code-block:: none
     

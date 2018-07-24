@@ -1,5 +1,5 @@
-Quick Start Guide
-=================
+Start from Nothing Guide
+========================
 
 Instructions for installing Python via Anaconda. 
 -------------------------------------------------

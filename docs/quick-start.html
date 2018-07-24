@@ -23,7 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Start from Nothing Guide" href="docs_start-from-scratch.html" />
+    <link rel="next" title="Data Model" href="data_model.html" />
     <link rel="prev" title="Welcome to anemoi’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -44,19 +44,22 @@
 <h1>Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="instructions-for-installing-anemoi">
 <h2>Instructions for installing anemoi.<a class="headerlink" href="#instructions-for-installing-anemoi" title="Permalink to this headline">¶</a></h2>
-<p>Anemoi only supports Python 3 and requires statsmodels, which is distributed via Anaconda. First, if you have a Windows machine you’ll need to install a C++ compiler. You can do this by installing the most recent version of Visual Studio Community edition from <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">here</a>. Then, assuming you’ve already installed Anaconda, run the following:</p>
+<p>Assuming you are starting from scratch, you’ll need to first install Python 3 and git. I recommend installing the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda distribution of Python 3</a> which automatically includes many of the libraries on which anemoi depends.</p>
+<p>Next you can install Git for your specific operating system <a class="reference external" href="https://git-scm.com/downloads">from here</a>.</p>
+<p>Then from the command line you pip install:</p>
 <div class="highlight-none"><div class="highlight"><pre><span></span>conda install statsmodels
 pip install anemoi
 </pre></div>
 </div>
-<p>If you can run the following within a Jupyter Notebook without an error you know you’re ready to analize some wind data.</p>
+<p>All the dependancies listed in required.txt will also be installed.</p>
+<p>Finally, if you can run the following within a Jupyter Notebook without an error you know you’re ready to analize some wind data.</p>
 <div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="kn">as</span> <span class="nn">an</span>
 </pre></div>
 </td></tr></table></div>
 </div>
 <div class="section" id="alternate-instructions-for-using-anemoi">
 <h2>Alternate instructions for using anemoi.<a class="headerlink" href="#alternate-instructions-for-using-anemoi" title="Permalink to this headline">¶</a></h2>
-<p>You can download the anemoi package from the <a class="reference external" href="https://github.com/coryjog/anemoi">master branch</a> on GitHub and place the anemoi folder in your working directory. This option requires you to separately install all the needed Python packages listed in the requirements.txt file.</p>
+<p>You can download the anemoi package from the master branch on GitHub and place the anemoi folder in your working directory. This option requires you to separately install all the needed Python packages listed in the required.txt file.</p>
 </div>
 </div>
 
@@ -83,18 +86,13 @@ pip install anemoi
 <li class="toctree-l2"><a class="reference internal" href="#alternate-instructions-for-using-anemoi">Alternate instructions for using anemoi.</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Start from Nothing Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_data_model.html">Data Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docs_plotting.html">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Analysis Module - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_freq_dist.html">Analysis Module - Freq Dist</a></li>
 </ul>
 
 <div class="relations">
@@ -102,7 +100,7 @@ pip install anemoi
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Welcome to anemoi’s documentation!</a></li>
-      <li>Next: <a href="docs_start-from-scratch.html" title="next chapter">Start from Nothing Guide</a></li>
+      <li>Next: <a href="data_model.html" title="next chapter">Data Model</a></li>
   </ul></li>
 </ul>
 </div>
@@ -128,7 +126,7 @@ pip install anemoi
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/docs_quick-start.rst.txt"
+      <a href="_sources/quick-start.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

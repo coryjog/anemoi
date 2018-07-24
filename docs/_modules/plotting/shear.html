@@ -75,12 +75,14 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Returns plotting data and a layout for a single mast shear analysis plot.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Mast shear results expect two index levels for plotting, you may be trying to pass site shear results.&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">nlevels</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Expecting three index levels for plotting [&#39;orient&#39;,&#39;height&#39;,&#39;sensor&#39;]&quot;</span>
 
-    <span class="n">orients</span> <span class="o">=</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;Orient&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">orients</span> <span class="o">=</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;orient&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;height&#39;</span><span class="p">)</span>
+    <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ht2&#39;</span>
+    <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sensor&#39;</span><span class="p">])</span>
+    <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;orient&#39;</span><span class="p">,</span><span class="s1">&#39;ht1&#39;</span><span class="p">]</span>
     <span class="n">stacked_shear_results</span> <span class="o">=</span> <span class="n">mast_shear_results</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">)</span>
-    <span class="n">stacked_shear_results</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Orient&#39;</span><span class="p">,</span> <span class="s1">&#39;ht1&#39;</span><span class="p">,</span> <span class="s1">&#39;ht2&#39;</span><span class="p">]</span>
 
     <span class="n">plotting_data</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">orient</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">orients</span><span class="p">):</span>
@@ -212,12 +214,13 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../docs_quick-start.html">Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../docs_start-from-scratch.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs_start-from-scratch.html">Start from Nothing Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs_data_model.html">Data Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs_tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../docs_plotting.html">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_class_MetMast.html">Class - MetMast</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_io_references.html">Input/Output - References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_analysis_shear.html">Analysis - Shear</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_analysis_correlate.html">Analysis - Correlate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
