@@ -1,6 +1,7 @@
 # Import libraries
 import os
 import sys
+import anemoi as an
 import pandas as pd
 import numpy as np
 import pyodbc
@@ -24,7 +25,7 @@ def return_between_date_query_string(start_date, end_date):
         return start_end_str
     
 def sql_or_string_from_mvs_ids(mvs_ids):
-    or_string = ' OR '.join(['MVS_ID = {}'.format(mvs_id) for mvs_id in mvs_ids])
+    or_string = ' OR '.join(['mvs_id = {}'.format(mvs_id) for mvs_id in mvs_ids])
     return or_string
 
 # Define DataBase class
@@ -47,7 +48,7 @@ class M2D2(object):
         '''
         
         self.database = 'M2D2'
-        server = 'sdhqragdbprd01'
+        server = '10.1.15.53'
         db = 'M2D2_DB_BE'
         
         conn_str = 'DRIVER={SQL Server}; SERVER=%s; DATABASE=%s; Trusted_Connection=yes' %(server, db)
@@ -61,7 +62,7 @@ class M2D2(object):
     def connection_check(self, database):
         return self.database == database
 
-    def get_masts(self):
+    def masts(self):
         '''
         :Returns:
 
@@ -71,7 +72,7 @@ class M2D2(object):
 
             import anemoi as an
             m2d2 = an.io.database.M2D2()
-            m2d2.get_masts()
+            m2d2.masts()
 
         ''' 
         
@@ -81,8 +82,8 @@ class M2D2(object):
         sql_query_masts = '''
         SELECT [Project]
             ,[AssetID]
-            ,[WMM_ID]
-            ,[MVS_ID]
+            ,[wmm_id]
+            ,[mvs_id]
             ,[Name]
             ,[Type]
             ,[StartDate]
@@ -91,7 +92,7 @@ class M2D2(object):
         '''
         
         sql_query_coordinates='''
-        SELECT [WMM_ID]
+        SELECT [wmm_id]
             ,[WMM_Latitude]
             ,[WMM_Longitude]
             ,[WMM_Elevation]
@@ -99,16 +100,25 @@ class M2D2(object):
         
         masts = pd.read_sql(sql_query_masts, self.conn, parse_dates=['StartDate', 'StopDate'])
         coordinates = pd.read_sql(sql_query_coordinates, self.conn)
-        masts = masts.merge(coordinates, left_on='WMM_ID', right_on='WMM_ID')
+        masts = masts.merge(coordinates, left_on='wmm_id', right_on='wmm_id')
 
-        masts.set_index(['Project', 'WMM_ID', 'WMM_Latitude', 'WMM_Longitude', 'Type'], inplace=True)
+        masts.set_index(['Project', 'wmm_id', 'WMM_Latitude', 'WMM_Longitude', 'Type'], inplace=True)
         masts.sort_index(inplace=True)
         return masts
 
-    def get_column_labels(self, wmm_id):
-        masts = self.get_masts()
-        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].MVS_ID.unique().tolist()
-        or_string = ' OR '.join(['MVS_ID = {}'.format(mvs_id) for mvs_id in mvs_ids])
+    def valid_signal_labels(self):
+        signal_type_query = '''
+        SELECT [MDVT_ID]
+              ,[MDVT_Name]
+        FROM [M2D2_DB_BE].[dbo].[MDataValueType]'''
+
+        signal_types = pd.read_sql(signal_type_query, self.conn, index_col='MDVT_Name').MDVT_ID
+        return signal_types
+
+    def column_labels_for_masts(self):
+        masts = self.masts()
+        mvs_ids = masts.mvs_id.unique().tolist()
+        or_string = ' OR '.join(['mvs_id = {}'.format(mvs_id) for mvs_id in mvs_ids])
         
         column_label_sql_query = '''
         SELECT [column_id]
@@ -117,263 +127,279 @@ class M2D2(object):
         WITH (NOLOCK)
         WHERE {}'''.format(or_string)
 
-        column_labels = pd.read_sql(column_label_sql_query, m2d2.conn)
+        column_labels = pd.read_sql(column_label_sql_query, self.conn)
+        column_labels = column_labels.set_index('column_id')
+        return column_labels
+
+    def column_labels_for_wmm_id(self, wmm_id):
+        masts = self.masts()
+        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].mvs_id.unique().tolist()
+        or_string = ' OR '.join(['mvs_id = {}'.format(mvs_id) for mvs_id in mvs_ids])
+        
+        column_label_sql_query = '''
+        SELECT [column_id]
+            ,[label]
+        FROM [M2D2_DB_BE].[dbo].[ViewWindogMetaData]
+        WITH (NOLOCK)
+        WHERE {}'''.format(or_string)
+
+        column_labels = pd.read_sql(column_label_sql_query, self.conn)
         column_labels = column_labels.set_index('column_id')
         return column_labels        
     
-    def get_windog_raw_data(self, wmm_id, start_date, end_date):
-        # Download raw windog data from M2D2 for an identifed period
-        
-        sql_query_data = '''
-        DECLARE @RC int
-        DECLARE @WMM_ID int
-        DECLARE @startDate datetime
-        DECLARE @endDate datetime
-        DECLARE @Windog_format bit
-
-        -- TODO: Set parameter values here.
-        Set @WMM_id = {}
-        Set @startDate = '{}'
-        set @endDate = '{}'
-        Set @Windog_format = 0
-
-        EXECUTE @RC = [dbo].[proc_GetWindogRawData]
-        @WMM_ID
-        ,@startDate
-        ,@endDate
-        ,@Windog_format'''.format(wmm_id, start_date, end_date)
-        
-        mast_data = pd.read_sql(sql_query_data, self.conn, parse_dates=['MRD_CorrectedTimestamp'])
-                
-        mast_data = mast_data.loc[mast_data.MDVT_ID == 1, ['MRD_CorrectedTimestamp', 'MVS_ID', 'CalDataValue']]
-        mast_data = mast_data.pivot_table(index='MRD_CorrectedTimestamp', columns='MVS_ID', values='CalDataValue', aggfunc='first')    
-        
-        return mast_data
-
-    def get_wmm_id_data(self, wmm_id, start_date=None, end_date=None):
-        '''Download all sensor average signals from M2D2 for a given wind met mast id
+    def sensor_data_from_mvs_id(self, mvs_id, signal_type='AVG'):
+        '''Download sensor data from M2D2
         
         :Parameters:
         
-        wmm_id: int, default None
-            Wind met mast ID
+        mvs_id: int
+            Virtual sensor ID (mvs_id) in M2D2
         
-        start_date: str, default None (first measured record)
-            Date at which to start the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will begin at the begining of the measured period
-        
-        end_date: str, default None (present day)
-            Date at which to end the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will stop at the present day
+        signal_type: str, default 'AVG'
+            Signal type for download
+            For example: 'AVG', 'SD', 'MIN', 'MAX', 'GUST'
         
         :Returns:
         
-        out: DataFrame of measured virtual sensor data with sensor names as the column labels
+        out: DataFrame with signal data from virtual sensor
         '''
 
-        sensors_metadata = self.get_masts().loc[pd.IndexSlice[:,wmm_id],:]
-        sensors = sensors_metadata.loc[:,['MVS_ID', 'Name']].set_index('MVS_ID')
-
-        if start_date is None:
-            start_date = pd.to_datetime(sensors_metadata.StartDate.min()).strftime('%Y-%m-%d')
-        if end_date is None:
-            end_date = end_date = pd.to_datetime(datetime.now()).strftime('%Y-%m-%d')
-
-        mast_data = self.get_windog_raw_data(wmm_id, start_date, end_date)
+        signal_types = self.valid_signal_labels()
+        assert signal_type in signal_types.index, 'Tried to look up "{}" but only valid options are: {}'.format(signal_type, signal_types.index.values) 
         
-        mast_data = mast_data.rename(columns=sensors.Name.to_dict())
-        mast_data.index.name = 'Stamp'
-        mast_data.columns.name = 'Sensor'
+        signal_id = signal_types[signal_type]
+
+        data_by_column_inputs = dict(mvs_id=mvs_id, signal_id=signal_id)
+        column_id = '{mvs_id}_{signal_id}'.format(**data_by_column_inputs)
+
+        sql_query= """
+        DECLARE  @column_id   NVARCHAR(50)  
+                ,@startDate   DATETIME     
+                ,@endDate     DATETIME     
+               
+        SET NOCOUNT ON;
+        SET @column_id = '{}'
+        SET @startDate = NULL
+        SET @endDate   = NULL 
+
+        EXEC dbo.proc_DataExport_GetDataByColumn   
+         @column_id   = @column_id               
+        ,@startDate   = @startDate 
+        ,@endDate     = @endDate     
+        """.format(column_id)
         
-        return mast_data
-    
-    def get_columns_from_wmm_id(self, wmm_id):
-        masts = self.get_masts()
-        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].MVS_ID.unique().tolist()
-        or_string = sql_or_string_from_mvs_ids(mvs_ids)
+        sensor_data = pd.read_sql(sql_query, self.conn, index_col='MRD_CorrectedTimestamp')
+        sensor_data.index.name = 'stamp'
+        sensor_data.columns = [column_id, 'flag']
+        return sensor_data[column_id].to_frame(column_id)
 
-        column_id_sql_query = '''
-        SELECT [column_id]
-          ,[label]
-        FROM [M2D2_DB_BE].[dbo].[ViewWindogMetaData]
-        WITH (NOLOCK)
-        WHERE {}
-        '''.format(or_string)
+    def sensor_flags_from_mvs_id(self, mvs_id):
+        '''Download sensor flags from M2D2
+        
+        :Parameters:
+        
+        mvs_id: int
+            Virtual sensor ID (mvs_id) in M2D2, assume flags associated with average signal
+        
+        :Returns:
+        
+        out: DataFrame with signal data from virtual sensor
+        '''
 
-        column_ids = pd.read_sql(column_id_sql_query, self.conn)
-        column_ids = column_ids.set_index('column_id')
-        return column_ids
+        signal_type='AVG'
+        signal_types = self.valid_signal_labels()
+        assert signal_type in signal_types.index, 'Tried to look up "{}" but only valid options are: {}'.format(signal_type, signal_types.index.values) 
+        
+        signal_id = signal_types[signal_type]
 
-    def get_data_from_column_id(self, column_id):
-        masts = self.get_masts()
-        column_id_sql_query = '''
-        SELECT [MRD_CorrectedTimestamp]
-          ,[CalDataValue]
-        FROM [M2D2_DB_BE].[dbo].[ViewWindogRawDataDefault]
-        WITH (NOLOCK)
-        WHERE column_id = '{}'
-        '''.format(column_id)
+        data_by_column_inputs = dict(mvs_id=mvs_id, signal_id=signal_id)
+        column_id = '{mvs_id}_{signal_id}'.format(**data_by_column_inputs)
 
-        sensor_data = pd.read_sql(column_id_sql_query, self.conn, parse_dates=['MRD_CorrectedTimestamp'])
-        sensor_data = sensor_data.set_index('MRD_CorrectedTimestamp')
-        return sensor_data
-    
-    def get_mast_data_from_wmm_id(self, wmm_id):
-        column_ids = self.get_columns_from_wmm_id(wmm_id)
-        mast_data = [self.get_data_from_column_id(column_id) for column_id in column_ids.index]
-        mast_data = pd.concat(mast_data, axis=1)
-        mast_data.columns = column_ids.label.values
-        mast_data.index.name = 'Stamp'
-        mast_data.columns.name = 'Sensor'
-        mast_data = mast_data.astype(np.float64).groupby(level=0, axis=1).mean()
-        return mast_data
-    
-    def get_wmm_id_metadata(self, wmm_id):
-        # Download raw windog data from M2D2 for an identifed period
+        sql_query= """
+        DECLARE  @column_id   NVARCHAR(50)  
+                ,@startDate   DATETIME     
+                ,@endDate     DATETIME     
+               
+        SET NOCOUNT ON;
+        SET @column_id = '{}'
+        SET @startDate = NULL
+        SET @endDate   = NULL 
+
+        EXEC dbo.proc_DataExport_GetDataByColumn   
+         @column_id   = @column_id               
+        ,@startDate   = @startDate 
+        ,@endDate     = @endDate     
+        """.format(column_id)
+        
+        sensor_data = pd.read_sql(sql_query, self.conn, index_col='MRD_CorrectedTimestamp')
+        sensor_data.index.name = 'stamp'
+        sensor_data.columns = [column_id, 'flag']
+        return sensor_data['flag'].to_frame('flag')
+
+    def mast_data_from_wmm_id(self, wmm_id):
+        '''Download data from all sensors on a mast from M2D2
+        
+        :Parameters:
+        
+        wmm_id: int
+            Mast ID (wmm_id) in M2D2
+        
+        :Returns:
+        
+        out: DataFrame with signal data from each virtual sensor
+        '''
+
+        masts = self.masts()
+        wmm_ids = masts.index.get_level_values('wmm_id').unique().tolist()
+        assert wmm_id in wmm_ids, 'Tried to look up "{} but this wmm_id is not found in M2D2'.format(wmm_id)
+
+        labels = self.column_labels_for_wmm_id(wmm_id).label
+        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],'mvs_id'].unique().tolist()
+        data = [self.sensor_data_from_mvs_id(mvs_id) for mvs_id in mvs_ids]
+        data = pd.concat(data, axis=1, sort=False)
+        data = data.rename(columns=labels.to_dict())
+        data.columns.name = 'sensor'
+        return data
+
+    def mast_metadata_from_wmm_id(self, wmm_id):
+        '''Download mast metadata from M2D2
+        
+        :Parameters:
+        
+        wmm_id: int
+            Mast ID (wmm_id) in M2D2
+        
+        :Returns:
+        
+        out: DataFrame with mast metadata
+        '''
         
         sql_query= '''
         SELECT [WMM_Latitude]
             ,[WMM_Longitude]
             ,[WMM_Elevation]
         FROM [M2D2_DB_BE].[dbo].[ViewWindDataSet]
-        WHERE WMM_ID = {}
+        WHERE wmm_id = {}
         '''.format(wmm_id)
         
         mast_metadata = pd.read_sql(sql_query, self.conn)
         
         return mast_metadata 
 
-    def get_sensor_data(self, MVS_ID=None, sensor_name=None, start_date=None, end_date=None, signal=1):
-        '''Download sensor data from M2D2
+    def mast_from_wmm_id(self, wmm_id):
+        '''Download an.MetMast from M2D2
         
         :Parameters:
         
-        vs: int, default None
-            Virtual sensor ID (MVS_ID)
-        
-        sensor_name: str, default None
-            Sensor name to be used for the column
-            Good practice to use get_masts.loc[MVS_ID == vs, Name]
-        
-        start_date: str, default None
-            Date at which to start the data
-            Assumed to be ISO format 'yyyy-mm-dd' example: '2017-01-31'
-            If None, will begin at the begining of the measured period
-        
-        end_date: str, default None
-            Date at which to end the data
-            Assumed to be ISO format 'yyyy-mm-dd' example: '2017-01-31'
-            If None, will stop at the end of the measured period
-        
-        signal: int, default=1
-            Signal type to download; 1=average
+        wmm_id: int
+            Mast ID (wmm_id) in M2D2
         
         :Returns:
         
-        out: DataFrame with signal data from virtual sensor
-        ''' 
-                
-        if not self.connection_check('M2D2'):
-            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database="M2D2")')
-        
-        #Four date conditions to take into account
-        if start_date != None and end_date != None:
-            start_end_str = '''AND MRD_CorrectedTimestamp BETWEEN '%s' and '%s' ''' %(start_date, end_date)
-        elif start_date != None and end_date == None:
-            start_end_str = '''AND MRD_CorrectedTimestamp >= '%s' ''' %(start_date)
-        elif start_date == None and end_date != None:
-            start_end_str = '''AND MRD_CorrectedTimestamp <= '%s' ''' %(end_date)
-        else:
-            start_end_str = ''
-                
-        sql_query_data = '''
-        SELECT [MRD_CorrectedTimestamp]
-              ,[CalDataValue] AS {}
-        FROM [M2D2_DB_BE].[dbo].[ViewWindogRawDataDefault] WITH (NOLOCK)
-        WHERE MDVT_ID = {} and MVS_ID = {} 
-        {}
-        ORDER BY MRD_CorrectedTimestamp'''.format(sensor_name, signal, MVS_ID, start_end_str)
-        print(sql_query_data)
-
-        sensor_data = pd.read_sql(sql_query_data, self.conn)
-        sensor_data.MRD_CorrectedTimestamp = pd.to_datetime(sensor_data.MRD_CorrectedTimestamp, infer_datetime_format=True)
-        sensor_data.set_index('MRD_CorrectedTimestamp', inplace=True)
-        sensor_data.index.name = 'Stamp'
-        return sensor_data
-    
-    def get_mast_data(self, WMM_ID, start_date=None, end_date=None):
-        '''Download all sensor data from a given mast in M2D2
-        
-        Parameters:
-        
-        project: string, default None
-            Name of the project within M2D2
-        mast: int, default None
-            WMM_ID for the mast to be downloaded
-        start_date: str, default None
-            Date at which to start the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will begin at the begining of the measured period
-        end_date: str, default None
-            Date at which to end the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will stop at the end of the measured period
-        
-        Returns:
-        DataFrame with signal data from every sensor on a mast
+        out: an.MetMast with data and metadata from M2D2
         '''
-        
-        if not self.connection_check('M2D2'):
-            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database=\'M2D2\')')
-        
-        masts = self.get_masts()
-        sensors = masts.loc[pd.IndexSlice[:,:,WMM_ID],'MVS_ID'].values
-        sensor_names = masts.loc[pd.IndexSlice[:,:,WMM_ID],'Name'].values
+        print('Downloading Mast {} from M2D2'.format(wmm_id))
 
-        mast_data = []
-        for i,sensor in enumerate(sensors):
-            name = sensor_names[i]
-            data = self.get_sensor_data(sensor, name, start_date=start_date, end_date=end_date)
-            mast_data.append(data)
+        masts = self.masts()
+        wmm_ids = masts.index.get_level_values('wmm_id').unique().tolist()
+        assert wmm_id in wmm_ids, 'Tried to look up "{} but this wmm_id is not found in M2D2'.format(wmm_id)
 
-        mast_data = pd.concat(mast_data, axis=1)
-        return mast_data
+        data = self.mast_data_from_wmm_id(wmm_id)
+        metadata = self.mast_metadata_from_wmm_id(wmm_id)
+        mast = an.MetMast(data=data, 
+                          name=wmm_id, 
+                          lat=metadata.WMM_Latitude[0], 
+                          lon=metadata.WMM_Longitude[0], 
+                          elev=metadata.WMM_Elevation[0])
+        return mast
 
-    def get_site_data(self, project=None, start_date=None, end_date=None):
-        '''Download all mast data from a given site in M2D2
+    def masts_from_project(self, project):
+        '''Download an.MetMasts from M2D2 for a given project
         
-        Parameters:
-        ___________
+        :Parameters:
         
-        project: string, default None
-            Name of the project within M2D2
-        start_date: str, default None
-            Date at which to start the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will begin at the begining of the measured period
-        end_date: str, default None
-            Date at which to end the data
-            Assumed to be ISO format 'yyyy-mm-dd'
-            If None, will stop at the end of the measured period
+        project_name: str
+            Project name in M2D2
         
-        Returns:
-        ________
-        DataFrame with signal data from every sensor on every mast at a site
+        :Returns:
+        
+        out: an.MetMasts with data and metadata from M2D2 for a project
         '''
 
-        if not self.connection_check('M2D2'):
-            raise ValueError('Need to connect to M2D2 to retrieve met masts. Use anemoi.DataBase(database="M2D2")')
+        masts = self.masts()
+        projects = masts.index.get_level_values('Project').unique().tolist()
+        assert project in projects, 'Tried to look up "{} but this project is not found in M2D2'.format(project)
 
-        masts = self.get_masts().loc[pd.IndexSlice[:,project],:].index.get_level_values('AssetID').unique().tolist()
-        mast_data = []
+        wmm_ids = masts.loc[project,:].index.get_level_values('wmm_id').unique().tolist()
+        masts = [self.mast_from_wmm_id(wmm_id) for wmm_id in wmm_ids]
+        return masts
+
+# Define Turbine class
+class Turbine(object):
+    '''Class to connect to standard RAG databases
+    '''
+
+    def __init__(self):
+        '''Data structure for connecting to and downloading data from M2D2. Convention is:
+
+            import anemoi as an
+            turb_db = an.io.database.Turbine()
         
-        for mast in masts:
-            mast_data.append(self.get_mast_data(project=project, mast=mast, start_date=start_date, end_date=end_date))
-        mast_data = pd.concat(mast_data, axis=1, keys=map(int, masts), names=['Mast', 'Sensors'])
+        :Parameters:
         
-        return mast_data
+
+        :Returns:
+
+        out: an.Turbine object connected to Turbine database
+        '''
+        
+        self.database = 'Turbine'
+        server = '10.1.15.53'
+        db = 'Turbine_DB_BE'
+        
+        conn_str = 'DRIVER={SQL Server}; SERVER=%s; DATABASE=%s; Trusted_Connection=yes' %(server, db)
+        self.conn_str = conn_str #Assign connection string
+        
+        try:
+            self.conn = pyodbc.connect(self.conn_str) #Apply connection string to connect to database
+        except:
+            print('Database connection error: you either don\'t have permission to the database or aren\'t signed onto the VPN')
+
+    def is_connected(self, database):
+        return self.database == database
+
+    def metadata(self):
+        '''Get turbine model metadata'''
+
+        assert self.is_connected('Turbine'), 'Trying to query the Turbine DB without being connected.'
+
+        sql_query_turbines = '''
+            SELECT [TUR_Manufacturer]
+            ,[TUR_RatedOutputkW]
+            ,[TPC_MaxOutput]
+            ,[TUR_RotorDia]
+            ,[TUR_Model]
+            ,[AllHubHeights]
+            ,[TPC_DocumentDate]
+            ,[TUR_ID]
+            ,[IECClass]
+            ,[TPG_ID]
+            ,[TPG_Name]
+            ,[TPC_ID]
+            ,[TVR_VersionName]
+            ,[TPC_dbalevel]
+            ,[TPC_TIScenario]
+            ,[TPC_BinType]
+            ,[TTC_ID]
+            ,[TRPMC_ID]
+            ,[P_ID]
+            ,[P_Name]
+            FROM [Turbine_DB_BE].[NodeEstimate].[AllPowerCurves]
+            WHERE TPC_Type = 'Manufacturer General Spec'
+            '''
+        
+        turbines = pd.read_sql(sql_query_turbines, self.conn)
+        return turbines
 
 # Define Padre class
 class Padre(object):
@@ -382,12 +408,15 @@ class Padre(object):
 
     def __init__(self, database='PADREScada', conn_str=None, conn=None, domino=False):
         '''Data structure with both database name and connection string.
-        Parameters
-        ----------
+        
+        :Parameters:
+
         database: string, default None
           Name of the padre database to connect to
+        
         conn_str: string, default None
           SQL connection string needed to connect to the database
+        
         conn: object, default None
           SQL connection object to database
         '''
@@ -411,7 +440,7 @@ class Padre(object):
     def is_connected(self, database):
         return self.database == database
 
-    def get_assets(self, project=None, turbines_only=False):
+    def assets(self, project=None, turbines_only=False):
         '''Returns:
         DataFrame of all turbines within Padre
         '''
@@ -446,7 +475,7 @@ class Padre(object):
 
         return assets
 
-    def get_operational_projects(self):
+    def operational_projects(self):
         '''Returns:
         List of all projects within Padre
         '''
@@ -469,7 +498,7 @@ class Padre(object):
         projects.set_index('ProjectName', inplace=True)
         return projects
 
-    def get_turbine_categorizations(self, category_type='EDF'):
+    def turbine_categorizations(self, category_type='EDF'):
 
         if not self.is_connected('PADREScada'):
             raise ValueError('Need to connect to Padre to retrieve turbines. Use anemoi.DataBase(database="Padre")')
@@ -484,7 +513,7 @@ class Padre(object):
         categories.set_index('CategoryKey', inplace=True)
         return categories
 
-    def get_QCd_turbine_data(self, asset_key):
+    def QCd_turbine_data(self, asset_key):
         if not self.is_connected('PADREScada'):
             raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -510,7 +539,7 @@ class Padre(object):
         turbine_data = turbine_data.groupby(turbine_data.index).first()
         return turbine_data
 
-    def get_raw_turbine_data(self, asset_key, start_date=None, end_date=None):
+    def raw_turbine_data(self, asset_key, start_date=None, end_date=None):
         if not self.is_connected('PADREScada'):
             raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -547,7 +576,7 @@ class Padre(object):
         turbine_data = turbine_data.groupby(turbine_data.index).first()
         return turbine_data
 
-    def get_raw_turbine_expected_energy(self, asset_key):
+    def raw_turbine_expected_energy(self, asset_key):
         if not self.is_connected('PADREScada'):
             raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -579,7 +608,7 @@ class Padre(object):
         turbine_data = turbine_data.groupby(turbine_data.index).first()
         return turbine_data
 
-    def get_senvion_event_logs(self, project_id):
+    def senvion_event_logs(self, project_id):
         if not self.is_connected('PADREScada'):
                 raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -596,7 +625,7 @@ class Padre(object):
         event_log = pd.read_sql(sql_query, self.conn)
         return event_log
 
-    def get_10min_energy_by_status_code(self, project_id, start_date, end_date, padre_NTF=True):
+    def ten_min_energy_by_status_code(self, project_id, start_date, end_date, padre_NTF=True):
         if not self.is_connected('PADREScada'):
                 raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -615,18 +644,18 @@ class Padre(object):
         WHERE [projectkey] = {} {}
         ORDER BY TimeStampLocal, AssetKey'''.format(padre_power_col, project_id, return_between_date_query_string(start_date, end_date))
         
-        data_10min = pd.read_sql(padre_project_query, self.conn).set_index(['TimeStampLocal', 'AssetKey'])
-        data_10min.columns = ['power_active','power_expected']
-        data_10min = data_10min.groupby(data_10min.index).first()
-        data_10min.index = pd.MultiIndex.from_tuples(data_10min.index)
-        data_10min.index.names = ['Stamp', 'AssetKey']
-        return data_10min
+        data_ten_min = pd.read_sql(padre_project_query, self.conn).set_index(['TimeStampLocal', 'AssetKey'])
+        data_ten_min.columns = ['power_active','power_expected']
+        data_ten_min = data_ten_min.groupby(data_ten_min.index).first()
+        data_ten_min.index = pd.MultiIndex.from_tuples(data_ten_min.index)
+        data_ten_min.index.names = ['Stamp', 'AssetKey']
+        return data_ten_min
 
-    def get_senvion_10min_energy_by_status_code(self, project_id, status_codes=[6680.0, 6690.0, 6697.0, 15000.0]):
+    def senvion_ten_min_energy_by_status_code(self, project_id, status_codes=[6680.0, 6690.0, 6697.0, 15000.0]):
         if not self.is_connected('PADREScada'):
                 raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
         
-        projects = self.get_operational_projects()
+        projects = self.operational_projects()
         project = projects.loc[projects.ProjectKey == project_id].index.values[0]
         
         if project in ['Lac Alfred','Massif du Sud','St. Robert Bellarmin']:
@@ -634,18 +663,18 @@ class Padre(object):
         else:
             padre_NTF = True
 
-        event_log = self.get_senvion_event_logs(project_id=project_id)
+        event_log = self.senvion_event_logs(project_id=project_id)
         event_log_icing = event_log.loc[event_log.statuscode.isin(status_codes), :]
         incoming = event_log_icing.loc[event_log_icing.incomingphasingoutreset == 'incoming', ['assetkey', 'statuscode', 'TimeStamp']].reset_index(drop=True)
         outgoing = event_log_icing.loc[event_log_icing.incomingphasingoutreset == 'phasing out', 'TimeStamp'].reset_index(drop=True)
         status = pd.concat([incoming, outgoing], axis=1).dropna()
         status.columns = ['asset_key', 'status_code', 'start', 'end']
 
-        status['start_10min'] = status.start.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
-        status['end_10min'] = status.end.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
+        status['start_ten_min'] = status.start.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
+        status['end_ten_min'] = status.end.apply(lambda dt: datetime(dt.year, dt.month, dt.day, dt.hour,10*(dt.minute // 10)))
         
-        status_start_date = status.loc[:,['start_10min','end_10min']].min().min()
-        status_end_date = status.loc[:,['start_10min','end_10min']].max().max()
+        status_start_date = status.loc[:,['start_ten_min','end_ten_min']].min().min()
+        status_end_date = status.loc[:,['start_ten_min','end_ten_min']].max().max()
 
         stamp = pd.date_range(start=status_start_date, end=status_end_date, freq='10T')
         icing_flags_cols = pd.MultiIndex.from_product([status.asset_key.unique(), status_codes], names=['AssetKey', 'Flag'])
@@ -653,19 +682,19 @@ class Padre(object):
         for col in icing_flags.columns:
             asset_key = col[0]
             icing_flag = col[1]
-            icing_flags.loc[status.loc[(status.asset_key==asset_key)&(status.status_code==icing_flag),'start_10min'],pd.IndexSlice[asset_key,icing_flag]] = 1.0
-            icing_flags.loc[status.loc[(status.asset_key==asset_key)&(status.status_code==icing_flag), 'end_10min'],pd.IndexSlice[asset_key,icing_flag]] = 0.0
+            icing_flags.loc[status.loc[(status.asset_key==asset_key)&(status.status_code==icing_flag),'start_ten_min'],pd.IndexSlice[asset_key,icing_flag]] = 1.0
+            icing_flags.loc[status.loc[(status.asset_key==asset_key)&(status.status_code==icing_flag), 'end_ten_min'],pd.IndexSlice[asset_key,icing_flag]] = 0.0
         icing_flags.fillna(method='ffill', inplace=True)
         icing_flags.fillna(0, inplace=True)
         icing_flags.index.name = 'Stamp'
         
-        data_power = self.get_10min_energy_by_status_code(project_id=project_id, start_date=status_start_date, end_date=status_end_date, padre_NTF=padre_NTF)
+        data_power = self.ten_min_energy_by_status_code(project_id=project_id, start_date=status_start_date, end_date=status_end_date, padre_NTF=padre_NTF)
         data_power = data_power.reset_index().pivot(index='Stamp', columns='AssetKey')
         data_power.columns = data_power.columns.swaplevel()
-        data_10min = pd.concat([data_power, icing_flags], axis=1).sort_index(axis=0).dropna()
-        return data_10min
+        data_ten_min = pd.concat([data_power, icing_flags], axis=1).sort_index(axis=0).dropna()
+        return data_ten_min
 
-    def get_monthly_energy_by_status_code(self, project_id, start_date, end_date, padre_NTF=True):
+    def monthly_energy_by_status_code(self, project_id, start_date, end_date, padre_NTF=True):
         if not self.is_connected('PADREScada'):
                 raise ValueError('Need to connect to Padre to retrieve met masts. Use anemoi.DataBase(database="Padre")')
 
@@ -697,12 +726,12 @@ class Padre(object):
         monthly_data.index.names = ['Year', 'Month', 'AssetKey', 'FaultCode']
         return monthly_data
 
-    def get_site_production_data(self, project):
+    def site_production_data(self, project):
         site_data = []
-        turbines = self.get_turbines(project).loc[:, 'AssetKey'].values
+        turbines = self.turbines(project).loc[:, 'AssetKey'].values
         for i, turbine in enumerate(turbines):
             print('{} of {} masts downloaded'.format(i+1, len(turbines)))
-            turbine_data = self.get_turbine_data(turbine)
+            turbine_data = self.turbine_data(turbine)
             site_data.append(turbine_data)
 
         site_data = pd.concat(site_data, axis=1, keys=turbines)
@@ -710,7 +739,7 @@ class Padre(object):
         site_data.sort_index(axis=1, inplace=True)
         return site_data
 
-    def get_meter_data(self, project):
+    def meter_data(self, project):
         if not self.is_connected('PadrePI'):
             raise ValueError('Need to connect to PadrePI to retrieve met masts. Use anemoi.DataBase(database="PadrePI")')
 
@@ -740,6 +769,93 @@ class Padre(object):
         meter_data.sort_index(axis=0, inplace=True)
         return meter_data
 
+    def operational_analysis_metadata(self):
+        '''Returns:
+        Project metadata for operational analysis
+        '''
+        if not self.is_connected('PADREScada'):
+            raise ValueError('Need to connect to Padre to retrieve projects. Use anemoi.DataBase(database="Padre")')
+        
+        metadata_query = """
+        SELECT [ProjectName]
+              ,[mfg]
+              ,[TimeZone]
+              ,[NamePlateCapacity]
+              ,[NumGenerators]
+              ,[latitude]
+              ,[longitude]
+              ,[DateCOD]
+        FROM [PADREScada].[dbo].[Project] with(nolock)
+        WHERE [PADREScada].[dbo].[Project].[technology] = 'Wind'
+        """
+
+        metadata = pd.read_sql(metadata_query, self.conn)
+        metadata.set_index('ProjectName', inplace=True)
+        return metadata
+
+    def operational_analysis_monthly_invoiced_production(self):
+        '''Returns:
+        Project monthly invoiced production for operational analysis
+        '''
+        if not self.is_connected('PADREScada'):
+            raise ValueError('Need to connect to Padre to retrieve projects. Use anemoi.DataBase(database="Padre")')
+        
+        invoiced_production_query = '''
+        SELECT P.[ProjectName]
+              ,[Year]
+              ,[Month]
+              ,[InvoicedProduction_kWh]
+        FROM [PADREScada].[dbo].[ProjectInvoicedProduction] PIP with(nolock)
+        INNER JOIN [PADREScada].[dbo].[Project] P ON P.projectKey = PIP.ProjectKey
+        '''
+
+        invoiced_production = pd.read_sql(invoiced_production_query, self.conn)
+        invoiced_production['Day'] = 1
+        invoiced_production['Stamp'] = pd.to_datetime(invoiced_production[['Year','Month','Day']])
+        invoiced_production = invoiced_production.set_index(['ProjectName','Stamp'])
+        invoiced_production = invoiced_production.drop(['Year','Month','Day'], axis=1)
+        return invoiced_production
+
+    def operational_analysis_scada_production(self):
+        '''Returns:
+        Project monthly scada production for operational analysis
+        '''
+        if not self.is_connected('PADREScada'):
+            raise ValueError('Need to connect to Padre to retrieve projects. Use anemoi.DataBase(database="Padre")')
+        
+        scada_production_query = '''
+        SELECT P.[ProjectName]
+              ,[Date] Stamp
+              ,[ValidRecords]
+              ,[TotalRecords]
+              ,[WTGProduction_MWh]
+              ,[TotalExpectedProduction_MWh]
+              ,[TotalEnergyDelta_MWh]
+              ,[FullPerformanceEnergyDelta_MWH]
+              ,[PartialPerformanceDegradedEnergyDelta_MWH]
+              ,[PartialPerformanceDeratedEnergyDelta_MWH]
+              ,[PartialPerformanceExtCurtailment_MWH]
+              ,[PartialPerformanceEnvironmentEnergyDelta_MWH]
+              ,[ForcedOutageEnergyDelta_MWH]
+              ,[SchedMaintenanceEnergyDelta_MWH]
+              ,[CorrectiveActionsEnergyDelta_MWH]
+              ,[TechnicalStandbyEnergyDelta_MWH]
+              ,[RequestedShutdownEnergyDelta_MWH]
+              ,[RequestedShutdownExtCurtailmentEnergyDelta_MWH]
+              ,[OutOfElectricalSpecEnergyDelta_MWH]
+              ,[OutOfEnvironmentalSpecEnergyDelta_MWH]
+              ,[CalmWindsEnergyDelta_MWH]
+              ,[HighWindsEnergyDelta_MWH]
+              ,[ForceMajeureEnergyDelta_MWH]
+              ,[UnclassifiedDowntimeEnergyDelta_MWH]
+        FROM [PADREScada].[dbo].[ProjectCalcDataDaily] PCDD with(nolock)
+        INNER JOIN [PADREScada].[dbo].[Project] P ON P.projectKey = PCDD.ProjectKey
+        '''
+
+        scada_production = pd.read_sql(scada_production_query, self.conn, parse_dates=['Stamp'])
+        scada_production = scada_production.set_index(['ProjectName','Stamp'])
+        return scada_production
+
 class EIA(object):
     '''Class to connect to EIA database via HTTP
     '''
@@ -761,7 +877,7 @@ class EIA(object):
         self.database = 'EIA'
         self.api_key = '9B2EDFF62577B236B5D66044ACECA2EF'
 
-    def get_eia_data_from_id(self, eia_id):
+    def eia_data_from_id(self, eia_id):
         
         url = 'http://api.eia.gov/series/?api_key={}&series_id=ELEC.PLANT.GEN.{}-WND-WT.M'.format(self.api_key, eia_id)
         
@@ -782,13 +898,13 @@ class EIA(object):
         except:
             return pd.DataFrame(columns=[eia_id])
 
-    def get_eia_data_from_ids(self, eia_ids):
+    def eia_data_from_ids(self, eia_ids):
         
-        data = [eia.get_eia_data(project) for project in projects]
+        data = [eia.eia_data(project) for project in projects]
         data = pd.concat(data, axis=1)
         return data
 
-    def get_eia_project_metadata(self):
+    def eia_project_metadata(self):
         
         filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_database_metadata_multiple.parquet'
         metadata = pd.read_parquet(filename)
@@ -796,14 +912,14 @@ class EIA(object):
         metadata.index.name = 'eia_id'
         return metadata
 
-    def get_eia_turbine_metadata(self):
+    def eia_turbine_metadata(self):
         
         filename = 'https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_Turb_Report_20171207.parquet'
         metadata = pd.read_parquet(filename)
         return metadata
 
-    def get_project_centroids(self):
+    def project_centroids(self):
 
-        metadata = self.get_eia_turbine_metadata()
+        metadata = self.eia_turbine_metadata()
         centroids = metadata.loc[:,['Turbine Latitude','Turbine Longitude']].groupby(metadata.index).mean()
         return centroids
