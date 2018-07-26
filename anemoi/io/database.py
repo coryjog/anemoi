@@ -786,7 +786,8 @@ class Padre(object):
               ,[longitude]
               ,[DateCOD]
         FROM [PADREScada].[dbo].[Project] with(nolock)
-        WHERE [PADREScada].[dbo].[Project].[technology] = 'Wind'
+        WHERE [PADREScada].[dbo].[Project].[technology] = 'Wind' and 
+        [PADREScada].[dbo].[Project].[active] = 1
         """
 
         metadata = pd.read_sql(metadata_query, self.conn)
@@ -826,8 +827,6 @@ class Padre(object):
         scada_production_query = '''
         SELECT P.[ProjectName]
               ,[Date] Stamp
-              ,[ValidRecords]
-              ,[TotalRecords]
               ,[WTGProduction_MWh]
               ,[TotalExpectedProduction_MWh]
               ,[TotalEnergyDelta_MWh]
