@@ -816,7 +816,7 @@ def apply_daily_results_by_month_to_mast_data(mast_data, corr_results, ref_ws_co
     else:
         syn_data = corr_data.syn.to_frame('syn')
 
-    return corr_data
+    return syn_data
 
 
 def apply_daily_results_by_month(ref_mast, site_mast, corr_results, ref_ws_col=None, site_ws_col=None, splice=True):
@@ -885,7 +885,7 @@ def apply_daily_results_by_month(ref_mast, site_mast, corr_results, ref_ws_col=N
     syn_data.loc[fill_index, 'syn_splice'] = syn_data.loc[fill_index, 'site']
 
     if splice:
-         syn_data = syn_data.syn_splice.to_frame('syn')
+        syn_data = syn_data.syn_splice.to_frame('syn')
     else:
         syn_data = syn_data.syn.to_frame('syn')
 
