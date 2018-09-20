@@ -53,7 +53,8 @@ def add_sensor_levels_to_from_mast_data_columns(mast_data_columns):
     null_signal = details.signal[details.signal.isnull()].index
     details.signal[null_signal] = details.orient[null_signal]
     details.orient[null_signal] = '-'
-    details.height.fillna('0', inplace=True)
+    details.signal = details.signal.fillna('-')
+    details.height[~details.height.str.isnumeric()] = 0.0
     details.height = details.height.astype(np.float)
     mast_data_columns = pd.MultiIndex.from_arrays(details.T.values, names=details.columns)
 
@@ -219,7 +220,7 @@ def sensor_names(mast_data, sensors=None):
         names = sensor_details(mast_data, level='sensor', sensors=sensors)
         return names
 
-def return_data_from_sensors(mast_data, sensors):
+def return_data_from_sensors_by_name(mast_data, sensors):
     check_mast_data_not_empty(mast_data)
     check_sensor_names_in_mast_data_columns(mast_data.columns, sensors)
     

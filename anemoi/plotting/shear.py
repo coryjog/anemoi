@@ -34,13 +34,14 @@ def annual_mast_results(mast_shear_results, lower_shear_bound=0.1, upper_shear_b
     '''
     Returns plotting data and a layout for a single mast shear analysis plot.
     '''
-    if mast_shear_results.index.nlevels != 2:
-        raise ValueError('Mast shear results expect two index levels for plotting, you may be trying to pass site shear results.')
+    assert mast_shear_results.index.nlevels == 3, "Expecting three index levels for plotting ['orient','height','sensor']"
 
     orients = mast_shear_results.index.get_level_values(level='orient').unique().tolist()
-    mast_shear_results.columns.name = ''
+    mast_shear_results.columns = mast_shear_results.columns.get_level_values('height')
+    mast_shear_results.columns.name = 'ht2'
+    mast_shear_results.index = mast_shear_results.index.droplevel(level=['sensor'])
+    mast_shear_results.index.names = ['orient','ht1']
     stacked_shear_results = mast_shear_results.stack().to_frame('alpha')
-    stacked_shear_results.index.names = ['orient', 'ht1', 'ht2']
 
     plotting_data = []
     for i, orient in enumerate(orients):

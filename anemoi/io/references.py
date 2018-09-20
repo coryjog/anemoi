@@ -4,14 +4,35 @@ import numpy as np
 import os
 from datetime import datetime
 import requests
-# from pyathenajdbc import connect
 
 def get_reference_stations_north_america():
+    '''Return list of North American reference stations'''
+    
     filename = 'https://raw.githubusercontent.com/coryjog/anemoi/master/anemoi/io/reference_stations_NA.csv'
     references = pd.read_csv(filename, encoding='windows-1252')
     return references
 
 def distances_to_project(lat_project, lon_project, lats, lons):
+    '''Method to calculate distances between a project and an array of lats and lons
+
+    :Parameters:
+
+    lat_project: float
+        Project latitude
+
+    lon_project: float
+        Project longitude
+
+    lats: np.array
+        Latitudes from which to calculate distances
+
+    lons: np.array
+        Longitudes from which to calculate distances
+
+    :Returns:
+
+    out: np.array of distances
+    '''
     lat_project = np.deg2rad(lat_project)
     lon_project = np.deg2rad(lon_project)
     avg_earth_radius = 6373  # in km
@@ -106,6 +127,26 @@ def get_local_timezone_from_google(lat, lon):
     return timezone_hour
 
 def get_merra2_data_from_cell_id(cell_id, lat=None, lon=None, daily_only=True, local_time=True):
+    '''Returns hourly data from MERRA2 cell using EDF's cell_id
+
+    :Parameters:
+
+    cell_id: int
+        Unique cell id
+
+    lat: float
+        Latitude value - used to infer local time
+
+    lon: float
+        Longitude value - used to infer local time
+
+    local_time: boolean, default: True
+        Return data in local time, as opposed to UTC
+
+    :Returns:
+
+    out: pd.DataFrame of MERRA2 data
+    '''
 
     if local_time & ((lat is None) | (lon is None)):
         raise ValueError('Trying to convert MERRA2 data to local time without latitude and/or longitude.')
@@ -151,9 +192,29 @@ def get_merra2_data_from_cell_id(cell_id, lat=None, lon=None, daily_only=True, l
     return results
 
 def get_era5_data_from_cell_id(cell_id, lat=None, lon=None, local_time=True, daily_only=False):
+    '''Returns hourly data from ERA5 cell using EDF's cell_id
+
+    :Parameters:
+
+    cell_id: int
+        Unique cell id
+
+    lat: float
+        Latitude value - used to infer local time
+
+    lon: float
+        Longitude value - used to infer local time
+
+    local_time: boolean, default: True
+        Return data in local time, as opposed to UTC
+
+    :Returns:
+
+    out: pd.DataFrame of ERA5 data
+    '''
 
     if local_time & ((lat is None) | (lon is None)):
-        raise ValueError('Trying to convert MERRA2 data to local time without latitude and/or longitude.')
+        raise ValueError('Trying to convert ERA-5 data to local time without latitude and/or longitude.')
 
     if daily_only:
         results = create_empty_time_series_to_fill(freq='D')
@@ -163,7 +224,7 @@ def get_era5_data_from_cell_id(cell_id, lat=None, lon=None, local_time=True, dai
     if cell_id == -999:
         return results
 
-    results = results.loc['2008-01-01':,:]
+    results = results.loc['2000-01-01':,:]
     sttYr = results.index[0].year    # start year
     endYr = results.index[-1].year
 
@@ -174,7 +235,7 @@ def get_era5_data_from_cell_id(cell_id, lat=None, lon=None, local_time=True, dai
         filenames = []
         if daily_only:
             nSize=dtEnd.timetuple().tm_yday        # days in for given year substitute np.sum(results.index.year==year)
-            filenames.append('//sdhqragarch01/RAG_Archive/UserArchive/Z_Yiping/MERRA2/BIN/%i_spd50m_dd.bin' %year)
+            filenames.append('//sdhqfile03.enxco.com/arcgis/MetData/DataLibrary/ERA5/Bin/%i_spd100m.bin' %year)
         else:
             nSize=dtEnd.timetuple().tm_yday*24         # hours in given year substitute np.sum(results.index.year==year)
             filenames.append('//sdhqfile03.enxco.com/arcgis/MetData/DataLibrary/ERA5/Bin/%i_spd100m.bin' %year)
@@ -197,57 +258,47 @@ def get_era5_data_from_cell_id(cell_id, lat=None, lon=None, local_time=True, dai
     return results
 
 def get_closest_merra2_data(lat, lon, local_time=True, daily_only=False):
+    '''Returns hourly data from closest MERRA2 cell
+
+    :Parameters:
+
+    lat: float
+        Latitude value
+
+    lon: float
+        Longitude value
+
+    local_time: boolean, default: True
+        Return data in local time, as opposed to UTC
+
+    :Returns:
+
+    out: pd.DataFrame of MERRA2 data
+    '''
+
     cell_id = closest_merra2_cell_id(lat,lon)
     results = get_merra2_data_from_cell_id(cell_id, lat=lat, lon=lon, daily_only=daily_only, local_time=local_time)
     return results
 
 def get_closest_era5_data(lat, lon, local_time=True, daily_only=False):
+    '''Returns hourly data from closest ERA5 cell
+
+    :Parameters:
+
+    lat: float
+        Latitude value
+
+    lon: float
+        Longitude value
+
+    local_time: boolean, default: True
+        Return data in local time, as opposed to UTC
+
+    :Returns:
+
+    out: pd.DataFrame of ERA5 data
+    '''
+
     cell_id = closest_era5_cell_id(lat,lon)
     results = get_era5_data_from_cell_id(cell_id, lat=lat, lon=lon, daily_only=daily_only, local_time=local_time)
     return results
-
-### ATHENA ###
-def where_station_id_string(station_ids):
-    if not isinstance(station_ids, list):
-        station_ids = list(station_ids)
-        
-    station_id_equals = 'station_id={}'
-    where_station_id = [station_id_equals.format(station_id) for station_id in station_ids]
-    station_string = ' OR '.join([station_id_equals.format(station_id) for station_id in station_ids])
-    return station_string
-
-def daily_ref_data_query(station_ids):
-    if not isinstance(station_ids, list):
-        station_ids = [station_ids]
-
-    sql_query = '''
-    SELECT year(ref_data.stamp) as year,
-      month(ref_data.stamp) as month,
-      day(ref_data.stamp) as day,
-      avg(ref_data.spd) as spd,
-      ref_data.station_id as station_id
-
-    FROM
-    (SELECT stamp, spd, station_id 
-    FROM "reference_station_data"."ref_data" 
-    WHERE {}) as ref_data
-
-    GROUP BY (year(ref_data.stamp),
-      month(ref_data.stamp),
-      day(ref_data.stamp),
-      ref_data.station_id)'''.format(where_station_id_string(station_ids))
-    
-    return sql_query
-
-# def get_daily_ref_data_from_athena(station_ids, access_key, secret_key):
-
-#     conn = connect(access_key=access_key,
-#                secret_key=secret_key,
-#                s3_staging_dir='s3://aws-athena-query-results-142959028981-us-east-1/jupyter_queries',
-#                region_name='us-east-1')
-#     ref_data = pd.read_sql(daily_ref_data_query(station_ids), conn)
-#     ref_data.index = pd.DatetimeIndex(pd.to_datetime(ref_data[['year', 'month', 'day']]), 
-#                                                     name='stamp')
-#     ref_data = ref_data.loc[:,['station_id', 'spd']].pivot(columns='station_id')
-#     ref_data.columns = ref_data.columns.get_level_values(level='station_id')
-#     return ref_data

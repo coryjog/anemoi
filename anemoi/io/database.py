@@ -401,6 +401,38 @@ class Turbine(object):
         turbines = pd.read_sql(sql_query_turbines, self.conn)
         return turbines
 
+    def power_curve_from_tpc_id(self, tpc_id):
+        '''Get turbine model metadata'''
+
+        assert self.is_connected('Turbine'), 'Trying to query the Turbine DB without being connected.'
+
+        sql_query_thrust_curve = '''
+        SELECT TPCD_AirDensity, 
+            TPCD_WindSpeedBin, 
+            TPCD_OutputKW 
+        FROM TPCDETAILS 
+        WHERE TPC_id = {} AND TPCD_IsDeleted = 0;
+        '''.format(tpc_id)
+        
+        thrust_curve = pd.read_sql(sql_query_thrust_curve, self.conn)
+        return thrust_curve
+
+    def trust_curve_from_ttc_id(self, ttc_id):
+        '''Get turbine model metadata'''
+
+        assert self.is_connected('Turbine'), 'Trying to query the Turbine DB without being connected.'
+
+        sql_query_thrust_curve = '''
+        SELECT TTCD_AirDensity, 
+            TTCD_WindSpeedBin, 
+            TTCD_ThrustValue
+        FROM TTCDETAILS 
+        WHERE TTC_id = {} AND TTCD_IsDeleted = 0;
+        '''.format(ttc_id)
+        
+        thrust_curve = pd.read_sql(sql_query_thrust_curve, self.conn)
+        return thrust_curve
+
 # Define Padre class
 class Padre(object):
     '''Class to connect to standard RAG databases

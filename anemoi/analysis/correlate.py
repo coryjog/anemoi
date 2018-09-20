@@ -812,7 +812,7 @@ def apply_daily_results_by_month_to_mast_data(mast_data, corr_results, ref_ws_co
     corr_data.loc[corr_data.syn_splice.isnull(),'syn_splice'] = corr_data.loc[corr_data.syn_splice.isnull(),'syn']
 
     if splice:
-         syn_data = corr_data.syn_splice.to_frame('syn')
+        syn_data = corr_data.syn_splice.to_frame('syn')
     else:
         syn_data = corr_data.syn.to_frame('syn')
 

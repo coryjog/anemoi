@@ -15,7 +15,7 @@ def wind_speed_data_for_annual_shear(mast_data, wind_speed_sensors=None, match_d
 
     if wind_speed_sensors is not None:
         assert isinstance(wind_speed_sensors, list), 'Need a list of wind speed sensors for annual shear calculation'
-        ano_data = an.utils.mast_data.return_data_from_sensors(ano_data, wind_speed_sensors)
+        ano_data = an.utils.mast_data.return_data_from_sensors_by_name(ano_data, wind_speed_sensors)
 
     heights = an.utils.mast_data.sensor_heights(ano_data)
     orients = an.utils.mast_data.sensor_orients(ano_data)
@@ -29,7 +29,7 @@ def check_and_return_wind_dir_data_for_shear(mast_data, wind_dir_sensor):
     '''Perform checks on wind direction data for shear calculations.'''
     assert wind_dir_sensor is not None, 'Need to specify a wind vane for directional shear calculations'
     
-    vane_data = an.utils.mast_data.return_data_from_sensors(mast_data, wind_dir_sensor)
+    vane_data = an.utils.mast_data.return_data_from_sensors_by_name(mast_data, wind_dir_sensor)
     vane_data.columns = an.utils.mast_data.remove_sensor_levels_from_mast_data_columns(vane_data.columns)
     return vane_data
 
@@ -198,7 +198,7 @@ def alpha_dir_profile_from_wind_speed_time_series(mast_data, wind_dir_sensor, di
         Mean alpha values indexed by the specified number of direction bins (directional shear profile)
     
     '''
-    ano_data, wind_speed_sensors, heights, orients = wind_speed_data_for_annual_shear(mast_data, wind_speed_sensors, match_data=match_data)
+    wind_speed_data, wind_speed_sensors, heights, orients = wind_speed_data_for_annual_shear(mast_data, wind_speed_sensors, match_data=match_data)
     wind_dir_data = check_and_return_wind_dir_data_for_shear(mast_data, wind_dir_sensor=wind_dir_sensor)
 
     alpha_ts = alpha_time_series(wind_speed_data, wind_speed_sensors=wind_speed_sensors, heights=heights)
@@ -211,7 +211,7 @@ def alpha_dir_profile_from_wind_speed_time_series(mast_data, wind_dir_sensor, di
     
     return alpha_by_dir
 
-def alpha_matrix_for_each_sensor_combination_from_mast_data(mast_data):
+def alpha_matrix_for_each_sensor_combination_from_mast_data(mast_data, include_reverse_combinations=False):
     '''Returns a DataFrame of annual alpha values, indexed by sensor name, from an.MetMast.data.
     
     :Parameters: 
@@ -225,18 +225,24 @@ def alpha_matrix_for_each_sensor_combination_from_mast_data(mast_data):
         Alpha values from a single mast, indexed by sensor name 
     
     '''
-    ano_data, wind_speed_sensors, heights, orients = an.analysis.shear.wind_speed_data_for_annual_shear(mast_data)
+    wind_speed_data, wind_speed_sensors, heights, orients = an.analysis.shear.wind_speed_data_for_annual_shear(mast_data)
 
     alpha_matrix = pd.DataFrame(index=wind_speed_sensors, columns=wind_speed_sensors)
-    sensor_combinations = itertools.combinations(wind_speed_sensors,2)
-    for sensor_combination in sensor_combinations:
-        alpha = an.analysis.shear.alpha_mean_from_wind_speed_time_series(ano_data, wind_speed_sensors=list(sensor_combination)).alpha[0]
-        alpha_matrix.loc[sensor_combination[0], sensor_combination[1]] = alpha
-        alpha_matrix.loc[sensor_combination[1], sensor_combination[0]] = alpha
-        
-    alpha_matrix = alpha_matrix.dropna(how='all')
     alpha_matrix.index.name = 'sensor'
     alpha_matrix.columns.name = 'sensor'
+
+    if alpha_matrix.shape[0] < 2:
+        return alpha_matrix
+
+    sensor_combinations = itertools.combinations(wind_speed_sensors,2)
+    for sensor_combination in sensor_combinations:
+        alpha = an.analysis.shear.alpha_mean_from_wind_speed_time_series(wind_speed_data, wind_speed_sensors=list(sensor_combination)).alpha[0]
+        alpha_matrix.loc[sensor_combination[0], sensor_combination[1]] = alpha
+
+        if include_reverse_combinations:
+            alpha_matrix.loc[sensor_combination[1], sensor_combination[0]] = alpha
+        
+    alpha_matrix = alpha_matrix.dropna(how='all')
     alpha_matrix.columns = an.utils.mast_data.remove_and_add_sensor_levels_to_mast_data_columns(alpha_matrix.columns)
     alpha_matrix.columns = alpha_matrix.columns.droplevel(['type','signal'])
     alpha_matrix.columns = alpha_matrix.columns.swaplevel('orient','height')
@@ -245,7 +251,7 @@ def alpha_matrix_for_each_sensor_combination_from_mast_data(mast_data):
     alpha_matrix.index = alpha_matrix.index.swaplevel('orient','height')
     return alpha_matrix
 
-def alpha_matrix_from_mast_data(mast_data):
+def alpha_matrix_from_mast_data(mast_data, include_reverse_combinations=False):
     '''Returns a DataFrame of annual alpha values, indexed by sensor name, from an.MetMast.data.
     
     :Parameters: 
@@ -265,13 +271,31 @@ def alpha_matrix_from_mast_data(mast_data):
     alpha_matrix = []
     for unique_orient in unique_orients:
         ano_data_orient = an.utils.mast_data.return_data_from_sensors_by_orient(ano_data, sensor_orient=unique_orient)
-        alpha_matrix_orient = alpha_matrix_for_each_sensor_combination_from_mast_data(ano_data_orient)
+        alpha_matrix_orient = alpha_matrix_for_each_sensor_combination_from_mast_data(ano_data_orient, include_reverse_combinations=include_reverse_combinations)
         alpha_matrix.append(alpha_matrix_orient)
         
     alpha_matrix = pd.concat(alpha_matrix, axis=0, sort=True).dropna(how='all')
     alpha_matrix.index.name = 'sensor'
     alpha_matrix.columns.name = 'sensor'
     return alpha_matrix
+
+def alpha_annual_avg_from_mast_alpha_matrix(alpha_matrix):
+    '''Returns a DataFrame of an annual alpha value from a single alpha matrix.
+    
+    :Parameters: 
+    
+    mast: an.MetMast
+        Measured data from MetMast.data
+
+    :Returns:
+
+    out: DataFrame
+        Average alpha value from a single mast. 
+    
+    '''
+    annual_avg_alpha = alpha_matrix.melt(value_name='alpha').alpha.mean()
+    annual_avg_alpha = pd.DataFrame(index=['avg'], columns=['alpha'], data=annual_avg_alpha)
+    return annual_avg_alpha
 
 def mast_annual(mast):
     '''Returns a DataFrame of annual alpha values from a single mast indexed by sensor orientation, height, and name.
@@ -304,8 +328,9 @@ def mast_annual_avg(mast):
         Average alpha value from a single mast. 
     
     '''
-    annual_avg_alpha = mast_annual(mast=mast).melt(value_name='alpha').alpha.mean()
-    annual_avg_alpha = pd.DataFrame(index=[mast.name], columns=['alpha'], data=annual_avg_alpha)
+    alpha_matrix = mast_annual(mast)
+    annual_avg_alpha = alpha_annual_avg_from_mast_alpha_matrix(alpha_matrix)
+    annual_avg_alpha = pd.DataFrame(index=[mast.name], columns=['alpha'], data=annual_avg_alpha.loc['avg','alpha'])
     annual_avg_alpha.index.name = 'mast'
     return annual_avg_alpha
 
