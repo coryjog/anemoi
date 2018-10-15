@@ -28,6 +28,17 @@ def sql_or_string_from_mvs_ids(mvs_ids):
     or_string = ' OR '.join(['mvs_id = {}'.format(mvs_id) for mvs_id in mvs_ids])
     return or_string
 
+def sql_list_from_mvs_ids(mvs_ids):
+    if not isinstance(mvs_ids, list):
+        mvs_ids = [mvs_ids]
+    mvs_ids_list = ','.join([f"('{mvs_id}_1')" for mvs_id in mvs_ids])
+    return mvs_ids_list
+
+def rename_mvs_id_column(col, names, types):
+    name = names[int(col.split('_')[0])]
+    data_type = types[col.split('_')[1]]
+    return f'{name}_{data_type}'
+
 # Define DataBase class
 class M2D2(object):
     '''Class to connect to standard RAG databases
@@ -105,6 +116,11 @@ class M2D2(object):
         masts.set_index(['Project', 'wmm_id', 'WMM_Latitude', 'WMM_Longitude', 'Type'], inplace=True)
         masts.sort_index(inplace=True)
         return masts
+    
+    def mvs_ids(self):
+        masts = self.masts()
+        mvs_ids = masts.mvs_id.values.tolist()
+        return mvs_ids
 
     def valid_signal_labels(self):
         signal_type_query = '''
@@ -130,7 +146,18 @@ class M2D2(object):
         column_labels = pd.read_sql(column_label_sql_query, self.conn)
         column_labels = column_labels.set_index('column_id')
         return column_labels
-
+    
+    def column_labels_for_data_from_mvs_ids(self, data):
+        masts = self.masts()
+        names_map = pd.Series(index=masts.mvs_id.values, data=masts.Name.values).to_dict()
+        
+        types = self.valid_signal_labels()
+        types.loc['FLAG'] = 'Flag'
+        types_map = pd.Series(index=types.values.astype(str), data=types.index.values).to_dict()
+        
+        data = data.rename(lambda x: rename_mvs_id_column(x, names=names_map, types=types_map), axis=1)
+        return data        
+        
     def column_labels_for_wmm_id(self, wmm_id):
         masts = self.masts()
         mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].mvs_id.unique().tolist()
@@ -147,15 +174,15 @@ class M2D2(object):
         column_labels = column_labels.set_index('column_id')
         return column_labels        
     
-    def sensor_data_from_mvs_id(self, mvs_id, signal_type='AVG'):
+    def data_from_sensors_mvs_ids(self, mvs_ids, signal_type='AVG'):
         '''Download sensor data from M2D2
         
         :Parameters:
         
-        mvs_id: int
-            Virtual sensor ID (mvs_id) in M2D2
+        mvs_ids: int or list
+            Virtual sensor IDs (mvs_ids) in M2D2, can be singular
         
-        signal_type: str, default 'AVG'
+        signal_type: str, default 'AVG' - NOT SUPPORTED AT THIS TIME
             Signal type for download
             For example: 'AVG', 'SD', 'MIN', 'MAX', 'GUST'
         
@@ -163,80 +190,36 @@ class M2D2(object):
         
         out: DataFrame with signal data from virtual sensor
         '''
-
-        signal_types = self.valid_signal_labels()
-        assert signal_type in signal_types.index, 'Tried to look up "{}" but only valid options are: {}'.format(signal_type, signal_types.index.values) 
+        if not isinstance(mvs_ids, list):
+            mvs_ids = [mvs_ids]
+        valid_mvs_ids = self.mvs_ids()
+        assert all([mvs_id in valid_mvs_ids for mvs_id in mvs_ids]), f'One of the following is not a valid mvs_id: {mvs_ids}'
         
-        signal_id = signal_types[signal_type]
+        mvs_ids_list = sql_list_from_mvs_ids(mvs_ids)
+        sql_query= f"""
+DECLARE @ColumnListID udtt_ColumnListID
+DECLARE @startDate DATETIME     
+DECLARE @endDate DATETIME     
 
-        data_by_column_inputs = dict(mvs_id=mvs_id, signal_id=signal_id)
-        column_id = '{mvs_id}_{signal_id}'.format(**data_by_column_inputs)
-
-        sql_query= """
-        DECLARE  @column_id   NVARCHAR(50)  
-                ,@startDate   DATETIME     
-                ,@endDate     DATETIME     
-               
-        SET NOCOUNT ON;
-        SET @column_id = '{}'
-        SET @startDate = NULL
-        SET @endDate   = NULL 
-
-        EXEC dbo.proc_DataExport_GetDataByColumn   
-         @column_id   = @column_id               
-        ,@startDate   = @startDate 
-        ,@endDate     = @endDate     
-        """.format(column_id)
+INSERT INTO @ColumnListID (column_id)
+VALUES
+{mvs_ids_list}
+SET @startDate = NULL
+SET @endDate   = NULL
+SET NOCOUNT ON;
+    
+EXECUTE [dbo].[proc_DataExport_GetDataByColumnList]
+         @ColumnListID       
+        ,@startDate
+        ,@endDate
+"""
+        data = pd.read_sql(sql_query, self.conn, index_col='CorrectedTimestamp')
+        data.index.name = 'stamp'
+        data.columns.name = 'sensor'
+        data = self.column_labels_for_data_from_mvs_ids(data)
+        return data
         
-        sensor_data = pd.read_sql(sql_query, self.conn, index_col='MRD_CorrectedTimestamp')
-        sensor_data.index.name = 'stamp'
-        sensor_data.columns = [column_id, 'flag']
-        return sensor_data[column_id].to_frame(column_id)
-
-    def sensor_flags_from_mvs_id(self, mvs_id):
-        '''Download sensor flags from M2D2
-        
-        :Parameters:
-        
-        mvs_id: int
-            Virtual sensor ID (mvs_id) in M2D2, assume flags associated with average signal
-        
-        :Returns:
-        
-        out: DataFrame with signal data from virtual sensor
-        '''
-
-        signal_type='AVG'
-        signal_types = self.valid_signal_labels()
-        assert signal_type in signal_types.index, 'Tried to look up "{}" but only valid options are: {}'.format(signal_type, signal_types.index.values) 
-        
-        signal_id = signal_types[signal_type]
-
-        data_by_column_inputs = dict(mvs_id=mvs_id, signal_id=signal_id)
-        column_id = '{mvs_id}_{signal_id}'.format(**data_by_column_inputs)
-
-        sql_query= """
-        DECLARE  @column_id   NVARCHAR(50)  
-                ,@startDate   DATETIME     
-                ,@endDate     DATETIME     
-               
-        SET NOCOUNT ON;
-        SET @column_id = '{}'
-        SET @startDate = NULL
-        SET @endDate   = NULL 
-
-        EXEC dbo.proc_DataExport_GetDataByColumn   
-         @column_id   = @column_id               
-        ,@startDate   = @startDate 
-        ,@endDate     = @endDate     
-        """.format(column_id)
-        
-        sensor_data = pd.read_sql(sql_query, self.conn, index_col='MRD_CorrectedTimestamp')
-        sensor_data.index.name = 'stamp'
-        sensor_data.columns = [column_id, 'flag']
-        return sensor_data['flag'].to_frame('flag')
-
-    def mast_data_from_wmm_id(self, wmm_id):
+    def data_from_mast_wmm_id(self, wmm_id):
         '''Download data from all sensors on a mast from M2D2
         
         :Parameters:
@@ -250,18 +233,13 @@ class M2D2(object):
         '''
 
         masts = self.masts()
-        wmm_ids = masts.index.get_level_values('wmm_id').unique().tolist()
-        assert wmm_id in wmm_ids, 'Tried to look up "{} but this wmm_id is not found in M2D2'.format(wmm_id)
-
-        labels = self.column_labels_for_wmm_id(wmm_id).label
-        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],'mvs_id'].unique().tolist()
-        data = [self.sensor_data_from_mvs_id(mvs_id) for mvs_id in mvs_ids]
-        data = pd.concat(data, axis=1, sort=False)
-        data = data.rename(columns=labels.to_dict())
-        data.columns.name = 'sensor'
+        wmm_ids = masts.index.get_level_values('wmm_id').sort_values().unique().tolist()
+        assert wmm_id in wmm_ids, f'the following is not a valid wmm_id: {wmm_id}'
+        mvs_ids = masts.loc[pd.IndexSlice[:,wmm_id],:].mvs_id.values.tolist()
+        data = self.data_from_sensors_mvs_ids(mvs_ids)        
         return data
 
-    def mast_metadata_from_wmm_id(self, wmm_id):
+    def metadata_from_mast_wmm_id(self, wmm_id):
         '''Download mast metadata from M2D2
         
         :Parameters:
@@ -298,19 +276,15 @@ class M2D2(object):
         
         out: an.MetMast with data and metadata from M2D2
         '''
-        print('Downloading Mast {} from M2D2'.format(wmm_id))
-
-        masts = self.masts()
-        wmm_ids = masts.index.get_level_values('wmm_id').unique().tolist()
-        assert wmm_id in wmm_ids, 'Tried to look up "{} but this wmm_id is not found in M2D2'.format(wmm_id)
-
-        data = self.mast_data_from_wmm_id(wmm_id)
-        metadata = self.mast_metadata_from_wmm_id(wmm_id)
+        print(f'Downloading Mast {wmm_id} from M2D2')
+        data = self.data_from_mast_wmm_id(wmm_id=wmm_id)
+        metadata = self.metadata_from_mast_wmm_id(wmm_id=wmm_id)
         mast = an.MetMast(data=data, 
-                          name=wmm_id, 
-                          lat=metadata.WMM_Latitude[0], 
-                          lon=metadata.WMM_Longitude[0], 
-                          elev=metadata.WMM_Elevation[0])
+                         name=wmm_id, 
+                         lat=metadata.WMM_Latitude[0], 
+                         lon=metadata.WMM_Longitude[0], 
+                         elev=metadata.WMM_Elevation[0])
+
         return mast
 
     def masts_from_project(self, project):
@@ -323,14 +297,14 @@ class M2D2(object):
         
         :Returns:
         
-        out: an.MetMasts with data and metadata from M2D2 for a project
+        out: List of an.MetMasts with data and metadata from M2D2 for a given project
         '''
 
         masts = self.masts()
         projects = masts.index.get_level_values('Project').unique().tolist()
-        assert project in projects, 'Tried to look up "{} but this project is not found in M2D2'.format(project)
+        assert project in projects, f'Project {project} not found in M2D2'.format(project)
 
-        wmm_ids = masts.loc[project,:].index.get_level_values('wmm_id').unique().tolist()
+        wmm_ids = masts.loc[project,:].index.get_level_values('wmm_id').sort_values().unique().tolist()
         masts = [self.mast_from_wmm_id(wmm_id) for wmm_id in wmm_ids]
         return masts
 
