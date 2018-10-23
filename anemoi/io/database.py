@@ -229,7 +229,7 @@ EXECUTE [dbo].[proc_DataExport_GetDataByColumnList]
         
         :Returns:
         
-        out: DataFrame with signal data from each virtual sensor
+        out: DataFrame with signal data from each virtual sensor on the mast
         '''
 
         masts = self.masts()
@@ -500,7 +500,7 @@ class Padre(object):
           FROM [PADREScada].[dbo].[Project]
           WHERE technology = 'Wind'"""
 
-        projects = pd.read_sql(padre_project_query, self.conn).dropna()
+        projects = pd.read_sql(padre_project_query, self.conn)
         projects.set_index('ProjectName', inplace=True)
         return projects
 
