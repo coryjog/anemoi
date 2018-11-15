@@ -31,7 +31,7 @@ def sql_or_string_from_mvs_ids(mvs_ids):
 def sql_list_from_mvs_ids(mvs_ids):
     if not isinstance(mvs_ids, list):
         mvs_ids = [mvs_ids]
-    mvs_ids_list = ','.join([f"('{mvs_id}_1')" for mvs_id in mvs_ids])
+    mvs_ids_list = ','.join([f"({mvs_id}_1)" for mvs_id in mvs_ids])
     return mvs_ids_list
 
 def rename_mvs_id_column(col, names, types):
@@ -59,7 +59,8 @@ class M2D2(object):
         '''
         
         self.database = 'M2D2'
-        server = '10.1.15.53'
+        server = '10.1.15.53' # PRD
+        #server = 'SDHQRAGDBDEV01\RAGSQLDBSTG' #STG
         db = 'M2D2_DB_BE'
         
         conn_str = 'DRIVER={SQL Server}; SERVER=%s; DATABASE=%s; Trusted_Connection=yes' %(server, db)
@@ -197,22 +198,21 @@ class M2D2(object):
         
         mvs_ids_list = sql_list_from_mvs_ids(mvs_ids)
         sql_query= f"""
-DECLARE @ColumnListID udtt_ColumnListID
-DECLARE @startDate DATETIME     
-DECLARE @endDate DATETIME     
+             SET NOCOUNT ON
+             DECLARE @ColumnListID NVARCHAR(4000) 
+                   ,@startDate    DATETIME2      
+                   ,@endDate      DATETIME2      
 
-INSERT INTO @ColumnListID (column_id)
-VALUES
-{mvs_ids_list}
-SET @startDate = NULL
-SET @endDate   = NULL
-SET NOCOUNT ON;
-    
-EXECUTE [dbo].[proc_DataExport_GetDataByColumnList]
-         @ColumnListID       
-        ,@startDate
-        ,@endDate
-"""
+            SET @ColumnListID= '{mvs_ids_list}'
+            SET @startDate   = NULL
+            SET @endDate     = NULL
+
+            EXECUTE [dbo].[proc_DataExport_GetDataByColumnList]
+                @ColumnListID             
+                ,@startDate
+                ,@endDate
+            """
+        
         data = pd.read_sql(sql_query, self.conn, index_col='CorrectedTimestamp')
         data.index.name = 'stamp'
         data.columns.name = 'sensor'
