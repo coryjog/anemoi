@@ -1,9 +1,0 @@
-Analysis Module Documentation
-==============================
-
-.. automodule:: analysis.shear
-    :members:
-
-.. automodule:: analysis.correlate
-    :members:
-

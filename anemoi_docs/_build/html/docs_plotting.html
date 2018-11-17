@@ -1,0 +1,239 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Plotting &#8212; anemoi 0.0.48 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Class - MetMast" href="code_class_MetMast.html" />
+    <link rel="prev" title="Tutorial" href="docs_tutorial.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="plotting">
+<h1>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h1>
+<p>This will be a quick tutorial for plotting results from Anemoi. Plotting in Anemoi is based on the <a class="reference external" href="https://plot.ly/d3-js-for-python-and-pandas-charts/">Plotly visualization library</a>. If you haven’t used Plotly in Jupyter before you can go <a class="reference external" href="https://plot.ly/python/ipython-notebook-tutorial/">here</a> for a tutorial on how to get setup the first time using Plotly.</p>
+<p>Some users will wonder why Plotly was chosen as the default plotting library over the myriad of other Python visualization libraries available such as matplotlib, seaborn, bokeh, altair, and ggplot. While there are benefits to each of these and we expect consolidation in this space in the years to come, right now the authors think Plolty provides the cleanest interactive visuals for the least amount of overhead. Obviously, this can be debated. But given Plotly is built upon the very powerful and prolific D3.js library, it offers quite a few benefits. Including <a class="reference external" href="https://www.mapbox.com/">Mapbox</a> maps and standalone exports to .html from Jupyter. If that doesn’t mean anything to you, just know Plotly was chosen to give us all access to beautiful plots (including maps) which are easy to package and distribute throughout our respective organizations.</p>
+<div class="section" id="import-initialization-for-plotting">
+<h2>Import initialization for plotting<a class="headerlink" href="#import-initialization-for-plotting" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="kn">as</span> <span class="nn">an</span>
+
+<span class="kn">import</span> <span class="nn">plotly.plotly</span> <span class="kn">as</span> <span class="nn">py</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="kn">as</span> <span class="nn">go</span>
+<span class="kn">import</span> <span class="nn">plotly.offline</span> <span class="kn">as</span> <span class="nn">offline</span>
+<span class="n">offline</span><span class="o">.</span><span class="n">init_notebook_mode</span><span class="p">(</span><span class="n">connected</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">HTML</span>
+<span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&lt;style&gt;.container { width:99% !important; }&lt;/style&gt;&quot;</span><span class="p">))</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Generally speaking, Plotly needs two Python dictionaries to create a figure: data and layout. Data describes your actual data, such as the frequencies in a wind rose or the wind speeds in a correlation, along with the formatting information for the data traces, like bar or scatter. Layout describes the general formatting of your plot like title, axes, background color, margins, and figure size.</p>
+<p>To produce standardized plots from Anemoi results the template is as follows:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># pseaudo code</span>
+<span class="n">analysis_results</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">shear</span><span class="o">.</span><span class="n">annual</span><span class="p">(</span><span class="n">mast</span><span class="p">)</span>
+<span class="n">results_figure</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">shear</span><span class="o">.</span><span class="n">annual_figure</span><span class="p">(</span><span class="n">analysis_results</span><span class="p">)</span>
+<span class="n">offline</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">results_figure</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>There are a couple things I’d like to highlight before covering what is going on in the back ground. Firstly, returning analysis results will involve calling: an.analysis.analysis_library. Plotting those same results will involve calling the same analysis library from the plotting module: an.plotting.analysis_library. The shear analysis library is being used in the example above.</p>
+<p>Behind the scenes, Anemoi is constructing both the data and layout dictionaries. The data describes the individual traces, such as:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">plot_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">go</span><span class="o">.</span><span class="n">Scattergl</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">ref_ws_col</span><span class="p">],</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">site_ws_col</span><span class="p">],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;markers&#39;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span>
+                <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">EDFBlue</span><span class="p">))]</span>
+</pre></div>
+</td></tr></table></div>
+<p>The layout describes the general properties of the plot:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">plot_layout</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">autosize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+                    <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+                    <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;#CCCCCC&#39;</span><span class="p">),</span>
+                    <span class="n">titlefont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;#CCCCCC&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;12&#39;</span><span class="p">),</span>
+                    <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span><span class="n">r</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">25</span><span class="p">),</span>
+                    <span class="n">hovermode</span><span class="o">=</span><span class="s2">&quot;closest&quot;</span><span class="p">,</span>
+                    <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">),</span>
+                    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Wind speed correlation&#39;</span><span class="p">,</span>
+                    <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Reference [m/s]&#39;</span><span class="p">,</span>
+                            <span class="n">rangemode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">),</span>
+                    <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Site [m/s]&#39;</span><span class="p">,</span>
+                            <span class="n">rangemode</span><span class="o">=</span><span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>The data and layout dictionaries are combined into a plotly figure and displayed in a Jupyter notebook using the following:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">plot_data</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">plot_layout</span><span class="p">)</span>
+<span class="n">offline</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="formatting">
+<h2>Formatting<a class="headerlink" href="#formatting" title="Permalink to this headline">¶</a></h2>
+<p>EDF branding colors used:</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="c1"># Colors for plotting</span>
+<span class="n">EDFGreen</span> <span class="o">=</span> <span class="s1">&#39;#509E2F&#39;</span>
+<span class="n">EDFLightGreen</span> <span class="o">=</span> <span class="s1">&#39;#C4D600&#39;</span>
+<span class="n">EDFOrange</span> <span class="o">=</span> <span class="s1">&#39;#FE5815&#39;</span>
+<span class="n">EDFLightOrange</span> <span class="o">=</span> <span class="s1">&#39;#FFA02F&#39;</span>
+<span class="n">EDFBlue</span> <span class="o">=</span> <span class="s1">&#39;#001A70&#39;</span>
+<span class="n">EDFLightBlue</span> <span class="o">=</span> <span class="s1">&#39;#005BBB&#39;</span>
+<span class="n">EDFColors</span> <span class="o">=</span> <span class="p">[</span><span class="n">EDFGreen</span><span class="p">,</span> <span class="n">EDFBlue</span><span class="p">,</span> <span class="n">EDFOrange</span><span class="p">,</span> <span class="n">EDFLightGreen</span><span class="p">,</span> <span class="n">EDFLightBlue</span><span class="p">,</span> <span class="n">EDFLightOrange</span><span class="p">]</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="docs_quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Start from Nothing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plotting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#import-initialization-for-plotting">Import initialization for plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#formatting">Formatting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_database.html">Input/Output Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="docs_tutorial.html" title="previous chapter">Tutorial</a></li>
+      <li>Next: <a href="code_class_MetMast.html" title="next chapter">Class - MetMast</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/docs_plotting.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
