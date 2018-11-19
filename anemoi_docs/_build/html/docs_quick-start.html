@@ -1,0 +1,144 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Quick Start Guide &#8212; anemoi 0.0.49 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Start from Nothing Guide" href="docs_start-from-scratch.html" />
+    <link rel="prev" title="Welcome to anemoi’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="quick-start-guide">
+<h1>Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="instructions-for-installing-anemoi">
+<h2>Instructions for installing anemoi.<a class="headerlink" href="#instructions-for-installing-anemoi" title="Permalink to this headline">¶</a></h2>
+<p>Anemoi only supports Python 3 and requires statsmodels, which is distributed via Anaconda. First, if you have a Windows machine you’ll need to install a C++ compiler. You can do this by installing the most recent version of Visual Studio Community edition from <a class="reference external" href="https://visualstudio.microsoft.com/downloads/">here</a>. Then, assuming you’ve already installed Anaconda, run the following:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install statsmodels
+pip install anemoi
+</pre></div>
+</div>
+<p>If you can run the following within a Jupyter Notebook without an error you know you’re ready to analize some wind data.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="kn">as</span> <span class="nn">an</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="alternate-instructions-for-using-anemoi">
+<h2>Alternate instructions for using anemoi.<a class="headerlink" href="#alternate-instructions-for-using-anemoi" title="Permalink to this headline">¶</a></h2>
+<p>You can download the anemoi package from the <a class="reference external" href="https://github.com/coryjog/anemoi">master branch</a> on GitHub and place the anemoi folder in your working directory. This option requires you to separately install all the needed Python packages listed in the requirements.txt file.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#instructions-for-installing-anemoi">Instructions for installing anemoi.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alternate-instructions-for-using-anemoi">Alternate instructions for using anemoi.</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Start from Nothing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_plotting.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_database.html">Input/Output Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to anemoi’s documentation!</a></li>
+      <li>Next: <a href="docs_start-from-scratch.html" title="next chapter">Start from Nothing Guide</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/docs_quick-start.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
