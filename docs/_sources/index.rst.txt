@@ -33,6 +33,7 @@ Anemoi were Greek wind gods. Each god was ascribed a cardinal direction from whi
    code_class_MetMast.rst
    code_class_RefMast.rst
    code_io_references.rst
+   code_io_database.rst
    code_analysis_shear.rst
    code_analysis_correlate.rst
    code_analysis_freq_dist.rst
