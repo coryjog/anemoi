@@ -41,7 +41,7 @@ def rename_mvs_id_column(col, names, types):
 
 # Define DataBase class
 class M2D2(object):
-    '''Class to connect to RAG M2D2 database
+    '''Class to connect to RAG M2D2 PRD database
     '''
 
     def __init__(self):
