@@ -4,39 +4,32 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to anemoi’s documentation! &#8212; anemoi  documentation</title>
+    <title>Welcome to anemoi’s documentation! &#8212; anemoi 0.0.48 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quick Start Guide" href="quick-start.html" />
+    <link rel="next" title="Quick Start Guide" href="docs_quick-start.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="welcome-to-anemoi-s-documentation">
@@ -46,36 +39,53 @@
 <p><strong>Requirements:</strong></p>
 <ul class="simple">
 <li>Python 3</li>
-<li>matplotlib</li>
 <li>numpy</li>
 <li>pandas</li>
-<li>pyarrow</li>
+<li>plotly</li>
 <li>pyodbc</li>
 <li>requests</li>
 <li>scipy</li>
-<li>seaborn</li>
 <li>statsmodels</li>
 </ul>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="quick-start.html#instructions-for-installing-anemoi">Instructions for installing anemoi.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-start.html#alternate-instructions-for-using-anemoi">Alternate instructions for using anemoi.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_quick-start.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_quick-start.html#instructions-for-installing-anemoi">Instructions for installing anemoi.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_quick-start.html#alternate-instructions-for-using-anemoi">Alternate instructions for using anemoi.</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data_model.html#anemoi-metmast-object">Anemoi MetMast object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_model.html#sensor-naming-convention">Sensor naming convention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="data_model.html#sensor-name-examples">Sensor name examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Start from Nothing Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_start-from-scratch.html#instructions-for-installing-python-via-anaconda">Instructions for installing Python via Anaconda.</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">Class - MetMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_RefMast.html">Class - RefMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Analysis Module - Correlate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_freq_dist.html">Analysis Module - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_data_model.html">Data Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_data_model.html#anemoi-metmast-object">Anemoi MetMast object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_data_model.html#sensor-naming-convention">Sensor naming convention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_data_model.html#sensor-name-examples">Sensor name examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_tutorial.html#import-initialization">Import initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_tutorial.html#importing-data-and-creating-a-metmast">Importing data and creating a MetMast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_tutorial.html#analysis">Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs_plotting.html">Plotting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs_plotting.html#import-initialization-for-plotting">Import initialization for plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_plotting.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs_plotting.html#formatting">Formatting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_database.html">Input/Output Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
 </ul>
 </div>
 </div>
@@ -90,6 +100,7 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -106,34 +117,50 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_MetMast.html">Class - MetMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_RefMast.html">Class - RefMast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_shear.html">Analysis Module - Shear</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_correlate.html">Analysis Module - Correlate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code_freq_dist.html">Analysis Module - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_start-from-scratch.html">Start from Nothing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs_plotting.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_database.html">Input/Output Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_plotting_correlate.html">Plotting - Correlate</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="quick-start.html" title="next chapter">Quick Start Guide</a></li>
+      <li>Next: <a href="docs_quick-start.html" title="next chapter">Quick Start Guide</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -142,8 +169,8 @@
       &copy;2017, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/index.rst.txt"

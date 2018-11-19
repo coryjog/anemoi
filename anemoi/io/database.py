@@ -41,7 +41,7 @@ def rename_mvs_id_column(col, names, types):
 
 # Define DataBase class
 class M2D2(object):
-    '''Class to connect to standard RAG databases
+    '''Class to connect to RAG M2D2 database
     '''
 
     def __init__(self):
@@ -310,7 +310,7 @@ class M2D2(object):
 
 # Define Turbine class
 class Turbine(object):
-    '''Class to connect to standard RAG databases
+    '''Class to connect to EDF Wind Turbine database
     '''
 
     def __init__(self):
@@ -409,7 +409,7 @@ class Turbine(object):
 
 # Define Padre class
 class Padre(object):
-    '''Class to connect to standard RAG databases
+    '''Class to connect to PRE Padre database
     '''
 
     def __init__(self, database='PADREScada', conn_str=None, conn=None, domino=False):
