@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Class - MetMast &#8212; anemoi  documentation</title>
+    <title>Class - MetMast &#8212; anemoi 0.0.49 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -31,13 +23,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="class-metmast">
@@ -90,7 +83,7 @@ See ECRM for more on the format of the naming convensions:</p>
 </dl>
 <dl class="method">
 <dt id="mast.MetMast.from_M2D2">
-<code class="descname">from_M2D2</code><span class="sig-paren">(</span><em>wmm_id</em>, <em>primary_ano=None</em>, <em>primary_vane=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.from_M2D2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.from_M2D2" title="Permalink to this definition">¶</a></dt>
+<code class="descname">from_M2D2</code><span class="sig-paren">(</span><em>primary_ano=None</em>, <em>primary_vane=None</em>, <em>start_date=None</em>, <em>end_date=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mast.html#MetMast.from_M2D2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mast.MetMast.from_M2D2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Download mast data and metadata from the met data database M2D2 (EDF specific). Currently
 this is only the 10-minute average of each installed sensor. Will add standard deviation, maximum, and
 minimum in the future.</p>
@@ -106,7 +99,7 @@ minimum in the future.</p>
 <dt>wmm_id: int</dt>
 <dd><p class="first">Wind met mast id number in M2D2.
 To get a list of masts in M2D2 run the following:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="k">as</span> <span class="nn">an</span>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">anemoi</span> <span class="k">as</span> <span class="nn">an</span>
 <span class="n">m2d2</span> <span class="o">=</span> <span class="n">an</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">M2D2</span><span class="p">()</span>
 <span class="n">m2d2</span><span class="o">.</span><span class="n">get_masts</span><span class="p">()</span>
 </pre></div>
@@ -435,6 +428,7 @@ See also: an.utils.mast_data.get_unique_sensor_details</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -459,6 +453,7 @@ See also: an.utils.mast_data.get_unique_sensor_details</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Class - MetMast</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_class_RefMast.html">Class - RefMast</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_io_database.html">Input/Output Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_analysis_shear.html">Analysis - Shear</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_analysis_correlate.html">Analysis - Correlate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
@@ -477,24 +472,34 @@ See also: an.utils.mast_data.get_unique_sensor_details</p>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, Cory Jog.
+      &copy;2018, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/code_class_MetMast.rst.txt"
