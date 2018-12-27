@@ -8,7 +8,6 @@ required = ['pandas',
             'matplotlib',
             'plotly',
             'pyodbc',
-            'pyathenajdbc',
             'statsmodels']
 
 classifiers = ['Development Status :: 3 - Alpha',
