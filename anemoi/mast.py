@@ -100,7 +100,7 @@ Primary vane: {vane}'''.format(name=name,
     def is_sensor_type_included(self, sensor_type=None):
         return an.utils.mast_data.is_sensor_type_included(self.data, sensor_type=sensor_type)
 
-    def is_sensor_name_included(self, sensor_name=None):
+    def is_sensor_name_included(self, sensors=None):
         return an.utils.mast_data.is_sensor_name_included(self.data, sensors=sensors)
 
     def is_sensor_names_included(self, sensors=None):
@@ -200,8 +200,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            types = an.utils.mast_data.sensor_types_unique(self.data, sensors=sensors)
-            return types
+        types = an.utils.mast_data.sensor_types_unique(self.data, sensors=sensors)
+        return types
 
     def sensor_signals(self, sensors=None):
         """Returns a list of sensor signals for columns in an.MetMast.data
@@ -211,8 +211,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            signals = an.utils.mast_data.sensor_signals(self.data, sensors=sensors)
-            return signals
+        signals = an.utils.mast_data.sensor_signals(self.data, sensors=sensors)
+        return signals
 
     def sensor_signals_unique(self, sensors=None):
         """Returns a list of unique sensor signals for columns in an.MetMast.data
@@ -222,8 +222,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            signals = an.utils.mast_data.sensor_signals_unique(self.data, sensors=sensors)
-            return signals
+        signals = an.utils.mast_data.sensor_signals_unique(self.data, sensors=sensors)
+        return signals
 
     def sensor_orients(self, sensors=None):
         """Returns a list of sensor orientations for columns in an.MetMast.data
@@ -233,8 +233,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            orients = an.utils.mast_data.sensor_orients(self.data, sensors=sensors)
-            return orients
+        orients = an.utils.mast_data.sensor_orients(self.data, sensors=sensors)
+        return orients
 
     def sensor_orients_unique(self, sensors=None):
         """Returns a list of unique sensor orientations for columns in an.MetMast.data
@@ -244,8 +244,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            orients = an.utils.mast_data.sensor_orients_unique(self.data, sensors=sensors)
-            return orients
+        orients = an.utils.mast_data.sensor_orients_unique(self.data, sensors=sensors)
+        return orients
 
     def sensor_heights(self, sensors=None):
         """Returns a list of sensor heights for columns in an.MetMast.data
@@ -255,8 +255,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            heights = an.utils.mast_data.sensor_heights(self.data, sensors=sensors)
-            return heights
+        heights = an.utils.mast_data.sensor_heights(self.data, sensors=sensors)
+        return heights
 
     def sensor_heights_unique(self, sensors=None):
         """Returns a list of unique sensor heights for columns in an.MetMast.data
@@ -266,8 +266,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            heights = an.utils.mast_data.sensor_heights_unique(self.data, sensors=sensors)
-            return heights
+        heights = an.utils.mast_data.sensor_heights_unique(self.data, sensors=sensors)
+        return heights
 
     def get_sensor_names(self, sensors=None):
         """Returns a list of sensor names for columns in an.MetMast.data
@@ -277,8 +277,8 @@ Primary vane: {vane}'''.format(name=name,
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
         """
-            names = self.get_sensor_details(level='sensor', sensors=sensors)
-            return names
+        names = self.get_sensor_details(level='sensor', sensors=sensors)
+        return names
 
     def return_sensor_data(self, sensors=None):
         """Returns a DataFrame of measured data from specified sensors
@@ -415,7 +415,7 @@ Primary vane: {vane}'''.format(name=name,
         df = df.groupby(df.index.month).mean()
         df.index.name = 'Month'
         df.columns = df.columns.get_level_values(-1)
-        days = pd.concat([shear.return_monthly_days()]*df.shape[1], axis=1)
+        days = pd.concat([self.return_monthly_days()]*df.shape[1], axis=1)
         days.columns = df.columns
         MoMM = (df*days).sum()/365.25
         MoMM = MoMM.to_frame(name='MoMM')
