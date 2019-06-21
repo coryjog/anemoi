@@ -4,5 +4,5 @@ Class - MetMast
 This is the foundational object within the Anemoi wind analysis package.
 
 
-.. autoclass:: mast.MetMast
+.. autoclass:: utils.mast_data.MetMast
     :members:
