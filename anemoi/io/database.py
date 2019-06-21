@@ -25,7 +25,7 @@ def sql_or_string_from_mvs_ids(mvs_ids):
 def sql_list_from_mvs_ids(mvs_ids):
     if not isinstance(mvs_ids, list):
         mvs_ids = [mvs_ids]
-    mvs_ids_list = ','.join([f"({mvs_id}_1)" for mvs_id in mvs_ids])
+    mvs_ids_list = ','.join(['({}_1)'.format(mvs_id) for mvs_id in mvs_ids])
     return mvs_ids_list
 
 
