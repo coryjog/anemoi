@@ -9,7 +9,7 @@ EDF's pre-alpha Python package for wind data analysis - may be open-sourced in t
 https://coryjog.github.io/anemoi/
 
 ## Installation
-https://coryjog.github.io/anemoi/quick-start.html
+https://coryjog.github.io/anemoi/docs_quick-start.html
 
 ## Explanation
 https://en.wikipedia.org/wiki/Anemoi
