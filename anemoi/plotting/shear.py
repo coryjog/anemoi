@@ -1,8 +1,6 @@
 import anemoi as an
 import pandas as pd
 import numpy as np
-
-import plotly.plotly as py
 import plotly.graph_objs as go
 import plotly.offline as offline
 offline.init_notebook_mode(connected=True)

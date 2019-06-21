@@ -1,9 +1,5 @@
-# Import libraries
-import anemoi as an
 import pandas as pd
 import numpy as np
-import pyodbc
-from datetime import datetime
 import json
 import urllib3
 
@@ -40,22 +36,22 @@ def rename_mvs_id_column(col, names, types):
 
 
 class EIA(object):
-    '''Class to connect to EIA database via HTTP
-    '''
+    """Class to connect to EIA database via HTTP
+    """
 
     def __init__(self):
-        '''Data structure for connecting to and downloading data from EIA. Convention is::
+        """Data structure for connecting to and downloading data from EIA. Convention is::
 
             import anemoi as an
             eia = an.io.database.EIA()
-        
+
         :Parameters:
-        
+
 
         :Returns:
 
         out: an.EIA object connected to EIA.gov
-        '''
+        """
 
         self.database = 'EIA'
         self.api_key = '9B2EDFF62577B236B5D66044ACECA2EF'
@@ -83,7 +79,7 @@ class EIA(object):
 
     def eia_data_from_ids(self, eia_ids):
 
-        data = [eia.eia_data(project) for project in projects]
+        data = [self.eia_data_from_id(project) for project in eia_ids]
         data = pd.concat(data, axis=1)
         return data
 

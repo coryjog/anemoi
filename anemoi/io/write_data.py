@@ -1,5 +1,3 @@
-import pandas as pd
-
 ### MAST I/O ###
 def mast_to_parquet(mast, folder_path=None):
     data_file_name = 'm{}_data.parquet'.format(mast.name)

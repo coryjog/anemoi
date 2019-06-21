@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
 import anemoi as an
 import pandas as pd
-import numpy as np
-
-import scipy as sp
-from scipy import stats
-import scipy.optimize as spyopt
-from scipy.special import gamma
 
 class MetMast(object):
-    '''Primary Anemoi object. Data structure made up of two components:
+    """Primary Anemoi object. Data structure made up of two components:
 
     * Metadata (mast coordinates, mast height, primary anemometer, primary wind vane)
     * Pandas DataFrame of time series wind measurements which assumes EDF's standard sensor naming conventions.
@@ -41,7 +35,7 @@ class MetMast(object):
         See ECRM for more on the format of the naming convensions:
 
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
-    '''
+    """
 
     def __init__(self,
                 data=None,
@@ -153,12 +147,12 @@ Primary vane: {vane}'''.format(name=name,
         return self
 
     def sensor_names(self):
-        '''Returns a list of sensor columns from the MetMast.data DataFrame
-        '''
+        """Returns a list of sensor columns from the MetMast.data DataFrame
+        """
         return an.utils.mast_data.sensor_details(self.data, level='sensor')
 
     def sensor_details(self, level, sensors=None):
-        '''Returns a list of sensor details for a given column level in MetMast.data.
+        """Returns a list of sensor details for a given column level in MetMast.data.
         See also: an.utils.mast_data.get_sensor_details
 
         :Parameters:
@@ -168,12 +162,12 @@ Primary vane: {vane}'''.format(name=name,
 
         sensors: list, default None
             List of specific sensors from which to return details
-        '''
+        """
         details = an.utils.mast_data.sensor_details(self.data, level=level, sensors=sensors)
         return details
 
     def sensor_details_unique(self, level, sensors=None):
-        '''Returns a list of sensor details for a given column level in an.MetMast.data.
+        """Returns a list of sensor details for a given column level in an.MetMast.data.
         See also: an.utils.mast_data.get_unique_sensor_details
 
         :Parameters:
@@ -183,138 +177,138 @@ Primary vane: {vane}'''.format(name=name,
 
         sensors: list, default None
             List of specific sensors from which to return details
-        '''
+        """
         details = an.utils.mast_data.sensor_details_unique(self.data, level=level, sensors=sensors)
         return details
 
     def sensor_types(self, sensors=None):
-        '''Returns a list of sensor types for columns in an.MetMast.data
+        """Returns a list of sensor types for columns in an.MetMast.data
 
         :Parameters:
 
         sensors: list, default None
             List of specific sensors from which to return details, otherwise all columns assumed
-        '''
+        """
         types = an.utils.mast_data.sensor_types(self.data, sensors=sensors)
         return types
 
     def sensor_types_unique(self, sensors=None):
-            '''Returns a list of unique sensor types for columns in an.MetMast.data
+        """Returns a list of unique sensor types for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             types = an.utils.mast_data.sensor_types_unique(self.data, sensors=sensors)
             return types
 
     def sensor_signals(self, sensors=None):
-            '''Returns a list of sensor signals for columns in an.MetMast.data
+        """Returns a list of sensor signals for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             signals = an.utils.mast_data.sensor_signals(self.data, sensors=sensors)
             return signals
 
     def sensor_signals_unique(self, sensors=None):
-            '''Returns a list of unique sensor signals for columns in an.MetMast.data
+        """Returns a list of unique sensor signals for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             signals = an.utils.mast_data.sensor_signals_unique(self.data, sensors=sensors)
             return signals
 
     def sensor_orients(self, sensors=None):
-            '''Returns a list of sensor orientations for columns in an.MetMast.data
+        """Returns a list of sensor orientations for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             orients = an.utils.mast_data.sensor_orients(self.data, sensors=sensors)
             return orients
 
     def sensor_orients_unique(self, sensors=None):
-            '''Returns a list of unique sensor orientations for columns in an.MetMast.data
+        """Returns a list of unique sensor orientations for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             orients = an.utils.mast_data.sensor_orients_unique(self.data, sensors=sensors)
             return orients
 
     def sensor_heights(self, sensors=None):
-            '''Returns a list of sensor heights for columns in an.MetMast.data
+        """Returns a list of sensor heights for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             heights = an.utils.mast_data.sensor_heights(self.data, sensors=sensors)
             return heights
 
     def sensor_heights_unique(self, sensors=None):
-            '''Returns a list of unique sensor heights for columns in an.MetMast.data
+        """Returns a list of unique sensor heights for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             heights = an.utils.mast_data.sensor_heights_unique(self.data, sensors=sensors)
             return heights
 
     def get_sensor_names(self, sensors=None):
-            '''Returns a list of sensor names for columns in an.MetMast.data
+        """Returns a list of sensor names for columns in an.MetMast.data
 
-            :Parameters:
+        :Parameters:
 
-            sensors: list, default None
-                List of specific sensors from which to return details, otherwise all columns assumed
-            '''
+        sensors: list, default None
+            List of specific sensors from which to return details, otherwise all columns assumed
+        """
             names = self.get_sensor_details(level='sensor', sensors=sensors)
             return names
 
     def return_sensor_data(self, sensors=None):
-        '''Returns a DataFrame of measured data from specified sensors
+        """Returns a DataFrame of measured data from specified sensors
 
         :Parameters:
 
         sensors: list, default None
             List of specific sensors from which to return data
-        '''
+        """
         return an.utils.mast_data.return_sensor_data(self.data, sensors=sensors)
 
     def return_primary_ano_data(self):
-        '''Returns a DataFrame of measured data from the primary anemomter
-        '''
+        """Returns a DataFrame of measured data from the primary anemomter
+        """
         return self.return_sensor_data(sensors=self.primary_ano)
 
     def return_primary_vane_data(self):
-        '''Returns a DataFrame of measured data from the primary wind vane
-        '''
+        """Returns a DataFrame of measured data from the primary wind vane
+        """
         return self.return_sensor_data(sensors=self.primary_vane)
 
     def return_primary_ano_vane_data(self):
-        '''Returns a DataFrame of measured data from the primary anemometer and primary wind vane
-        '''
+        """Returns a DataFrame of measured data from the primary anemometer and primary wind vane
+        """
         ano_data = self.return_primary_ano_data()
         vane_data = self.return_primary_vane_data()
         return pd.concat([ano_data, vane_data], axis=1)
 
     def return_sensor_type_data(self, sensor_type=None, sensor_signal='AVG'):
-        '''Returns a DataFrame of measured data from a specified sensor type
+        """Returns a DataFrame of measured data from a specified sensor type
 
         :Parameters:
 
@@ -324,11 +318,11 @@ Primary vane: {vane}'''.format(name=name,
         see ECRM for more on naming convensions
 
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
-        '''
+        """
         return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type, sensor_signal=sensor_signal)
 
     def resample_sensor_data(self, sensors, freq, agg='mean', minimum_recovery_rate=0.7):
-        '''Returns a DataFrame of measured data resampled to the specified frequency
+        """Returns a DataFrame of measured data resampled to the specified frequency
 
         :Parameters:
 
@@ -344,7 +338,7 @@ Primary vane: {vane}'''.format(name=name,
 
         agg: string; default 'mean'
             Aggregator ('mean', 'std', 'max', 'min', 'count', 'first', 'last')
-        '''
+        """
         self.is_mast_data_size_greater_than_zero()
 
         if not isinstance(sensors, list):
