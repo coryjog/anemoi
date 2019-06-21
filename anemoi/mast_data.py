@@ -31,10 +31,7 @@ class MetMast(object):
     :Data:
 
     data: DataFrame
-        Pandas DataFrame of a time series of measured wind data. The column labels assume EDF's standard naming conventions.
-        See ECRM for more on the format of the naming convensions:
-
-        https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
+        Pandas DataFrame of a time series of measured wind data. The column labels assume EDF's standard naming convention.
     """
 
     def __init__(self,

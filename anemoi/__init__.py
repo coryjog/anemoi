@@ -1,5 +1,5 @@
 from ._version import __version__
-from anemoi.mast import MetMast
+from anemoi.mast_data import MetMast
 import anemoi
 import anemoi.io.database
 import anemoi.io.read_data
