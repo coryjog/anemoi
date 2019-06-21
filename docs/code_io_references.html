@@ -36,173 +36,6 @@
   <div class="section" id="input-output-references">
 <h1>Input/Output - References<a class="headerlink" href="#input-output-references" title="Permalink to this headline">¶</a></h1>
 <p>This module is for getting reference station data from EDF servers. The plan is to eventually migrate to Amazon Web Services.</p>
-<span class="target" id="module-anemoi.io.references"></span><dl class="function">
-<dt id="anemoi.io.references.distances_to_project">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">distances_to_project</code><span class="sig-paren">(</span><em>lat_project</em>, <em>lon_project</em>, <em>lats</em>, <em>lons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#distances_to_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.distances_to_project" title="Permalink to this definition">¶</a></dt>
-<dd><p>Method to calculate distances between a project and an array of lats and lons</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>lat_project: float</dt>
-<dd>Project latitude</dd>
-<dt>lon_project: float</dt>
-<dd>Project longitude</dd>
-<dt>lats: np.array</dt>
-<dd>Latitudes from which to calculate distances</dd>
-<dt>lons: np.array</dt>
-<dd>Longitudes from which to calculate distances</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<p>out: np.array of distances</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="anemoi.io.references.get_closest_era5_data">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">get_closest_era5_data</code><span class="sig-paren">(</span><em>lat</em>, <em>lon</em>, <em>local_time=True</em>, <em>daily_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_closest_era5_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_closest_era5_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns hourly data from closest ERA5 cell</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>lat: float</dt>
-<dd>Latitude value</dd>
-<dt>lon: float</dt>
-<dd>Longitude value</dd>
-<dt>local_time: boolean, default: True</dt>
-<dd>Return data in local time, as opposed to UTC</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<p>out: pd.DataFrame of ERA5 data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="anemoi.io.references.get_closest_merra2_data">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">get_closest_merra2_data</code><span class="sig-paren">(</span><em>lat</em>, <em>lon</em>, <em>local_time=True</em>, <em>daily_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_closest_merra2_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_closest_merra2_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns hourly data from closest MERRA2 cell</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>lat: float</dt>
-<dd>Latitude value</dd>
-<dt>lon: float</dt>
-<dd>Longitude value</dd>
-<dt>local_time: boolean, default: True</dt>
-<dd>Return data in local time, as opposed to UTC</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<p>out: pd.DataFrame of MERRA2 data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="anemoi.io.references.get_era5_data_from_cell_id">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">get_era5_data_from_cell_id</code><span class="sig-paren">(</span><em>cell_id</em>, <em>lat=None</em>, <em>lon=None</em>, <em>local_time=True</em>, <em>daily_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_era5_data_from_cell_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_era5_data_from_cell_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns hourly data from ERA5 cell using EDF’s cell_id</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>cell_id: int</dt>
-<dd>Unique cell id</dd>
-<dt>lat: float</dt>
-<dd>Latitude value - used to infer local time</dd>
-<dt>lon: float</dt>
-<dd>Longitude value - used to infer local time</dd>
-<dt>local_time: boolean, default: True</dt>
-<dd>Return data in local time, as opposed to UTC</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<p>out: pd.DataFrame of ERA5 data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="anemoi.io.references.get_merra2_data_from_cell_id">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">get_merra2_data_from_cell_id</code><span class="sig-paren">(</span><em>cell_id</em>, <em>lat=None</em>, <em>lon=None</em>, <em>daily_only=True</em>, <em>local_time=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_merra2_data_from_cell_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_merra2_data_from_cell_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns hourly data from MERRA2 cell using EDF’s cell_id</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>cell_id: int</dt>
-<dd>Unique cell id</dd>
-<dt>lat: float</dt>
-<dd>Latitude value - used to infer local time</dd>
-<dt>lon: float</dt>
-<dd>Longitude value - used to infer local time</dd>
-<dt>local_time: boolean, default: True</dt>
-<dd>Return data in local time, as opposed to UTC</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-<p>out: pd.DataFrame of MERRA2 data</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="anemoi.io.references.get_reference_stations_north_america">
-<code class="descclassname">anemoi.io.references.</code><code class="descname">get_reference_stations_north_america</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_reference_stations_north_america"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_reference_stations_north_america" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return list of North American reference stations</p>
-</dd></dl>
-
 </div>
 
 
@@ -261,14 +94,6 @@
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
@@ -277,8 +102,8 @@
       &copy;2018, Cory Jog.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/code_io_references.rst.txt"

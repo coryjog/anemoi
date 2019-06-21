@@ -12,5 +12,5 @@ A more robust example will be added here in the future.
     results_fig = an.plotting.shear.annual_mast(results)
     offline.iplot(results_fig)
 
-.. automodule:: plotting.shear
+.. automodule:: anemoi.plotting.shear
     :members:
