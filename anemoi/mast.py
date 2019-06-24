@@ -313,9 +313,58 @@ Primary vane: {vane}'''.format(name=name,
         sensor_type: string, default None
             Sensor type ('SPD', 'DIR', 'T', 'RH')
 
-        see ECRM for more on naming convensions
+        Sensor Naming Convention:
 
-        https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
+            Anemometer: SPD_height_orientation; Ex: SPD_102_SW
+
+            ​Vertical Anemometer: ​VFS_height_orientation; Ex: ​VFS_77_W
+
+            ​Wind Vane: ​​DIR_height; Ex: ​​DIR_88
+
+            ​Ambient Temperature: ​T_height; Ex: ​T_92
+
+            Barometric Pressure: BP_height; Ex: BP_92
+
+            ​Relative Humidity: RH_height; Ex: RH_91
+
+            ​Dew Point: ​DEW; Ex: ​DEW
+
+            ​Air Density: ​AIRD; Ex: ​AIRD
+
+            ​Rain Gauge: ​RG; Ex: ​RG
+
+            ​Logger Battery Voltage: ​VBAT; Ex: ​VBAT
+
+            Logger Internal Temperature: ​TLOG; Ex: ​TLOG
+
+            ​Multiplexer: ​MUX; Ex: ​MUX
+
+            Instrument Current: CUR_[number]; Ex: CUR_1, CUR_2, etc.
+
+            ​Obstruction Lighting Status: ​OLS; Ex: ​OLS
+
+            ​Power System Voltage - 12: ​PS12; Ex: ​PS12
+
+            ​Power System Voltage - 24: ​PS24; Ex: ​PS24
+
+            ​Grid Power Status: ​GRID; Ex: ​GRID
+
+            Ice Detectors: ICE_height; Ex: ICE_20
+
+            Visibility Detectors: VIS_height; Ex: VIS_20
+
+            Pyranometer: PYR_height; Ex: PYR_3
+
+            Wetness: WET; Ex: WET
+
+            Logger Clock Drift: LCDR; Ex: LCDR
+
+            Heated sensors: [SensorType]H_ height_orientation; Ex: SPDH_80_SW
+
+                        [SensorType]H_ height; Ex: DIRH_77
+
+                        (based on sensor type); Ex: BPH_75
+
         """
         return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type,
                                                           sensor_signal=sensor_signal)

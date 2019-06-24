@@ -36,6 +36,45 @@
   <div class="section" id="input-output-references">
 <h1>Input/Output - References<a class="headerlink" href="#input-output-references" title="Permalink to this headline">¶</a></h1>
 <p>This module is for getting reference station data from EDF servers. The plan is to eventually migrate to Amazon Web Services.</p>
+<span class="target" id="module-anemoi.io.references"></span><dl class="function">
+<dt id="anemoi.io.references.distances_to_project">
+<code class="descclassname">anemoi.io.references.</code><code class="descname">distances_to_project</code><span class="sig-paren">(</span><em>lat_project</em>, <em>lon_project</em>, <em>lats</em>, <em>lons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#distances_to_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.distances_to_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to calculate distances between a project and an array of lats and lons</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>lat_project: float</dt>
+<dd>Project latitude</dd>
+<dt>lon_project: float</dt>
+<dd>Project longitude</dd>
+<dt>lats: np.array</dt>
+<dd>Latitudes from which to calculate distances</dd>
+<dt>lons: np.array</dt>
+<dd>Longitudes from which to calculate distances</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>out: np.array of distances</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="anemoi.io.references.get_reference_stations_north_america">
+<code class="descclassname">anemoi.io.references.</code><code class="descname">get_reference_stations_north_america</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/anemoi/io/references.html#get_reference_stations_north_america"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#anemoi.io.references.get_reference_stations_north_america" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of North American reference stations</p>
+</dd></dl>
+
 </div>
 
 

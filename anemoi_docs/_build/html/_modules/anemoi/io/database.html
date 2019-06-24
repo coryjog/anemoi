@@ -1,0 +1,213 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>anemoi.io.database &#8212; anemoi 0.0.49 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for anemoi.io.database</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">urllib3</span>
+
+
+<span class="k">def</span> <span class="nf">return_between_date_query_string</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start_end_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;AND [TimeStampLocal] &gt;= &#39;</span><span class="si">%s</span><span class="s1">&#39; AND [TimeStampLocal] &lt; &#39;</span><span class="si">%s</span><span class="s1">&#39; &#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start_end_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;AND [TimeStampLocal] &gt;= &#39;</span><span class="si">%s</span><span class="s1">&#39; &#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">start_date</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_date</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start_end_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;AND [TimeStampLocal] &lt; &#39;</span><span class="si">%s</span><span class="s1">&#39; &#39;&#39;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">end_date</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start_end_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">return</span> <span class="n">start_end_str</span>
+
+
+<span class="k">def</span> <span class="nf">sql_or_string_from_mvs_ids</span><span class="p">(</span><span class="n">mvs_ids</span><span class="p">):</span>
+    <span class="n">or_string</span> <span class="o">=</span> <span class="s1">&#39; OR &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;mvs_id = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mvs_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">mvs_id</span> <span class="ow">in</span> <span class="n">mvs_ids</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">or_string</span>
+
+
+<span class="k">def</span> <span class="nf">sql_list_from_mvs_ids</span><span class="p">(</span><span class="n">mvs_ids</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mvs_ids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">mvs_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">mvs_ids</span><span class="p">]</span>
+    <span class="n">mvs_ids_list</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">_1)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mvs_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">mvs_id</span> <span class="ow">in</span> <span class="n">mvs_ids</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">mvs_ids_list</span>
+
+
+<span class="k">def</span> <span class="nf">rename_mvs_id_column</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">types</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">data_type</span> <span class="o">=</span> <span class="n">types</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EIA"><a class="viewcode-back" href="../../../code_io_database.html#anemoi.io.database.EIA">[docs]</a><span class="k">class</span> <span class="nc">EIA</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to connect to EIA database via HTTP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Data structure for connecting to and downloading data from EIA. Convention is::</span>
+
+<span class="sd">            import anemoi as an</span>
+<span class="sd">            eia = an.io.database.EIA()</span>
+
+<span class="sd">        :Parameters:</span>
+
+
+<span class="sd">        :Returns:</span>
+
+<span class="sd">        out: an.EIA object connected to EIA.gov</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="s1">&#39;EIA&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="s1">&#39;9B2EDFF62577B236B5D66044ACECA2EF&#39;</span>
+
+    <span class="k">def</span> <span class="nf">eia_data_from_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eia_id</span><span class="p">):</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;http://api.eia.gov/series/?api_key=</span><span class="si">{}</span><span class="s1">&amp;series_id=ELEC.PLANT.GEN.</span><span class="si">{}</span><span class="s1">-WND-WT.M&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span> <span class="n">eia_id</span><span class="p">)</span>
+
+        <span class="n">http</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No EIA data for station: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eia_id</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">eia_id</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))[</span><span class="s1">&#39;series&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Stamp&#39;</span><span class="p">,</span> <span class="n">eia_id</span><span class="p">])</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">Stamp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">Stamp</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y%m&#39;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Stamp&#39;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">eia_id</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">eia_data_from_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eia_ids</span><span class="p">):</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">eia_data_from_id</span><span class="p">(</span><span class="n">project</span><span class="p">)</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">eia_ids</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">eia_project_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_database_metadata_multiple.parquet&#39;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">metadata</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;eia_id&#39;</span>
+        <span class="k">return</span> <span class="n">metadata</span>
+
+    <span class="k">def</span> <span class="nf">eia_turbine_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;https://raw.githubusercontent.com/coryjog/wind_data/master/data/AWEA_Turb_Report_20171207.parquet&#39;</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metadata</span>
+
+    <span class="k">def</span> <span class="nf">project_centroids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eia_turbine_metadata</span><span class="p">()</span>
+        <span class="n">centroids</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;Turbine Latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Turbine Longitude&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">centroids</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">anemoi</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs_quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs_start-from-scratch.html">Start from Nothing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs_data_model.html">Data Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs_tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs_plotting.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_class_MetMast.html">Class - MetMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_class_RefMast.html">Class - RefMast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_io_references.html">Input/Output - References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_io_database.html">Input/Output Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_analysis_shear.html">Analysis - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_analysis_correlate.html">Analysis - Correlate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_analysis_freq_dist.html">Analysis - Freq Dist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_plotting_shear.html">Plotting - Shear</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code_plotting_correlate.html">Plotting - Correlate</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Cory Jog.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
