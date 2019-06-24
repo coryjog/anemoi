@@ -32,7 +32,7 @@ def sql_list_from_mvs_ids(mvs_ids):
 def rename_mvs_id_column(col, names, types):
     name = names[int(col.split('_')[0])]
     data_type = types[col.split('_')[1]]
-    return f'{name}_{data_type}'
+    return '{}_{}'.format(name, data_type)
 
 
 class EIA(object):

@@ -2,6 +2,7 @@
 import anemoi as an
 import pandas as pd
 
+
 class MetMast(object):
     """Primary Anemoi object. Data structure made up of two components:
 
@@ -35,15 +36,15 @@ class MetMast(object):
     """
 
     def __init__(self,
-                data=None,
-                name=None,
-                lat=None,
-                lon=None,
-                elev=None,
-                height=None,
-                primary_ano=None,
-                primary_vane=None,
-                shear_sensors=None):
+                 data=None,
+                 name=None,
+                 lat=None,
+                 lon=None,
+                 elev=None,
+                 height=None,
+                 primary_ano=None,
+                 primary_vane=None,
+                 shear_sensors=None):
 
         self.lat = lat
         self.lon = lon
@@ -54,13 +55,13 @@ class MetMast(object):
         self.name = name
         self.shear_sensors = shear_sensors
         self.metadata = pd.DataFrame(index=['height', 'elev', 'lat', 'lon', 'primary_ano', 'primary_vane'],
-                                    columns=[self.name],
-                                    data=[height, elev, lat, lon, primary_ano, primary_vane])
+                                     columns=[self.name],
+                                     data=[height, elev, lat, lon, primary_ano, primary_vane])
 
         if data is not None:
             if data.columns.nlevels > 1:
                 data.columns = an.utils.mast_data.remove_sensor_levels_from_mast_data_columns(data.columns)
-            
+
             data.columns = an.utils.mast_data.add_sensor_levels_to_from_mast_data_columns(data.columns)
             data = data.sort_index(axis=1)
 
@@ -77,16 +78,16 @@ class MetMast(object):
 Coords: {lat:.3f}, {lon:.3f}
 Primary ano: {ano}
 Primary vane: {vane}'''.format(name=name,
-                            sensors=len(sensors),
-                            lat=self.lat,
-                            lon=self.lon,
-                            ano=self.primary_ano,
-                            vane=self.primary_vane)
+                               sensors=len(sensors),
+                               lat=self.lat,
+                               lon=self.lon,
+                               ano=self.primary_ano,
+                               vane=self.primary_vane)
         return repr_string
 
     def print_mast_data_summary(self):
         measured_period = (self.data.index[-1] - self.data.index[0]).total_seconds()
-        measured_period = measured_period/(60*60*24*365.25) #convert to years
+        measured_period = measured_period / (60 * 60 * 24 * 365.25)  # convert to years
         print('Mast {}'.format(self.name))
         print('Elevation: {} m'.format(self.elev))
         print('Start date: {}'.format(self.data.index[0]))
@@ -316,7 +317,8 @@ Primary vane: {vane}'''.format(name=name,
 
         https://my.ecrm.edf-re.com/personal/benjamin_kandel/WRAMethod/WRA%20Wiki%20page/Definitions%20and%20conventions.aspx
         """
-        return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type, sensor_signal=sensor_signal)
+        return an.utils.mast_data.return_sensor_type_data(self.data, sensor_type=sensor_type,
+                                                          sensor_signal=sensor_signal)
 
     def resample_sensor_data(self, sensors, freq, agg='mean', minimum_recovery_rate=0.7):
         """Returns a DataFrame of measured data resampled to the specified frequency
@@ -344,7 +346,8 @@ Primary vane: {vane}'''.format(name=name,
         start_time = self.data.index[0]
         if freq == 'hourly':
             freq = 'H'
-            start_time = pd.to_datetime('{}/{}/{} {}:00'.format(start_time.year, start_time.month, start_time.day, start_time.hour))
+            start_time = pd.to_datetime(
+                '{}/{}/{} {}:00'.format(start_time.year, start_time.month, start_time.day, start_time.hour))
         elif freq == 'daily':
             freq = 'D'
             start_time = pd.to_datetime('{}/{}/{}'.format(start_time.year, start_time.month, start_time.day))
@@ -358,35 +361,36 @@ Primary vane: {vane}'''.format(name=name,
             start_time = pd.to_datetime('{}/01/01'.format(start_time.year))
 
         if minimum_recovery_rate > 1:
-            minimum_recovery_rate = minimum_recovery_rate/100.0
+            minimum_recovery_rate = minimum_recovery_rate / 100.0
 
         data = self.return_sensor_data(sensors)
         data_agg = data.resample(freq).agg(agg)
         data_count = data.resample(freq).agg('count')
-        date_range = pd.date_range(start_time, data.index[-1], freq=data.index[1]-data.index[0])
+        date_range = pd.date_range(start_time, data.index[-1], freq=data.index[1] - data.index[0])
         max_counts = pd.DataFrame(index=date_range, columns=data_count.columns)
         max_counts.fillna(0, inplace=True)
         max_counts = max_counts.resample(freq).count()
-        data_recovery_rate = data_count/max_counts
+        data_recovery_rate = data_count / max_counts
         data_agg = data_agg[data_recovery_rate > minimum_recovery_rate].dropna()
         return data_agg
 
     def return_self_corr_result_dataframe(self):
         self = self.remove_and_add_sensor_levels_to_from_mast_data_columns()
-        df = self.data.loc[:,'SPD']
+        df = self.data.loc[:, 'SPD']
         df.columns = df.columns.droplevel(level='height')
         orients = df.columns.get_level_values(level='orient').unique().tolist()
         result_dataframe = []
         for orient in orients:
-            oriented_sensors = df.loc[:,orient].columns.get_level_values(level='sensor').unique().tolist()
-            orientated_result = pd.DataFrame(index=pd.MultiIndex.from_product([oriented_sensors]*2, names=['Ref', 'Site']),
-                                             columns=['Slope', 'R2', 'Uncert'])
+            oriented_sensors = df.loc[:, orient].columns.get_level_values(level='sensor').unique().tolist()
+            orientated_result = pd.DataFrame(
+                index=pd.MultiIndex.from_product([oriented_sensors] * 2, names=['Ref', 'Site']),
+                columns=['Slope', 'R2', 'Uncert'])
             result_dataframe.append(orientated_result)
 
         result_dataframe = pd.concat(result_dataframe, axis=0)
-        result_dataframe = result_dataframe.loc[result_dataframe.index.get_level_values(0) != result_dataframe.index.get_level_values(1),:]
+        result_dataframe = result_dataframe.loc[
+                           result_dataframe.index.get_level_values(0) != result_dataframe.index.get_level_values(1), :]
         return result_dataframe
-
 
     #### MAST STATS ####
     def return_monthly_data_recovery(self):
@@ -394,12 +398,14 @@ Primary vane: {vane}'''.format(name=name,
         data = self.data.copy()
 
         # Calculate monthly data recovery by dividing the number of valid records by the number possible
-        data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index], names=['Year', 'Month', 'Stamp'])
+        data.index = pd.MultiIndex.from_arrays([data.index.year, data.index.month, data.index],
+                                               names=['Year', 'Month', 'Stamp'])
         monthly_data_count = data.groupby(level=['Year', 'Month']).count()
-        monthly_max = pd.DataFrame(data=pd.concat([data.groupby(level=['Year', 'Month']).size()]*monthly_data_count.shape[1], axis=1).values,
-                                  index=monthly_data_count.index,
-                                  columns=monthly_data_count.columns)
-        monthly_data_recovery = monthly_data_count/monthly_max*100
+        monthly_max = pd.DataFrame(
+            data=pd.concat([data.groupby(level=['Year', 'Month']).size()] * monthly_data_count.shape[1], axis=1).values,
+            index=monthly_data_count.index,
+            columns=monthly_data_count.columns)
+        monthly_data_recovery = monthly_data_count / monthly_max * 100
         return monthly_data_recovery
 
     def return_momm(self, sensors=None, sensor_type=None):
@@ -412,9 +418,9 @@ Primary vane: {vane}'''.format(name=name,
         df = df.groupby(df.index.month).mean()
         df.index.name = 'Month'
         df.columns = df.columns.get_level_values(-1)
-        days = pd.concat([self.return_monthly_days()]*df.shape[1], axis=1)
+        days = pd.concat([self.return_monthly_days()] * df.shape[1], axis=1)
         days.columns = df.columns
-        MoMM = (df*days).sum()/365.25
+        MoMM = (df * days).sum() / 365.25
         MoMM = MoMM.to_frame(name='MoMM')
         return MoMM
 
@@ -430,10 +436,10 @@ Primary vane: {vane}'''.format(name=name,
             ws_sensor = self.primary_ano
 
         data = self.return_sensor_data([dir_sensor, ws_sensor])
-        freqs = an.analysis.wind_rose.return_directional_energy_frequencies(df=data, 
-                                                                  dir_sensor=dir_sensor,
-                                                                  ws_sensor=ws_sensor,
-                                                                  dir_sectors=dir_sectors)
+        freqs = an.analysis.wind_rose.return_directional_energy_frequencies(df=data,
+                                                                            dir_sensor=dir_sensor,
+                                                                            ws_sensor=ws_sensor,
+                                                                            dir_sectors=dir_sectors)
         return freqs
 
     # #### ANALYSIS - LONG-TERM ####
@@ -738,8 +744,6 @@ Primary vane: {vane}'''.format(name=name,
     #                                                       dir_bin_freqs_ws=freqs.dir.values,
     #                                                       dir_bin_freqs_energy=freqs.energy.values)
     #     return fig
-
-
 
     # def plot_self_corrs(self, pdf_filename='_self_corrs.pdf', save_pdf=True):
     #     '''
