@@ -59,7 +59,7 @@ author = 'Cory Jog'
 # built documents.
 #
 # The short X.Y version.
-version = '0.0.49'
+version = '0.0.61'
 # The full version, including alpha/beta/rc tags.
 release = version
 
